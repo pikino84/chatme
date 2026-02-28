@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(psql:*)",
+      "Bash(export:*)",
+      "Bash(php artisan:*)",
+      "Bash(php:*)",
+      "Bash(composer require:*)"
+    ]
+  }
+}
