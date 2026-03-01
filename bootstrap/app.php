@@ -14,6 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             Route::domain('admin.' . config('app.base_domain'))
+                ->middleware('web')
+                ->group(function () {
+                    Route::get('/', function () {
+                        return redirect('/panel');
+                    });
+                });
+
+            Route::domain('admin.' . config('app.base_domain'))
                 ->middleware(['web', 'auth', 'saas_admin'])
                 ->prefix('panel')
                 ->group(base_path('routes/saas_admin.php'));
