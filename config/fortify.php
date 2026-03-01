@@ -88,7 +88,7 @@ return [
 
     'prefix' => '',
 
-    'domain' => null,
+    'domain' => 'app.' . env('APP_BASE_DOMAIN', 'chatme.test'),
 
     /*
     |--------------------------------------------------------------------------
