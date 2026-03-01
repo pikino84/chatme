@@ -53,6 +53,28 @@ class RolesAndPermissionsSeeder extends Seeder
             'sla.view',
             'sla.manage',
 
+            // Deals
+            'deals.view',
+            'deals.view-all',
+            'deals.create',
+            'deals.update',
+            'deals.delete',
+            'deals.assign',
+            'deals.manage-commissions',
+
+            // Pipelines
+            'pipelines.view',
+            'pipelines.create',
+            'pipelines.update',
+            'pipelines.delete',
+
+            // Knowledge Base
+            'kb.view',
+            'kb.create',
+            'kb.update',
+            'kb.delete',
+            'kb.publish',
+
             // Reports
             'reports.view',
             'reports.export',
@@ -83,6 +105,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'messages.view', 'messages.send', 'messages.delete', 'messages.internal-note',
             'channels.view', 'channels.manage',
             'sla.view', 'sla.manage',
+            'deals.view', 'deals.view-all', 'deals.create', 'deals.update', 'deals.delete',
+            'deals.assign', 'deals.manage-commissions',
+            'pipelines.view', 'pipelines.create', 'pipelines.update', 'pipelines.delete',
+            'kb.view', 'kb.create', 'kb.update', 'kb.delete', 'kb.publish',
             'reports.view', 'reports.export',
             'settings.view', 'settings.update',
         ]);
@@ -98,6 +124,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'messages.view', 'messages.send', 'messages.internal-note',
             'channels.view',
             'sla.view',
+            'deals.view', 'deals.view-all', 'deals.create', 'deals.update', 'deals.assign',
+            'pipelines.view',
+            'kb.view', 'kb.create', 'kb.update',
             'reports.view',
         ]);
 
@@ -108,6 +137,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'conversations.view',
             'conversations.close',
             'messages.view', 'messages.send', 'messages.internal-note',
+            'deals.view', 'deals.create', 'deals.update',
+            'pipelines.view',
+            'kb.view',
         ]);
     }
 }

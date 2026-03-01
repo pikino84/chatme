@@ -66,16 +66,45 @@
 [x] Blade views (index, create, show) + sidebar link
 [x] tests (32 tests, 79 assertions)
 
-## Phase 8 – Monitoring
-[ ] horizon monitoring
-[ ] netdata setup
-[ ] performance thresholds
+## Phase 8 – Monitoring & Hardening
+[x] Laravel Horizon installed + configured (critical/default/low queues, saas_admin gate)
+[x] QUEUE_CONNECTION switched to redis
+[x] SendWhatsAppMessage dispatched to critical queue
+[x] PerformanceMonitorService (queue backlog, failed jobs, usage >90% → auto SaasAlert)
+[x] monitor:performance artisan command + scheduled every 5 minutes
+[x] saas_alerts.created_by made nullable for system-generated alerts
+[x] Health check endpoints: /health/app, /health/db, /health/redis, /health/queue
+[x] EnsureProductionSafety middleware (logs critical if APP_DEBUG=true in production)
+[x] Reverb allowed_origins configurable via REVERB_ALLOWED_ORIGINS env
+[x] Horizon link in admin sidebar
+[x] tests (28 tests, 55 assertions)
+[ ] netdata setup (deferred — infrastructure-level, not application code)
 
 ## Phase 9 – CRM Foundation
-[ ] pipelines
-[ ] pipeline stages
-[ ] deals table
+[x] pipelines + pipeline_stages tables (position ordering, is_won/is_lost, max_duration_hours SLA)
+[x] deals table (pipeline/stage/conversation/assigned_user, value, currency, status, stage_entered_at)
+[x] deal_tag pivot, tags table (unique per org)
+[x] deal_stage_history (from/to stage, changed_by, changed_at)
+[x] deal_notes, deal_attachments, deal_commissions tables
+[x] 8 models (Pipeline, PipelineStage, Deal, DealStageHistory, DealNote, DealAttachment, DealCommission, Tag)
+[x] Existing models updated: Conversation→deals(), Organization→pipelines()/deals()/tags(), User→deals()/commissions()
+[x] 8 factories with chainable states (won/lost/stale/highValue/assigned/etc.)
+[x] DealPolicy, PipelinePolicy, DealNotePolicy (tenant-aware, role-based)
+[x] 11 CRM permissions added to RolesAndPermissionsSeeder (org_admin/supervisor/agent)
+[x] DealService (convertToDeal, createDeal, moveToStage, setDefaultPipeline, addNote, addAttachment)
+[x] PerformanceMonitorService.checkDealStaleness() — SLA alerts for stale deals
+[x] tests (64 new tests, 805 total assertions)
 
 ## Phase 10 – AI Preparation
-[ ] knowledge base table
-[ ] embedding column placeholder
+[x] kb_categories table (org_id, name, description, position, parent_id self-referencing, is_active)
+[x] kb_articles table (org_id, category, created_by/updated_by, title, slug, content, status enum, priority, visible_on_webchat/whatsapp/instagram/facebook, published_at)
+[x] kb_versions table (org_id, article_id, version_number, title, content, changed_by, change_summary)
+[x] pgvector embedding column vector(1536) on kb_articles (try/catch for envs without pgvector)
+[x] 3 models (KbCategory, KbArticle, KbVersion) + Organization updated
+[x] 3 factories with chainable states (published/archived/visibleOnWebchat/visibleOnWhatsApp/inactive)
+[x] KbArticlePolicy, KbCategoryPolicy (tenant-aware, role-based, category delete checks zero articles)
+[x] 5 KB permissions (kb.view/create/update/delete/publish) added to RolesAndPermissionsSeeder
+[x] kb_articles_limit feature added to PlansAndFeaturesSeeder (Starter: 20, Professional: 200, Enterprise: unlimited)
+[x] KnowledgeBaseService (createArticle with billing limit, updateArticle with versioning, publish, archive, delete, getPublishedArticles with channel filter)
+[x] tests (54 new tests, 884 total assertions)
+[ ] OpenAI integration (deferred — infrastructure ready, no API calls yet)

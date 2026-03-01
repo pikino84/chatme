@@ -22,6 +22,7 @@ class PlansAndFeaturesSeeder extends Seeder
             ['code' => 'sla_tracking', 'description' => 'SLA monitoring and alerts', 'type' => 'boolean'],
             ['code' => 'api_access', 'description' => 'REST API access', 'type' => 'boolean'],
             ['code' => 'custom_branding', 'description' => 'Custom branding on widget', 'type' => 'boolean'],
+            ['code' => 'kb_articles_limit', 'description' => 'Maximum KB articles', 'type' => 'limit'],
         ];
 
         foreach ($features as $feature) {
@@ -48,6 +49,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'sla_tracking' => 'false',
                     'api_access' => 'false',
                     'custom_branding' => 'false',
+                    'kb_articles_limit' => '20',
                 ],
             ],
             [
@@ -68,6 +70,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'sla_tracking' => 'true',
                     'api_access' => 'false',
                     'custom_branding' => 'false',
+                    'kb_articles_limit' => '200',
                 ],
             ],
             [
@@ -88,6 +91,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'sla_tracking' => 'true',
                     'api_access' => 'true',
                     'custom_branding' => 'true',
+                    'kb_articles_limit' => 'unlimited',
                 ],
             ],
         ];

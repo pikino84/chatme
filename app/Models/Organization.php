@@ -46,6 +46,31 @@ class Organization extends Model
         return $this->hasMany(OrganizationUsageMonthly::class);
     }
 
+    public function pipelines(): HasMany
+    {
+        return $this->hasMany(Pipeline::class);
+    }
+
+    public function deals(): HasMany
+    {
+        return $this->hasMany(Deal::class);
+    }
+
+    public function tags(): HasMany
+    {
+        return $this->hasMany(Tag::class);
+    }
+
+    public function kbCategories(): HasMany
+    {
+        return $this->hasMany(KbCategory::class);
+    }
+
+    public function kbArticles(): HasMany
+    {
+        return $this->hasMany(KbArticle::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

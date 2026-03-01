@@ -17,13 +17,14 @@ class SendWhatsAppMessage implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'critical';
     public int $tries = 3;
     public array $backoff = [10, 60, 300];
 
     public function __construct(
         public readonly Message $message,
-    ) {}
+    ) {
+        $this->onQueue('critical');
+    }
 
     public function handle(WhatsAppService $whatsAppService): void
     {

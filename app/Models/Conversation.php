@@ -72,6 +72,11 @@ class Conversation extends Model
         return $this->hasMany(ConversationSlaLog::class);
     }
 
+    public function deals(): HasMany
+    {
+        return $this->hasMany(Deal::class);
+    }
+
     public function isOpen(): bool
     {
         return $this->status === 'open';

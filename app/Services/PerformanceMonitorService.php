@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Deal;
 use App\Models\OrganizationUsageMonthly;
+use App\Models\PipelineStage;
 use App\Models\SaasAlert;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +22,7 @@ class PerformanceMonitorService
             'queue_backlog' => $this->checkQueueBacklog(),
             'failed_jobs' => $this->checkFailedJobs(),
             'usage_limits' => $this->checkUsageLimits(),
+            'deal_staleness' => $this->checkDealStaleness(),
         ];
     }
 
@@ -95,6 +98,41 @@ class PerformanceMonitorService
                     "Usage Limit Warning: {$org->name}",
                     "{$org->name} has used {$usage->usage}/{$limitInt} of {$usage->feature_code} this period.",
                     $org->id
+                );
+                $alertCount++;
+            }
+        }
+
+        return $alertCount;
+    }
+
+    public function checkDealStaleness(): int
+    {
+        $alertCount = 0;
+
+        $stageIdsWithSla = PipelineStage::withoutGlobalScopes()
+            ->whereNotNull('max_duration_hours')
+            ->pluck('id');
+
+        $staleDeals = Deal::withoutGlobalScopes()
+            ->where('status', 'open')
+            ->whereIn('pipeline_stage_id', $stageIdsWithSla)
+            ->get();
+
+        // Eager load stage without global scopes
+        $staleDeals->load(['stage' => fn ($q) => $q->withoutGlobalScopes()]);
+
+        foreach ($staleDeals as $deal) {
+            $maxSeconds = $deal->stage->maxDurationInSeconds();
+            $elapsed = $deal->stage_entered_at->diffInSeconds(now(), false);
+
+            if ($elapsed > $maxSeconds) {
+                $hours = round($elapsed / 3600, 1);
+                $this->createAlertIfNotExists(
+                    'warning',
+                    "Stale Deal: {$deal->contact_name} in {$deal->stage->name}",
+                    "Deal #{$deal->id} ({$deal->contact_name}) has been in stage \"{$deal->stage->name}\" for {$hours}h (max: {$deal->stage->max_duration_hours}h).",
+                    $deal->organization_id
                 );
                 $alertCount++;
             }

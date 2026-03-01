@@ -5,7 +5,8 @@
       "Bash(export:*)",
       "Bash(php artisan:*)",
       "Bash(php:*)",
-      "Bash(composer require:*)"
+      "Bash(composer require:*)",
+      "Bash(redis-cli ping:*)"
     ]
   }
 }
