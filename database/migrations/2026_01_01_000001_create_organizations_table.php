@@ -18,6 +18,10 @@ return new class extends Migration
 
             $table->index('status');
         });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('organization_id')->references('id')->on('organizations')->nullOnDelete();
+        });
     }
 
     public function down(): void

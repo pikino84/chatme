@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::create('channels', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->enum('type', ['whatsapp', 'webchat', 'email'])->default('whatsapp');
             $table->string('name');
-            $table->jsonb('configuration')->nullable();
+            $table->text('configuration')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 

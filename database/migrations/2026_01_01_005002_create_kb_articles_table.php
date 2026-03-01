@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -30,6 +31,16 @@ return new class extends Migration
             $table->index(['organization_id', 'kb_category_id']);
             $table->unique(['organization_id', 'slug']);
         });
+
+        try {
+            DB::statement('SAVEPOINT pgvector_check');
+            DB::statement('CREATE EXTENSION IF NOT EXISTS vector');
+            DB::statement('ALTER TABLE kb_articles ADD COLUMN embedding vector(1536)');
+            DB::statement('RELEASE SAVEPOINT pgvector_check');
+        } catch (\Throwable $e) {
+            DB::statement('ROLLBACK TO SAVEPOINT pgvector_check');
+            // pgvector not available
+        }
     }
 
     public function down(): void

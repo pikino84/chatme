@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('contact_name')->nullable();
             $table->string('contact_identifier');
             $table->enum('priority', ['low', 'normal', 'high', 'urgent'])->default('normal');
+            $table->jsonb('metadata')->nullable();
             $table->timestamp('closed_at')->nullable();
             $table->timestamp('last_message_at')->nullable();
             $table->timestamps();
