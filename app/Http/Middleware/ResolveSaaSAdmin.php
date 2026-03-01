@@ -13,7 +13,9 @@ class ResolveSaaSAdmin
         $user = $request->user();
 
         if (!$user) {
-            return redirect()->route('login');
+            return redirect()->to(
+                'https://app.' . config('app.base_domain') . '/login'
+            );
         }
 
         if (!$user->hasRole('saas_admin')) {
