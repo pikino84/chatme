@@ -25,6 +25,10 @@ Route::domain(config('app.base_domain'))->group(function () {
 */
 
 Route::domain('app.' . config('app.base_domain'))->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('login');
+    });
+
     Route::prefix('health')->group(function () {
         Route::get('/app', [HealthCheckController::class, 'app']);
         Route::get('/db', [HealthCheckController::class, 'db']);
@@ -32,11 +36,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
         Route::get('/queue', [HealthCheckController::class, 'queue']);
     });
 
-    Route::middleware([
-        'auth:sanctum',
-        config('jetstream.auth_session'),
-        'verified',
-    ])->group(function () {
+    Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', function () {
             return view('dashboard');
         })->name('dashboard');

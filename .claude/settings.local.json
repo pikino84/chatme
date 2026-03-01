@@ -7,7 +7,11 @@
       "Bash(php:*)",
       "Bash(composer require:*)",
       "Bash(redis-cli ping:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(find:*)",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
