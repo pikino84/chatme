@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\HealthCheckController;
+use App\Http\Controllers\Tenant\ConversationsController;
+use App\Http\Controllers\Tenant\InboxController;
+use App\Http\Controllers\Tenant\MessageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,5 +43,16 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
         Route::get('/dashboard', function () {
             return view('dashboard');
         })->name('dashboard');
+
+        Route::middleware([\App\Http\Middleware\ResolveUserTenant::class])->group(function () {
+            Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
+            Route::get('/inbox/conversations/{conversation}', [ConversationsController::class, 'show'])->name('inbox.conversations.show');
+            Route::post('/inbox/conversations/{conversation}/read', [ConversationsController::class, 'markAsRead'])->name('inbox.conversations.read');
+            Route::post('/inbox/conversations/{conversation}/close', [ConversationsController::class, 'close'])->name('inbox.conversations.close');
+            Route::post('/inbox/conversations/{conversation}/reopen', [ConversationsController::class, 'reopen'])->name('inbox.conversations.reopen');
+            Route::post('/inbox/conversations/{conversation}/assign', [ConversationsController::class, 'assign'])->name('inbox.conversations.assign');
+            Route::post('/inbox/conversations/{conversation}/transfer', [ConversationsController::class, 'transfer'])->name('inbox.conversations.transfer');
+            Route::post('/inbox/conversations/{conversation}/messages', [MessageController::class, 'store'])->name('inbox.conversations.messages.store');
+        });
     });
 });
