@@ -19,7 +19,9 @@ class ResolveSaaSAdmin
         }
 
         if (!$user->hasRole('saas_admin')) {
-            abort(403, 'Access denied. SaaS Admin role required.');
+            return redirect()->to(
+                $request->getScheme() . '://app.' . config('app.base_domain') . '/dashboard'
+            );
         }
 
         if ($user->organization_id !== null) {

@@ -62,7 +62,7 @@ class SaaSAdminTest extends TestCase
         $response->assertRedirect();
     }
 
-    public function test_middleware_blocks_non_saas_admin_role(): void
+    public function test_middleware_redirects_non_saas_admin_role(): void
     {
         $org = Organization::factory()->create();
         $user = User::factory()->create(['organization_id' => $org->id]);
@@ -71,7 +71,7 @@ class SaaSAdminTest extends TestCase
         $response = $this->actingAs($user)
             ->get("http://{$this->domain}/panel/organizations");
 
-        $response->assertStatus(403);
+        $response->assertRedirect();
     }
 
     public function test_middleware_blocks_saas_admin_with_organization(): void
