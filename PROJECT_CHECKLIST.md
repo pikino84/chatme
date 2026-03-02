@@ -55,6 +55,13 @@
 [x] MaintenanceController (toggle per org via settings)
 [x] ResolveTenant updated for maintenance_mode check
 [x] tests (35 tests, 78 assertions)
+[x] UserController CRUD (index with search/filter, show, create, store, edit, update, destroy + self-delete protection)
+[x] PlanController CRUD (index, show, create, store, edit, update, destroy + subscription protection + feature values sync)
+[x] OrganizationController expanded (create, store, destroy + user protection)
+[x] SubscriptionController expanded (create, store with auto ends_at/trial_ends_at)
+[x] Admin views: users (index/show/form), plans (index/show/form), organizations/form, subscriptions/create
+[x] Sidebar updated with Users + Plans links
+[x] Admin CRUD tests (21 tests, 49 assertions)
 
 ## Phase 7.5 – Form Templates System
 [x] channel_forms table + metadata column on conversations

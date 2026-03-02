@@ -5,22 +5,47 @@ use App\Http\Controllers\SaaSAdmin\ChannelFormController;
 use App\Http\Controllers\SaaSAdmin\DashboardController;
 use App\Http\Controllers\SaaSAdmin\MaintenanceController;
 use App\Http\Controllers\SaaSAdmin\OrganizationController;
+use App\Http\Controllers\SaaSAdmin\PlanController;
 use App\Http\Controllers\SaaSAdmin\SubscriptionController;
 use App\Http\Controllers\SaaSAdmin\UsageController;
+use App\Http\Controllers\SaaSAdmin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('saas-admin.dashboard');
 
 // Organizations
 Route::get('organizations', [OrganizationController::class, 'index'])->name('saas-admin.organizations.index');
+Route::get('organizations/create', [OrganizationController::class, 'create'])->name('saas-admin.organizations.create');
+Route::post('organizations', [OrganizationController::class, 'store'])->name('saas-admin.organizations.store');
 Route::get('organizations/{organization}', [OrganizationController::class, 'show'])->name('saas-admin.organizations.show');
 Route::get('organizations/{organization}/edit', [OrganizationController::class, 'edit'])->name('saas-admin.organizations.edit');
 Route::put('organizations/{organization}', [OrganizationController::class, 'update'])->name('saas-admin.organizations.update');
 Route::post('organizations/{organization}/suspend', [OrganizationController::class, 'suspend'])->name('saas-admin.organizations.suspend');
 Route::post('organizations/{organization}/activate', [OrganizationController::class, 'activate'])->name('saas-admin.organizations.activate');
+Route::delete('organizations/{organization}', [OrganizationController::class, 'destroy'])->name('saas-admin.organizations.destroy');
+
+// Users
+Route::get('users', [UserController::class, 'index'])->name('saas-admin.users.index');
+Route::get('users/create', [UserController::class, 'create'])->name('saas-admin.users.create');
+Route::post('users', [UserController::class, 'store'])->name('saas-admin.users.store');
+Route::get('users/{user}', [UserController::class, 'show'])->name('saas-admin.users.show');
+Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('saas-admin.users.edit');
+Route::put('users/{user}', [UserController::class, 'update'])->name('saas-admin.users.update');
+Route::delete('users/{user}', [UserController::class, 'destroy'])->name('saas-admin.users.destroy');
+
+// Plans
+Route::get('plans', [PlanController::class, 'index'])->name('saas-admin.plans.index');
+Route::get('plans/create', [PlanController::class, 'create'])->name('saas-admin.plans.create');
+Route::post('plans', [PlanController::class, 'store'])->name('saas-admin.plans.store');
+Route::get('plans/{plan}', [PlanController::class, 'show'])->name('saas-admin.plans.show');
+Route::get('plans/{plan}/edit', [PlanController::class, 'edit'])->name('saas-admin.plans.edit');
+Route::put('plans/{plan}', [PlanController::class, 'update'])->name('saas-admin.plans.update');
+Route::delete('plans/{plan}', [PlanController::class, 'destroy'])->name('saas-admin.plans.destroy');
 
 // Subscriptions
 Route::get('subscriptions', [SubscriptionController::class, 'index'])->name('saas-admin.subscriptions.index');
+Route::get('subscriptions/create', [SubscriptionController::class, 'create'])->name('saas-admin.subscriptions.create');
+Route::post('subscriptions', [SubscriptionController::class, 'store'])->name('saas-admin.subscriptions.store');
 Route::get('subscriptions/{subscription}', [SubscriptionController::class, 'show'])->name('saas-admin.subscriptions.show');
 Route::put('subscriptions/{subscription}', [SubscriptionController::class, 'update'])->name('saas-admin.subscriptions.update');
 

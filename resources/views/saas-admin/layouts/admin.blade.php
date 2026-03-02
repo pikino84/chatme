@@ -66,6 +66,8 @@
         <nav class="sidebar-nav">
             <a href="{{ route('saas-admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('saas-admin.dashboard') ? 'active' : '' }}">Dashboard</a>
             <a href="{{ route('saas-admin.organizations.index') }}" class="sidebar-link {{ request()->routeIs('saas-admin.organizations.*') ? 'active' : '' }}">Organizations</a>
+            <a href="{{ route('saas-admin.users.index') }}" class="sidebar-link {{ request()->routeIs('saas-admin.users.*') ? 'active' : '' }}">Users</a>
+            <a href="{{ route('saas-admin.plans.index') }}" class="sidebar-link {{ request()->routeIs('saas-admin.plans.*') ? 'active' : '' }}">Plans</a>
             <a href="{{ route('saas-admin.subscriptions.index') }}" class="sidebar-link {{ request()->routeIs('saas-admin.subscriptions.*') ? 'active' : '' }}">Subscriptions</a>
             <a href="{{ route('saas-admin.usage.index') }}" class="sidebar-link {{ request()->routeIs('saas-admin.usage.*') ? 'active' : '' }}">Usage</a>
             <a href="{{ route('saas-admin.alerts.index') }}" class="sidebar-link {{ request()->routeIs('saas-admin.alerts.*') ? 'active' : '' }}">Alerts</a>

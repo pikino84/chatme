@@ -7,6 +7,7 @@
             <h1>Organizations</h1>
             <p>Manage all tenant organizations</p>
         </div>
+        <a href="{{ route('saas-admin.organizations.create') }}" class="btn btn-primary">+ New Organization</a>
     </div>
 
     <div class="card" style="margin-bottom:1rem;">

@@ -6,9 +6,29 @@ use App\Http\Controllers\Controller;
 use App\Models\Organization;
 use App\Models\OrganizationSubscription;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class OrganizationController extends Controller
 {
+    public function create()
+    {
+        return view('saas-admin.organizations.form', ['organization' => null]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:organizations,slug',
+            'status' => 'required|in:active,suspended,trial',
+        ]);
+
+        $org = Organization::create($validated);
+
+        return redirect()->route('saas-admin.organizations.show', $org)
+            ->with('success', "Organization '{$org->name}' created.");
+    }
+
     public function index(Request $request)
     {
         $query = Organization::query();
@@ -82,5 +102,17 @@ class OrganizationController extends Controller
         $organization->update(['status' => 'active']);
 
         return back()->with('success', "Organization '{$organization->name}' has been activated.");
+    }
+
+    public function destroy(Organization $organization)
+    {
+        if ($organization->users()->exists()) {
+            return back()->with('error', 'Cannot delete an organization that has users. Remove users first.');
+        }
+
+        $organization->delete();
+
+        return redirect()->route('saas-admin.organizations.index')
+            ->with('success', 'Organization deleted.');
     }
 }

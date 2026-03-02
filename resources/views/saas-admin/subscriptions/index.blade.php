@@ -2,9 +2,12 @@
 @section('title', 'Subscriptions')
 
 @section('content')
-    <div class="page-header">
-        <h1>Subscriptions</h1>
-        <p>All organization subscriptions</p>
+    <div class="page-header flex justify-between items-center">
+        <div>
+            <h1>Subscriptions</h1>
+            <p>All organization subscriptions</p>
+        </div>
+        <a href="{{ route('saas-admin.subscriptions.create') }}" class="btn btn-primary">+ New Subscription</a>
     </div>
 
     <div class="card" style="margin-bottom:1rem;">
