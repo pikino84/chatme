@@ -54,6 +54,35 @@ class ChannelFactory extends Factory
         ]);
     }
 
+    public function facebook(): static
+    {
+        return $this->state([
+            'type' => 'facebook',
+            'name' => fake()->company() . ' Facebook',
+            'configuration' => [
+                'page_id' => (string) fake()->numerify('#########'),
+                'page_access_token' => 'EAA' . Str::random(40),
+                'app_secret' => Str::random(32),
+                'verify_token' => Str::random(32),
+            ],
+        ]);
+    }
+
+    public function instagram(): static
+    {
+        return $this->state([
+            'type' => 'instagram',
+            'name' => fake()->company() . ' Instagram',
+            'configuration' => [
+                'instagram_account_id' => (string) fake()->numerify('#########'),
+                'page_id' => (string) fake()->numerify('#########'),
+                'page_access_token' => 'EAA' . Str::random(40),
+                'app_secret' => Str::random(32),
+                'verify_token' => Str::random(32),
+            ],
+        ]);
+    }
+
     public function inactive(): static
     {
         return $this->state(['is_active' => false]);

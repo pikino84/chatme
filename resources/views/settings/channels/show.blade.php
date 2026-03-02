@@ -26,8 +26,12 @@
                     <dd class="mt-1">
                         @if($channel->type === 'whatsapp')
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">WhatsApp</span>
+                        @elseif($channel->type === 'facebook')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Facebook</span>
+                        @elseif($channel->type === 'instagram')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300">Instagram</span>
                         @else
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Webchat</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">Webchat</span>
                         @endif
                     </dd>
                 </div>
@@ -96,6 +100,111 @@
                             Configura esta URL de Webhook y el Verify Token en tu
                             <a href="https://developers.facebook.com/" target="_blank" class="text-indigo-500 hover:underline">Consola de Desarrolladores de Meta</a>
                             en la configuraci&oacute;n de tu app de WhatsApp Business.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- Facebook Integration --}}
+        @if($channel->type === 'facebook')
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6" x-data>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Integraci&oacute;n Facebook Messenger</h3>
+
+                @php $config = $channel->configuration ?? []; @endphp
+
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">URL del Webhook</label>
+                        <div class="flex gap-2">
+                            <input type="text" value="{{ $webhookUrl }}" readonly
+                                   class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm bg-gray-50 dark:bg-gray-800">
+                            <button type="button"
+                                    x-on:click="navigator.clipboard.writeText('{{ $webhookUrl }}'); $el.textContent = 'Copiado!'; setTimeout(() => $el.textContent = 'Copiar', 2000)"
+                                    class="px-3 py-2 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">
+                                Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">Verify Token</label>
+                        <code class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ $config['verify_token'] ?? '—' }}</code>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">Page ID</label>
+                        <span class="text-gray-900 dark:text-gray-100">{{ $config['page_id'] ?? '—' }}</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">Credenciales</label>
+                        <span class="text-gray-500 dark:text-gray-400">
+                            Page Access Token: ********{{ !empty($config['page_access_token']) ? substr($config['page_access_token'], -8) : '—' }}<br>
+                            App Secret: ********{{ !empty($config['app_secret']) ? substr($config['app_secret'], -8) : '—' }}
+                        </span>
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <p class="text-xs text-gray-400">
+                            Configura esta URL de Webhook y el Verify Token en tu
+                            <a href="https://developers.facebook.com/" target="_blank" class="text-indigo-500 hover:underline">Consola de Desarrolladores de Meta</a>
+                            en la configuraci&oacute;n de Messenger de tu app.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- Instagram Integration --}}
+        @if($channel->type === 'instagram')
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6" x-data>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Integraci&oacute;n Instagram</h3>
+
+                @php $config = $channel->configuration ?? []; @endphp
+
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">URL del Webhook</label>
+                        <div class="flex gap-2">
+                            <input type="text" value="{{ $webhookUrl }}" readonly
+                                   class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm bg-gray-50 dark:bg-gray-800">
+                            <button type="button"
+                                    x-on:click="navigator.clipboard.writeText('{{ $webhookUrl }}'); $el.textContent = 'Copiado!'; setTimeout(() => $el.textContent = 'Copiar', 2000)"
+                                    class="px-3 py-2 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">
+                                Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">Verify Token</label>
+                        <code class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ $config['verify_token'] ?? '—' }}</code>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">Instagram Account ID</label>
+                        <span class="text-gray-900 dark:text-gray-100">{{ $config['instagram_account_id'] ?? '—' }}</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">Page ID vinculada</label>
+                        <span class="text-gray-900 dark:text-gray-100">{{ $config['page_id'] ?? '—' }}</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-500 dark:text-gray-400 mb-1">Credenciales</label>
+                        <span class="text-gray-500 dark:text-gray-400">
+                            Page Access Token: ********{{ !empty($config['page_access_token']) ? substr($config['page_access_token'], -8) : '—' }}<br>
+                            App Secret: ********{{ !empty($config['app_secret']) ? substr($config['app_secret'], -8) : '—' }}
+                        </span>
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <p class="text-xs text-gray-400">
+                            Configura esta URL de Webhook y el Verify Token en tu
+                            <a href="https://developers.facebook.com/" target="_blank" class="text-indigo-500 hover:underline">Consola de Desarrolladores de Meta</a>
+                            en la configuraci&oacute;n de Instagram de tu app.
                         </p>
                     </div>
                 </div>

@@ -103,6 +103,47 @@ class ChannelManagementTest extends TestCase
         ]);
     }
 
+    public function test_org_admin_can_create_facebook_channel(): void
+    {
+        $response = $this->actingAs($this->orgAdmin)
+            ->post($this->channelUrl(), [
+                'name' => 'My Facebook',
+                'type' => 'facebook',
+                'page_id' => '123456789',
+                'page_access_token' => 'EAAfbtoken123',
+                'app_secret' => 'fbsecret123',
+                'verify_token' => 'fbverify123',
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('channels', [
+            'organization_id' => $this->org->id,
+            'name' => 'My Facebook',
+            'type' => 'facebook',
+        ]);
+    }
+
+    public function test_org_admin_can_create_instagram_channel(): void
+    {
+        $response = $this->actingAs($this->orgAdmin)
+            ->post($this->channelUrl(), [
+                'name' => 'My Instagram',
+                'type' => 'instagram',
+                'instagram_account_id' => '987654321',
+                'page_id' => '123456789',
+                'page_access_token' => 'EAAigtoken123',
+                'app_secret' => 'igsecret123',
+                'verify_token' => 'igverify123',
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('channels', [
+            'organization_id' => $this->org->id,
+            'name' => 'My Instagram',
+            'type' => 'instagram',
+        ]);
+    }
+
     public function test_org_admin_can_view_channel(): void
     {
         $channel = Channel::factory()->create(['organization_id' => $this->org->id]);

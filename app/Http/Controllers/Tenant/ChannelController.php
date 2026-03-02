@@ -42,14 +42,17 @@ class ChannelController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:whatsapp,webchat',
+            'type' => 'required|in:whatsapp,webchat,facebook,instagram',
             'phone_number_id' => 'required_if:type,whatsapp|nullable|string|max:255',
             'waba_id' => 'required_if:type,whatsapp|nullable|string|max:255',
             'access_token' => 'required_if:type,whatsapp|nullable|string|max:1000',
-            'verify_token' => 'required_if:type,whatsapp|nullable|string|max:255',
-            'app_secret' => 'required_if:type,whatsapp|nullable|string|max:255',
+            'verify_token' => 'nullable|string|max:255',
+            'app_secret' => 'nullable|string|max:255',
             'display_phone' => 'required_if:type,whatsapp|nullable|string|max:50',
             'allowed_origins' => 'nullable|string',
+            'page_id' => 'required_if:type,facebook|required_if:type,instagram|nullable|string|max:255',
+            'page_access_token' => 'required_if:type,facebook|required_if:type,instagram|nullable|string|max:1000',
+            'instagram_account_id' => 'required_if:type,instagram|nullable|string|max:255',
         ]);
 
         $config = $this->buildConfig($request);
@@ -88,6 +91,10 @@ class ChannelController extends Controller
         } elseif ($channel->type === 'webchat') {
             $widgetSnippet = $this->generateWidgetSnippet($channel);
             $formTemplates = config('form_templates', []);
+        } elseif ($channel->type === 'facebook') {
+            $webhookUrl = url("/api/webhooks/facebook/{$channel->uuid}");
+        } elseif ($channel->type === 'instagram') {
+            $webhookUrl = url("/api/webhooks/instagram/{$channel->uuid}");
         }
 
         return view('settings.channels.show', compact(
@@ -120,14 +127,17 @@ class ChannelController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone_number_id' => 'required_if:type,whatsapp|nullable|string|max:255',
-            'waba_id' => 'required_if:type,whatsapp|nullable|string|max:255',
+            'phone_number_id' => 'nullable|string|max:255',
+            'waba_id' => 'nullable|string|max:255',
             'access_token' => 'nullable|string|max:1000',
-            'verify_token' => 'required_if:type,whatsapp|nullable|string|max:255',
+            'verify_token' => 'nullable|string|max:255',
             'app_secret' => 'nullable|string|max:255',
-            'display_phone' => 'required_if:type,whatsapp|nullable|string|max:50',
+            'display_phone' => 'nullable|string|max:50',
             'allowed_origins' => 'nullable|string',
             'template_key' => 'nullable|string',
+            'page_id' => 'nullable|string|max:255',
+            'page_access_token' => 'nullable|string|max:1000',
+            'instagram_account_id' => 'nullable|string|max:255',
         ]);
 
         $config = $this->buildConfig($request, $channel);
@@ -203,6 +213,51 @@ class ChannelController extends Controller
                     : ($existingConfig['app_secret'] ?? '');
             } else {
                 $config['access_token'] = $request->input('access_token');
+                $config['app_secret'] = $request->input('app_secret');
+            }
+
+            return $config;
+        }
+
+        if ($type === 'facebook') {
+            $config = [
+                'page_id' => $request->input('page_id'),
+                'verify_token' => $request->input('verify_token'),
+            ];
+
+            if ($existing) {
+                $existingConfig = $existing->configuration ?? [];
+                $config['page_access_token'] = $request->filled('page_access_token')
+                    ? $request->input('page_access_token')
+                    : ($existingConfig['page_access_token'] ?? '');
+                $config['app_secret'] = $request->filled('app_secret')
+                    ? $request->input('app_secret')
+                    : ($existingConfig['app_secret'] ?? '');
+            } else {
+                $config['page_access_token'] = $request->input('page_access_token');
+                $config['app_secret'] = $request->input('app_secret');
+            }
+
+            return $config;
+        }
+
+        if ($type === 'instagram') {
+            $config = [
+                'instagram_account_id' => $request->input('instagram_account_id'),
+                'page_id' => $request->input('page_id'),
+                'verify_token' => $request->input('verify_token'),
+            ];
+
+            if ($existing) {
+                $existingConfig = $existing->configuration ?? [];
+                $config['page_access_token'] = $request->filled('page_access_token')
+                    ? $request->input('page_access_token')
+                    : ($existingConfig['page_access_token'] ?? '');
+                $config['app_secret'] = $request->filled('app_secret')
+                    ? $request->input('app_secret')
+                    : ($existingConfig['app_secret'] ?? '');
+            } else {
+                $config['page_access_token'] = $request->input('page_access_token');
                 $config['app_secret'] = $request->input('app_secret');
             }
 
