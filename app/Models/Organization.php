@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class Organization extends Model
 {
@@ -18,6 +19,37 @@ class Organization extends Model
         'status',
         'settings',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $org) {
+            if (empty($org->slug)) {
+                $org->slug = static::generateUniqueSlug($org->name);
+            }
+        });
+    }
+
+    public static function generateUniqueSlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name) ?: Str::random(8);
+        $slug = $base;
+        $counter = 1;
+
+        while (static::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+            $slug = $base . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    public function canChangeSlug(): bool
+    {
+        return ! $this->users()->exists()
+            && ! $this->branches()->exists()
+            && ! OrganizationSubscription::withoutGlobalScopes()
+                    ->where('organization_id', $this->id)->exists();
+    }
 
     protected function casts(): array
     {

@@ -19,7 +19,6 @@ class OrganizationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:organizations,slug',
             'status' => 'required|in:active,suspended,trial',
         ]);
 
@@ -73,10 +72,21 @@ class OrganizationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:organizations,slug,' . $organization->id,
+            'slug' => 'nullable|string|max:255|unique:organizations,slug,' . $organization->id,
         ]);
 
-        $organization->update($validated);
+        $data = ['name' => $validated['name']];
+
+        // Only update slug if the org has no dependencies
+        if ($organization->canChangeSlug()) {
+            if (! empty($validated['slug'])) {
+                $data['slug'] = $validated['slug'];
+            } else {
+                $data['slug'] = Organization::generateUniqueSlug($validated['name'], $organization->id);
+            }
+        }
+
+        $organization->update($data);
 
         return redirect()->route('saas-admin.organizations.show', $organization)
             ->with('success', "Organization '{$organization->name}' updated.");

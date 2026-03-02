@@ -19,8 +19,14 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Slug</label>
-                <input type="text" name="slug" class="form-input" value="{{ old('slug', $organization->slug) }}" required>
+                <label class="form-label">Slug (subdomain)</label>
+                @if($organization->canChangeSlug())
+                    <input type="text" name="slug" class="form-input" value="{{ old('slug', $organization->slug) }}">
+                    <small style="color:#6b7280;">Leave empty to auto-generate from name. Editable because this org has no users, branches, or subscriptions.</small>
+                @else
+                    <input type="text" class="form-input" value="{{ $organization->slug }}" disabled style="background:#f3f4f6;">
+                    <small style="color:#6b7280;">Cannot change slug — this organization has active users, branches, or subscriptions that depend on the subdomain.</small>
+                @endif
                 @error('slug') <small style="color:#dc2626;">{{ $message }}</small> @enderror
             </div>
 

@@ -13,13 +13,8 @@
             <div class="form-group">
                 <label class="form-label">Name</label>
                 <input type="text" name="name" class="form-input" value="{{ old('name') }}" required>
+                <small style="color:#6b7280;">The slug (subdomain) will be generated automatically from the name.</small>
                 @error('name') <small style="color:#dc2626;">{{ $message }}</small> @enderror
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Slug</label>
-                <input type="text" name="slug" class="form-input" value="{{ old('slug') }}" required>
-                @error('slug') <small style="color:#dc2626;">{{ $message }}</small> @enderror
             </div>
 
             <div class="form-group">

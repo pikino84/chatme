@@ -235,12 +235,11 @@ class AdminCrudTest extends TestCase
     {
         $response = $this->adminPost('/organizations', [
             'name' => 'Acme Corp',
-            'slug' => 'acme-corp',
             'status' => 'active',
         ]);
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('organizations', ['slug' => 'acme-corp']);
+        $this->assertDatabaseHas('organizations', ['name' => 'Acme Corp', 'slug' => 'acme-corp']);
     }
 
     public function test_admin_can_delete_empty_organization(): void
@@ -261,6 +260,34 @@ class AdminCrudTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('error');
         $this->assertDatabaseHas('organizations', ['id' => $org->id]);
+    }
+
+    public function test_org_slug_cannot_change_when_has_users(): void
+    {
+        $org = Organization::factory()->create(['slug' => 'original-slug']);
+        User::factory()->create(['organization_id' => $org->id]);
+
+        $response = $this->adminPut("/organizations/{$org->id}", [
+            'name' => 'New Name',
+            'slug' => 'new-slug',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertEquals('original-slug', $org->fresh()->slug);
+        $this->assertEquals('New Name', $org->fresh()->name);
+    }
+
+    public function test_org_slug_can_change_when_no_dependencies(): void
+    {
+        $org = Organization::factory()->create(['slug' => 'old-slug']);
+
+        $response = $this->adminPut("/organizations/{$org->id}", [
+            'name' => 'Updated Org',
+            'slug' => 'new-slug',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertEquals('new-slug', $org->fresh()->slug);
     }
 
     // ── Subscription create ──
@@ -300,17 +327,17 @@ class AdminCrudTest extends TestCase
         $response->assertSessionHasErrors('email');
     }
 
-    public function test_org_create_validates_unique_slug(): void
+    public function test_org_create_auto_generates_unique_slug(): void
     {
-        Organization::factory()->create(['slug' => 'taken']);
+        Organization::factory()->create(['slug' => 'acme-corp']);
 
         $response = $this->adminPost('/organizations', [
-            'name' => 'Dupe Org',
-            'slug' => 'taken',
+            'name' => 'Acme Corp',
             'status' => 'active',
         ]);
 
-        $response->assertSessionHasErrors('slug');
+        $response->assertRedirect();
+        $this->assertDatabaseHas('organizations', ['slug' => 'acme-corp-1']);
     }
 
     public function test_plan_create_validates_unique_slug(): void
