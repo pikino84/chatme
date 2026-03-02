@@ -107,4 +107,15 @@
 [x] kb_articles_limit feature added to PlansAndFeaturesSeeder (Starter: 20, Professional: 200, Enterprise: unlimited)
 [x] KnowledgeBaseService (createArticle with billing limit, updateArticle with versioning, publish, archive, delete, getPublishedArticles with channel filter)
 [x] tests (54 new tests, 884 total assertions)
-[ ] OpenAI integration (deferred — infrastructure ready, no API calls yet)
+[x] OpenAI integration (EmbeddingService, AiAnswerService, VectorSearchService)
+
+## Phase 11 – Product Layer UI
+[x] Conversations Inbox UI (InboxController, ConversationsController, MessageController, 3-column Blade layout, 11 tests)
+[x] CRM Kanban UI (DealBoardController, DealController, kanban board + drawer + create modal, 7 tests)
+[x] Tenant Settings (SettingsController, TeamController, org name/logo/timezone, user roles/activate, 8 tests)
+[x] Migration: add is_active boolean to users table
+[x] Billing UX (BillingController, subscription/plans/usage views, limit banners, 7 tests)
+[x] Knowledge Base UI (KbCategoryController, KbArticleController, category/article CRUD, version history, 10 tests)
+[x] AI Layer (EmbeddingService, VectorSearchService, AiAnswerService, GenerateArticleEmbedding job, AiConfigController, 10 tests)
+[ ] Analytics
+[ ] Security Hardening Improvements

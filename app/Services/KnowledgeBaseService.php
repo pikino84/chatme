@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\GenerateArticleEmbedding;
 use App\Models\KbArticle;
 use App\Models\KbVersion;
 use App\Models\Organization;
@@ -71,6 +72,8 @@ class KnowledgeBaseService
             'published_at' => now(),
             'updated_by' => $actor->id,
         ]);
+
+        GenerateArticleEmbedding::dispatch($article->id, $article->organization_id);
 
         return $article->fresh();
     }

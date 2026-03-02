@@ -7,10 +7,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class KbArticle extends Model
 {
     use HasFactory, BelongsToOrganization;
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $article) {
+            if (empty($article->slug)) {
+                $article->slug = Str::slug($article->title) ?: Str::random(8);
+            }
+        });
+    }
 
     protected $fillable = [
         'organization_id',
