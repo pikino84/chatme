@@ -17,6 +17,6 @@ class LoginResponse implements LoginResponseContract
             $url = $request->getScheme() . '://app.' . $base . '/dashboard';
         }
 
-        return redirect()->intended($url);
+        return redirect($url);
     }
 }
