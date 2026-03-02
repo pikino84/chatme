@@ -10,6 +10,7 @@ use App\Http\Controllers\Tenant\AiConfigController;
 use App\Http\Controllers\Tenant\KbArticleController;
 use App\Http\Controllers\Tenant\KbCategoryController;
 use App\Http\Controllers\Tenant\MessageController;
+use App\Http\Controllers\Tenant\ChannelController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -97,6 +98,16 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/kb/articles/{article}/publish', [KbArticleController::class, 'publish'])->name('kb.articles.publish');
             Route::post('/kb/articles/{article}/archive', [KbArticleController::class, 'archive'])->name('kb.articles.archive');
             Route::post('/kb/articles/{article}/delete', [KbArticleController::class, 'destroy'])->name('kb.articles.destroy');
+
+            // Channels
+            Route::get('/settings/channels', [ChannelController::class, 'index'])->name('settings.channels');
+            Route::get('/settings/channels/create', [ChannelController::class, 'create'])->name('settings.channels.create');
+            Route::post('/settings/channels', [ChannelController::class, 'store'])->name('settings.channels.store');
+            Route::get('/settings/channels/{channel}', [ChannelController::class, 'show'])->name('settings.channels.show');
+            Route::get('/settings/channels/{channel}/edit', [ChannelController::class, 'edit'])->name('settings.channels.edit');
+            Route::post('/settings/channels/{channel}/update', [ChannelController::class, 'update'])->name('settings.channels.update');
+            Route::post('/settings/channels/{channel}/toggle', [ChannelController::class, 'toggleActive'])->name('settings.channels.toggle');
+            Route::post('/settings/channels/{channel}/delete', [ChannelController::class, 'destroy'])->name('settings.channels.delete');
 
             // AI Configuration
             Route::get('/settings/ai', [AiConfigController::class, 'show'])->name('settings.ai');
