@@ -63,7 +63,7 @@ class ChannelController extends Controller
         ]);
 
         return redirect()->route('settings.channels.show', $channel)
-            ->with('success', 'Channel created successfully.');
+            ->with('success', 'Canal creado exitosamente.');
     }
 
     public function show(Request $request, Channel $channel)
@@ -142,7 +142,7 @@ class ChannelController extends Controller
         }
 
         return redirect()->route('settings.channels.show', $channel)
-            ->with('success', 'Channel updated successfully.');
+            ->with('success', 'Canal actualizado exitosamente.');
     }
 
     public function toggleActive(Request $request, Channel $channel)
@@ -157,7 +157,7 @@ class ChannelController extends Controller
 
         $channel->update(['is_active' => !$channel->is_active]);
 
-        return back()->with('success', $channel->is_active ? 'Channel activated.' : 'Channel deactivated.');
+        return back()->with('success', $channel->is_active ? 'Canal activado.' : 'Canal desactivado.');
     }
 
     public function destroy(Request $request, Channel $channel)
@@ -171,13 +171,13 @@ class ChannelController extends Controller
         }
 
         if ($channel->conversations()->count() > 0) {
-            return back()->with('error', 'Cannot delete a channel that has conversations.');
+            return back()->with('error', 'No se puede eliminar un canal que tiene conversaciones.');
         }
 
         $channel->delete();
 
         return redirect()->route('settings.channels')
-            ->with('success', 'Channel deleted.');
+            ->with('success', 'Canal eliminado.');
     }
 
     private function buildConfig(Request $request, ?Channel $existing = null): array

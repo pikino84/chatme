@@ -1,11 +1,11 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-8 px-4">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Channels</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Canales</h2>
             @can('channels.manage')
                 <a href="{{ route('settings.channels.create') }}"
                    class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                    Add Channel
+                    Agregar Canal
                 </a>
             @endcan
         </div>
@@ -24,10 +24,10 @@
 
         @if($channels->isEmpty())
             <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <p class="text-gray-500 dark:text-gray-400">No channels configured yet.</p>
+                <p class="text-gray-500 dark:text-gray-400">No hay canales configurados.</p>
                 @can('channels.manage')
                     <a href="{{ route('settings.channels.create') }}" class="mt-2 inline-block text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                        Add your first channel
+                        Agrega tu primer canal
                     </a>
                 @endcan
             </div>
@@ -36,11 +36,11 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Conversations</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Conversaciones</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -62,18 +62,18 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     @if($channel->is_active)
-                                        <span class="text-green-600 dark:text-green-400">Active</span>
+                                        <span class="text-green-600 dark:text-green-400">Activo</span>
                                     @else
-                                        <span class="text-gray-400">Inactive</span>
+                                        <span class="text-gray-400">Inactivo</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     {{ $channel->conversations_count }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                                    <a href="{{ route('settings.channels.show', $channel) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">View</a>
+                                    <a href="{{ route('settings.channels.show', $channel) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">Ver</a>
                                     @can('channels.manage')
-                                        <a href="{{ route('settings.channels.edit', $channel) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">Edit</a>
+                                        <a href="{{ route('settings.channels.edit', $channel) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">Editar</a>
                                     @endcan
                                 </td>
                             </tr>

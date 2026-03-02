@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="max-w-2xl mx-auto py-8 px-4" x-data="{ type: '{{ old('type', $channel->type ?? '') }}' }">
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">
-            {{ $channel ? 'Edit Channel' : 'Add Channel' }}
+            {{ $channel ? 'Editar Canal' : 'Agregar Canal' }}
         </h2>
 
         @if(session('error'))
@@ -16,7 +16,7 @@
             @csrf
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Channel Name</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre del Canal</label>
                 <input type="text" name="name" value="{{ old('name', $channel->name ?? '') }}" required
                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                 @error('name')
@@ -25,7 +25,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
                 @if($channel)
                     <input type="text" value="{{ ucfirst($channel->type) }}" disabled
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 text-sm bg-gray-100 dark:bg-gray-800">
@@ -42,10 +42,10 @@
                             <span>Webchat</span>
                         </label>
                         <div class="flex items-center gap-2 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 text-gray-400 text-sm cursor-not-allowed">
-                            Facebook <span class="text-xs">(Soon)</span>
+                            Facebook <span class="text-xs">(Pronto)</span>
                         </div>
                         <div class="flex items-center gap-2 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 text-gray-400 text-sm cursor-not-allowed">
-                            Instagram <span class="text-xs">(Soon)</span>
+                            Instagram <span class="text-xs">(Pronto)</span>
                         </div>
                     </div>
                     @error('type')
@@ -56,7 +56,7 @@
 
             {{-- WhatsApp Config --}}
             <div x-show="type === 'whatsapp'" x-cloak class="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">WhatsApp Configuration</h3>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Configuraci&oacute;n de WhatsApp</h3>
 
                 @php
                     $waConfig = $channel ? ($channel->configuration ?? []) : [];
@@ -82,7 +82,7 @@
                            placeholder="{{ $channel && !empty($waConfig['access_token']) ? '********' . substr($waConfig['access_token'], -8) : '' }}"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @if($channel)
-                        <p class="text-xs text-gray-400 mt-1">Leave blank to keep current value.</p>
+                        <p class="text-xs text-gray-400 mt-1">Dejar en blanco para mantener el valor actual.</p>
                     @endif
                     @error('access_token') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -100,13 +100,13 @@
                            placeholder="{{ $channel && !empty($waConfig['app_secret']) ? '********' . substr($waConfig['app_secret'], -8) : '' }}"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @if($channel)
-                        <p class="text-xs text-gray-400 mt-1">Leave blank to keep current value.</p>
+                        <p class="text-xs text-gray-400 mt-1">Dejar en blanco para mantener el valor actual.</p>
                     @endif
                     @error('app_secret') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Display Phone Number</label>
+                    <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">N&uacute;mero de tel&eacute;fono visible</label>
                     <input type="text" name="display_phone" value="{{ old('display_phone', $waConfig['display_phone'] ?? '') }}"
                            placeholder="+52 1 555 123 4567"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
@@ -116,7 +116,7 @@
 
             {{-- Webchat Config --}}
             <div x-show="type === 'webchat'" x-cloak class="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Webchat Configuration</h3>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Configuraci&oacute;n de Webchat</h3>
 
                 @php
                     $wcConfig = $channel ? ($channel->configuration ?? []) : [];
@@ -124,9 +124,9 @@
                 @endphp
 
                 <div>
-                    <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Allowed Origins (one per line)</label>
+                    <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Or&iacute;genes permitidos (uno por l&iacute;nea)</label>
                     <textarea name="allowed_origins" rows="3"
-                              placeholder="https://example.com&#10;https://shop.example.com"
+                              placeholder="https://ejemplo.com&#10;https://tienda.ejemplo.com"
                               class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">{{ old('allowed_origins', $origins) }}</textarea>
                     @error('allowed_origins') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -135,10 +135,10 @@
             <div class="flex items-center gap-3">
                 <button type="submit"
                         class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                    {{ $channel ? 'Update Channel' : 'Create Channel' }}
+                    {{ $channel ? 'Actualizar Canal' : 'Crear Canal' }}
                 </button>
                 <a href="{{ $channel ? route('settings.channels.show', $channel) : route('settings.channels') }}"
-                   class="text-sm text-gray-500 dark:text-gray-400 hover:underline">Cancel</a>
+                   class="text-sm text-gray-500 dark:text-gray-400 hover:underline">Cancelar</a>
             </div>
         </form>
     </div>
