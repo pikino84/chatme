@@ -21,16 +21,43 @@
                 @enderror
             </div>
 
-            <div>
+            <div x-data="{
+                    search: '',
+                    open: false,
+                    selected: '{{ $organization->settings['timezone'] ?? '' }}',
+                    timezones: @js(array_merge(
+                        ['America/Cancun'],
+                        array_filter(timezone_identifiers_list(), fn($tz) => $tz !== 'America/Cancun')
+                    )),
+                    get filtered() {
+                        if (!this.search) return this.timezones;
+                        const q = this.search.toLowerCase();
+                        return this.timezones.filter(tz => tz.toLowerCase().includes(q));
+                    }
+                 }"
+                 x-on:click.outside="open = false">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zona Horaria</label>
-                <select name="timezone"
-                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
-                        @cannot('settings.update') disabled @endcannot>
-                    <option value="">— Seleccionar zona horaria —</option>
-                    @foreach(timezone_identifiers_list() as $tz)
-                        <option value="{{ $tz }}" @selected(($organization->settings['timezone'] ?? '') === $tz)>{{ $tz }}</option>
-                    @endforeach
-                </select>
+                <input type="hidden" name="timezone" :value="selected">
+                <div class="relative">
+                    <input type="text"
+                           x-model="search"
+                           x-on:focus="open = true"
+                           x-on:input="open = true"
+                           :placeholder="selected || '— Buscar zona horaria —'"
+                           class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
+                           @cannot('settings.update') disabled @endcannot>
+                    <div x-show="open && filtered.length > 0" x-cloak
+                         class="absolute z-20 mt-1 w-full max-h-60 overflow-y-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg">
+                        <template x-for="tz in filtered" :key="tz">
+                            <button type="button"
+                                    x-text="tz"
+                                    x-on:click="selected = tz; search = ''; open = false"
+                                    :class="selected === tz ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-200'"
+                                    class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            </button>
+                        </template>
+                    </div>
+                </div>
                 @error('timezone')
                     <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                 @enderror
