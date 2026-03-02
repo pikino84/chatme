@@ -1,9 +1,9 @@
 <x-app-layout>
     <div class="max-w-5xl mx-auto py-8 px-4">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Available Plans</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Planes Disponibles</h2>
             <a href="{{ route('billing.index') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                &larr; Back to Billing
+                &larr; Volver a Facturación
             </a>
         </div>
 
@@ -24,7 +24,7 @@
                         <div class="flex items-center gap-2">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $plan->name }}</h3>
                             @if($isCurrent)
-                                <span class="text-[10px] px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-full font-medium">Current</span>
+                                <span class="text-[10px] px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-full font-medium">Actual</span>
                             @endif
                         </div>
                         @if($plan->description)
@@ -36,10 +36,10 @@
                     <div class="mb-4">
                         <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             ${{ number_format($plan->price_monthly / 100, 2) }}
-                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">/ month</span>
+                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">/ mes</span>
                         </div>
                         <div class="text-xs text-gray-400 mt-1">
-                            or ${{ number_format($plan->price_yearly / 100, 2) }} / year
+                            or ${{ number_format($plan->price_yearly / 100, 2) }} / año
                         </div>
                     </div>
 
@@ -58,7 +58,7 @@
                                     <span class="text-indigo-500">&#8226;</span>
                                     <span class="text-gray-700 dark:text-gray-300">
                                         {{ $fv->feature->description }}:
-                                        <span class="font-medium">{{ $fv->isUnlimited() ? 'Unlimited' : number_format((int) $fv->value) }}</span>
+                                        <span class="font-medium">{{ $fv->isUnlimited() ? 'Ilimitado' : number_format((int) $fv->value) }}</span>
                                     </span>
                                 @endif
                             </div>
@@ -69,7 +69,7 @@
                     <div class="mt-auto">
                         @if($isCurrent)
                             <span class="block w-full text-center px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-md">
-                                Current Plan
+                                Plan Actual
                             </span>
                         @else
                             <form method="POST" action="{{ route('billing.change-plan') }}">
@@ -77,7 +77,7 @@
                                 <input type="hidden" name="plan_id" value="{{ $plan->id }}">
                                 <button type="submit"
                                         class="block w-full text-center px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                                    Switch to {{ $plan->name }}
+                                    Cambiar a {{ $plan->name }}
                                 </button>
                             </form>
                         @endif

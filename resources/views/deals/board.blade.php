@@ -3,7 +3,7 @@
         {{-- Header --}}
         <div class="px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Deals</h2>
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Negocios</h2>
 
                 @if($pipelines->count() > 1)
                     <select onchange="window.location.href='{{ route('deals.board') }}?pipeline_id=' + this.value"
@@ -22,7 +22,7 @@
             @can('create', App\Models\Deal::class)
                 <button @click="showCreateModal = true"
                         class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                    + New Deal
+                    + Nuevo Negocio
                 </button>
             @endcan
         </div>
@@ -36,7 +36,7 @@
             </div>
         @else
             <div class="flex items-center justify-center h-[calc(100vh-128px)] bg-gray-100 dark:bg-gray-900">
-                <p class="text-gray-500 dark:text-gray-400">No pipelines configured.</p>
+                <p class="text-gray-500 dark:text-gray-400">No hay pipelines configurados.</p>
             </div>
         @endif
 

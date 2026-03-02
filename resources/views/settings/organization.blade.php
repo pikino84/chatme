@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="max-w-2xl mx-auto py-8 px-4">
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">Organization Settings</h2>
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">Configuración de Organización</h2>
 
         @if(session('success'))
             <div class="mb-4 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm rounded">
@@ -12,7 +12,7 @@
             @csrf
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Organization Name</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre de la Organización</label>
                 <input type="text" name="name" value="{{ old('name', $organization->name) }}" required
                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
                        @cannot('settings.update') disabled @endcannot>
@@ -22,11 +22,11 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timezone</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zona Horaria</label>
                 <select name="timezone"
                         class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
                         @cannot('settings.update') disabled @endcannot>
-                    <option value="">— Select timezone —</option>
+                    <option value="">— Seleccionar zona horaria —</option>
                     @foreach(timezone_identifiers_list() as $tz)
                         <option value="{{ $tz }}" @selected(($organization->settings['timezone'] ?? '') === $tz)>{{ $tz }}</option>
                     @endforeach
@@ -47,7 +47,7 @@
                 <input type="file" name="logo" accept="image/*"
                        class="text-sm text-gray-600 dark:text-gray-400"
                        @cannot('settings.update') disabled @endcannot>
-                <p class="text-xs text-gray-400 mt-1">Max 1MB. JPG, PNG, SVG.</p>
+                <p class="text-xs text-gray-400 mt-1">Máx 1MB. JPG, PNG, SVG.</p>
                 @error('logo')
                     <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                 @enderror
@@ -57,7 +57,7 @@
                 <div>
                     <button type="submit"
                             class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                        Save Settings
+                        Guardar Configuración
                     </button>
                 </div>
             @endcan
@@ -65,7 +65,7 @@
 
         <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <a href="{{ route('settings.team') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                Manage Team Members &rarr;
+                Gestionar Miembros del Equipo &rarr;
             </a>
         </div>
     </div>

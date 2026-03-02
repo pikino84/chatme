@@ -2,7 +2,7 @@
     <div class="flex justify-between text-sm mb-1">
         <span class="text-gray-700 dark:text-gray-300">{{ $label }}</span>
         @if($isUnlimited)
-            <span class="text-gray-500 dark:text-gray-400">Unlimited</span>
+            <span class="text-gray-500 dark:text-gray-400">Ilimitado</span>
         @else
             <span class="text-gray-500 dark:text-gray-400">{{ number_format($usage) }} / {{ number_format($limit) }}</span>
         @endif

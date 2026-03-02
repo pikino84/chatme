@@ -5,7 +5,7 @@
             <div class="p-3 border-b border-gray-200 dark:border-gray-700">
                 <a href="{{ route('inbox', request()->only(['status', 'channel_id', 'assigned_user_id', 'search'])) }}"
                    class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
-                    &larr; Back to Inbox
+                    &larr; Volver a Bandeja
                 </a>
             </div>
             @include('inbox.partials.metadata-drawer')
@@ -36,11 +36,11 @@
                 @include('inbox.partials.message-input')
             @else
                 <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-center text-xs text-gray-500 dark:text-gray-400">
-                    This conversation is closed.
+                    Esta conversación está cerrada.
                     @can('reopen', $conversation)
                         <form method="POST" action="{{ route('inbox.conversations.reopen', $conversation) }}" class="inline">
                             @csrf
-                            <button type="submit" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 underline">Reopen</button>
+                            <button type="submit" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 underline">Reabrir</button>
                         </form>
                     @endcan
                 </div>

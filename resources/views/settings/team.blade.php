@@ -1,9 +1,9 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-8 px-4">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Team Members</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Miembros del Equipo</h2>
             <a href="{{ route('settings.show') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                &larr; Back to Settings
+                &larr; Volver a Configuración
             </a>
         </div>
 
@@ -23,12 +23,12 @@
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Name</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Nombre</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Email</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Role</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Rol</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Estado</th>
                         @can('users.update')
-                            <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Acciones</th>
                         @endcan
                     </tr>
                 </thead>
@@ -38,7 +38,7 @@
                             <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
                                 {{ $user->name }}
                                 @if($user->id === auth()->id())
-                                    <span class="text-xs text-gray-400">(you)</span>
+                                    <span class="text-xs text-gray-400">(tú)</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $user->email }}</td>
@@ -53,9 +53,9 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if($user->is_active)
-                                    <span class="text-xs text-green-600 dark:text-green-400">Active</span>
+                                    <span class="text-xs text-green-600 dark:text-green-400">Activo</span>
                                 @else
-                                    <span class="text-xs text-red-500 dark:text-red-400">Inactive</span>
+                                    <span class="text-xs text-red-500 dark:text-red-400">Inactivo</span>
                                 @endif
                             </td>
                             @can('users.update')
@@ -69,13 +69,13 @@
                                                     <option value="supervisor" @selected($user->roles->first()?->name === 'supervisor')>supervisor</option>
                                                     <option value="agent" @selected($user->roles->first()?->name === 'agent')>agent</option>
                                                 </select>
-                                                <button type="submit" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Set</button>
+                                                <button type="submit" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Asignar</button>
                                             </form>
 
                                             <form method="POST" action="{{ route('settings.team.toggle', $user) }}">
                                                 @csrf
                                                 <button type="submit" class="text-xs {{ $user->is_active ? 'text-red-500 hover:text-red-700' : 'text-green-600 hover:text-green-800' }}">
-                                                    {{ $user->is_active ? 'Deactivate' : 'Activate' }}
+                                                    {{ $user->is_active ? 'Desactivar' : 'Activar' }}
                                                 </button>
                                             </form>
                                         </div>

@@ -11,7 +11,7 @@
         @if($deal->assignedUser)
             <div class="text-xs text-gray-400 mt-1">{{ $deal->assignedUser->name }}</div>
         @else
-            <div class="text-xs text-gray-400 mt-1 italic">Unassigned</div>
+            <div class="text-xs text-gray-400 mt-1 italic">Sin asignar</div>
         @endif
 
         @if($deal->tags->count())
@@ -33,7 +33,7 @@
     @can('update', $deal)
         <div x-data="{ showMove: false }" class="mt-2 border-t border-gray-200 dark:border-gray-600 pt-2">
             <button @click.prevent="showMove = !showMove" class="text-xs text-indigo-500 hover:text-indigo-700">
-                Move stage
+                Mover etapa
             </button>
             <form x-show="showMove" x-cloak method="POST" action="{{ route('deals.move', $deal) }}" class="mt-1 flex gap-1">
                 @csrf
@@ -42,7 +42,7 @@
                         <option value="{{ $s->id }}" @selected($s->id === $deal->pipeline_stage_id)>{{ $s->name }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="text-xs bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600">Go</button>
+                <button type="submit" class="text-xs bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600">Ir</button>
             </form>
         </div>
     @endcan

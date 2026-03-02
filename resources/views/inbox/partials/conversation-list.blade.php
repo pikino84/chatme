@@ -14,7 +14,7 @@
             @if($conv->messages->first())
                 {{ Str::limit($conv->messages->first()->body, 50) }}
             @else
-                No messages yet
+                Sin mensajes aún
             @endif
         </span>
 

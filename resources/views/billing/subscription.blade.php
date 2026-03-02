@@ -1,9 +1,9 @@
 <x-app-layout>
     <div class="max-w-3xl mx-auto py-8 px-4">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Billing & Subscription</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Facturación y Suscripción</h2>
             <a href="{{ route('billing.plans') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                View Plans &rarr;
+                Ver Planes &rarr;
             </a>
         </div>
 
@@ -17,10 +17,10 @@
 
         @if(! $subscription)
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
-                <p class="text-gray-500 dark:text-gray-400 mb-4">No active subscription.</p>
+                <p class="text-gray-500 dark:text-gray-400 mb-4">Sin suscripción activa.</p>
                 <a href="{{ route('billing.plans') }}"
                    class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                    Choose a Plan
+                    Elegir un Plan
                 </a>
             </div>
         @else
@@ -45,35 +45,35 @@
 
                 <dl class="text-sm space-y-2 mb-4">
                     <div class="flex justify-between">
-                        <dt class="text-gray-500 dark:text-gray-400">Billing Cycle</dt>
+                        <dt class="text-gray-500 dark:text-gray-400">Ciclo de Facturación</dt>
                         <dd class="text-gray-900 dark:text-gray-100 capitalize">{{ $subscription->billing_cycle }}</dd>
                     </div>
                     <div class="flex justify-between">
-                        <dt class="text-gray-500 dark:text-gray-400">Price</dt>
+                        <dt class="text-gray-500 dark:text-gray-400">Precio</dt>
                         <dd class="text-gray-900 dark:text-gray-100">
                             ${{ number_format(($subscription->billing_cycle === 'yearly' ? $plan->price_yearly : $plan->price_monthly) / 100, 2) }}
-                            / {{ $subscription->billing_cycle === 'yearly' ? 'year' : 'month' }}
+                            / {{ $subscription->billing_cycle === 'yearly' ? 'año' : 'mes' }}
                         </dd>
                     </div>
                     <div class="flex justify-between">
-                        <dt class="text-gray-500 dark:text-gray-400">Started</dt>
+                        <dt class="text-gray-500 dark:text-gray-400">Inicio</dt>
                         <dd class="text-gray-900 dark:text-gray-100">{{ $subscription->starts_at->format('M d, Y') }}</dd>
                     </div>
                     @if($subscription->ends_at)
                         <div class="flex justify-between">
-                            <dt class="text-gray-500 dark:text-gray-400">Renews</dt>
+                            <dt class="text-gray-500 dark:text-gray-400">Renueva</dt>
                             <dd class="text-gray-900 dark:text-gray-100">{{ $subscription->ends_at->format('M d, Y') }}</dd>
                         </div>
                     @endif
                     @if($subscription->isTrialing() && $subscription->trial_ends_at)
                         <div class="flex justify-between">
-                            <dt class="text-gray-500 dark:text-gray-400">Trial Ends</dt>
+                            <dt class="text-gray-500 dark:text-gray-400">Fin del Periodo de Prueba</dt>
                             <dd class="text-blue-600 dark:text-blue-400">{{ $subscription->trial_ends_at->format('M d, Y') }} ({{ $subscription->trial_ends_at->diffForHumans() }})</dd>
                         </div>
                     @endif
                     @if($subscription->isCanceled() && $subscription->grace_period_ends_at)
                         <div class="flex justify-between">
-                            <dt class="text-gray-500 dark:text-gray-400">Access Until</dt>
+                            <dt class="text-gray-500 dark:text-gray-400">Acceso Hasta</dt>
                             <dd class="text-red-500">{{ $subscription->grace_period_ends_at->format('M d, Y') }}</dd>
                         </div>
                     @endif
@@ -83,7 +83,7 @@
             {{-- Features --}}
             @if($features->isNotEmpty())
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase mb-3">Features</h4>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase mb-3">Características</h4>
                     <div class="space-y-2">
                         @foreach($features as $f)
                             <div class="flex items-center gap-2 text-sm">
@@ -102,7 +102,7 @@
             {{-- Usage Meters --}}
             @if($limits->isNotEmpty())
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase mb-3">Usage</h4>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase mb-3">Uso</h4>
                     @foreach($limits as $l)
                         @include('billing.partials.usage-meter', [
                             'label' => $l['description'],

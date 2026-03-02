@@ -11,7 +11,7 @@
         @forelse($stage->deals as $deal)
             @include('deals.partials.deal-card', ['deal' => $deal, 'allStages' => $allStages])
         @empty
-            <p class="text-xs text-gray-400 dark:text-gray-500 text-center py-4">No deals</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 text-center py-4">Sin negocios</p>
         @endforelse
     </div>
 </div>
