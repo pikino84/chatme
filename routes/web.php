@@ -101,6 +101,14 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             // AI Configuration
             Route::get('/settings/ai', [AiConfigController::class, 'show'])->name('settings.ai');
             Route::post('/settings/ai', [AiConfigController::class, 'update'])->name('settings.ai.update');
+
+            // Tenant aliases
+            Route::get('/tenant/inbox', [InboxController::class, 'index'])->name('tenant.inbox');
+            Route::get('/tenant/kanban', [DealBoardController::class, 'index'])->name('tenant.kanban');
+            Route::get('/tenant/settings', [SettingsController::class, 'show'])->name('tenant.settings');
+            Route::get('/tenant/dashboard', function () {
+                return view('tenant.dashboard');
+            })->name('tenant.dashboard');
         });
     });
 });
