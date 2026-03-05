@@ -34,6 +34,10 @@ Route::domain(config('app.base_domain'))->group(function () {
     Route::get('/legal/terms', function () {
         return view('legal.terms');
     })->name('legal.terms');
+
+    Route::get('/legal/data-deletion', function () {
+        return view('legal.data-deletion');
+    })->name('legal.data-deletion');
 });
 
 /*
