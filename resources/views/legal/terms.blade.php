@@ -23,7 +23,7 @@
 
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">1. Aceptacion de los terminos</h2>
             <p>
-                Al registrarse y utilizar la plataforma ChatMe, operada por <strong>Crea Espacios</strong>,
+                Al registrarse y utilizar la plataforma ChatMe, operada por <strong>ChatMe</strong>,
                 usted acepta estos terminos de servicio en su totalidad. Si no esta de acuerdo con alguno de
                 estos terminos, no utilice la plataforma.
             </p>
@@ -64,7 +64,7 @@
 
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">6. Propiedad intelectual</h2>
             <p>
-                La plataforma ChatMe, incluyendo su codigo, diseno, marca y contenido, es propiedad de Crea Espacios.
+                La plataforma ChatMe, incluyendo su codigo, diseno, marca y contenido, es propiedad de ChatMe.
                 El uso de la plataforma no le otorga ningun derecho de propiedad intelectual sobre la misma.
                 Los datos y contenido que usted suba a la plataforma siguen siendo de su propiedad.
             </p>
@@ -78,7 +78,7 @@
 
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">8. Limitacion de responsabilidad</h2>
             <p>
-                Crea Espacios no sera responsable por danos indirectos, incidentales o consecuentes
+                ChatMe no sera responsable por danos indirectos, incidentales o consecuentes
                 derivados del uso de la plataforma, incluyendo pero no limitado a: perdida de datos,
                 interrupciones del servicio de terceros (Meta, WhatsApp, etc.) o fallos en la entrega de mensajes.
             </p>
@@ -118,7 +118,7 @@
             <a href="{{ route('legal.privacy') }}" class="hover:text-gray-700 dark:hover:text-gray-300">Aviso de Privacidad</a>
             <a href="{{ route('legal.terms') }}" class="hover:text-gray-700 dark:hover:text-gray-300">Terminos de Servicio</a>
         </div>
-        <p class="text-sm text-gray-400 dark:text-gray-500 mt-4">&copy; {{ date('Y') }} Crea Espacios. Todos los derechos reservados.</p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-4">&copy; {{ date('Y') }} ChatMe. Todos los derechos reservados.</p>
     </footer>
 </body>
 </html>

@@ -23,7 +23,7 @@
 
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">1. Responsable del tratamiento de datos</h2>
             <p>
-                <strong>Crea Espacios</strong>, con domicilio en Mexico, es responsable del tratamiento de sus datos personales.
+                <strong>ChatMe</strong>, con domicilio en Mexico, es responsable del tratamiento de sus datos personales.
                 Para cualquier consulta relacionada con la proteccion de sus datos puede contactarnos en:
                 <a href="mailto:jfcruz@outlook.com" class="text-indigo-600 dark:text-indigo-400">jfcruz@outlook.com</a>.
             </p>
@@ -135,7 +135,7 @@
             <a href="{{ route('legal.privacy') }}" class="hover:text-gray-700 dark:hover:text-gray-300">Aviso de Privacidad</a>
             <a href="{{ route('legal.terms') }}" class="hover:text-gray-700 dark:hover:text-gray-300">Terminos de Servicio</a>
         </div>
-        <p class="text-sm text-gray-400 dark:text-gray-500 mt-4">&copy; {{ date('Y') }} Crea Espacios. Todos los derechos reservados.</p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-4">&copy; {{ date('Y') }} ChatMe. Todos los derechos reservados.</p>
     </footer>
 </body>
 </html>
