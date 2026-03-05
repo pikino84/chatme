@@ -26,6 +26,14 @@ Route::domain(config('app.base_domain'))->group(function () {
     Route::get('/', function () {
         return view('landing');
     })->name('landing');
+
+    Route::get('/legal/privacy', function () {
+        return view('legal.privacy');
+    })->name('legal.privacy');
+
+    Route::get('/legal/terms', function () {
+        return view('legal.terms');
+    })->name('legal.terms');
 });
 
 /*
