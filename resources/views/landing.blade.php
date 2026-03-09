@@ -117,8 +117,8 @@
             <a href="#funciones">Funciones</a>
             <a href="#canales">Canales</a>
             <a href="#precios">Precios</a>
-            <a href="{{ 'https://app.' . config('app.base_domain') . '/login' }}" class="btn btn-ghost">Iniciar Sesión</a>
-            <a href="{{ 'https://app.' . config('app.base_domain') . '/register' }}" class="btn btn-primary">Prueba Gratis</a>
+            <a href="https://app.{{ config('app.base_domain') }}/login" class="btn btn-ghost">Iniciar Sesión</a>
+            <a href="https://app.{{ config('app.base_domain') }}/register" class="btn btn-primary">Prueba Gratis</a>
         </div>
     </div>
 </nav>
@@ -361,9 +361,9 @@
         </div>
         <div>
             <h4>Legal</h4>
-            <a href="{{ route('legal.privacy') }}">Política de Privacidad</a>
-            <a href="{{ route('legal.terms') }}">Términos de Servicio</a>
-            <a href="{{ route('legal.data-deletion') }}">Eliminación de Datos</a>
+            <a href="/legal/privacy">Política de Privacidad</a>
+            <a href="/legal/terms">Términos de Servicio</a>
+            <a href="/legal/data-deletion">Eliminación de Datos</a>
         </div>
         <div>
             <h4>Soporte</h4>
