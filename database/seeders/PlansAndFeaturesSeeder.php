@@ -31,6 +31,7 @@ class PlansAndFeaturesSeeder extends Seeder
             ['code' => 'max_campaigns_monthly', 'description' => 'Monthly campaign limit', 'type' => 'limit'],
             ['code' => 'drip_sequences_enabled', 'description' => 'Drip sequences', 'type' => 'boolean'],
             ['code' => 'automations_enabled', 'description' => 'Automation rules', 'type' => 'boolean'],
+            ['code' => 'max_brands', 'description' => 'Maximum number of brands', 'type' => 'limit'],
         ];
 
         foreach ($features as $feature) {
@@ -66,6 +67,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'max_campaigns_monthly' => '0',
                     'drip_sequences_enabled' => 'false',
                     'automations_enabled' => 'false',
+                    'max_brands' => '1',
                 ],
             ],
             [
@@ -95,6 +97,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'max_campaigns_monthly' => '10',
                     'drip_sequences_enabled' => 'true',
                     'automations_enabled' => 'true',
+                    'max_brands' => '5',
                 ],
             ],
             [
@@ -124,6 +127,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'max_campaigns_monthly' => 'unlimited',
                     'drip_sequences_enabled' => 'true',
                     'automations_enabled' => 'true',
+                    'max_brands' => 'unlimited',
                 ],
             ],
         ];

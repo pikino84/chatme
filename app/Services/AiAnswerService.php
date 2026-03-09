@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Brand;
 use App\Models\Organization;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -15,10 +16,12 @@ class AiAnswerService
 
     /**
      * Generate an AI-powered answer using RAG (Retrieve + Generate).
+     * Supports brand-aware context: prioritizes the conversation's brand KB
+     * but can cross-reference other brands within the same organization.
      *
-     * @return array{answer: string, sources: array<int, array{id: int, title: string}>}|null
+     * @return array{answer: string, sources: array<int, array{id: int, title: string, brand: string|null}>}|null
      */
-    public function answer(Organization $org, string $question, ?string $channel = null, int $topN = 5): ?array
+    public function answer(Organization $org, string $question, ?string $channel = null, int $topN = 5, ?int $brandId = null): ?array
     {
         if (! $this->isEnabled($org)) {
             return null;
@@ -28,15 +31,18 @@ class AiAnswerService
             return ['answer' => 'Monthly AI query limit reached.', 'sources' => []];
         }
 
-        $articles = $this->vectorSearch->search($org, $question, $topN, $channel);
+        $articles = $this->vectorSearch->search($org, $question, $topN, $channel, $brandId);
 
         if ($articles->isEmpty()) {
             return ['answer' => 'No relevant articles found.', 'sources' => []];
         }
 
-        $context = $articles->map(fn ($a, $i) => "[" . ($i + 1) . "] {$a->title}\n{$a->content}")->implode("\n\n---\n\n");
+        $context = $articles->map(function ($a, $i) {
+            $brandLabel = $a->brand?->name ?? 'General';
+            return "[" . ($i + 1) . "] [{$brandLabel}] {$a->title}\n{$a->content}";
+        })->implode("\n\n---\n\n");
 
-        $systemPrompt = "You are a helpful customer support assistant. Answer the user's question using ONLY the context provided below. If the context doesn't contain enough information, say so. Keep your answer concise and direct.\n\nContext:\n{$context}";
+        $systemPrompt = $this->buildSystemPrompt($org, $brandId, $context);
 
         $apiKey = config('services.openai.api_key');
         $model = $org->settings['ai_model'] ?? config('services.openai.chat_model', 'gpt-4o-mini');
@@ -71,13 +77,36 @@ class AiAnswerService
             $this->billing->incrementUsage($org, 'ai_queries_monthly');
 
             $answer = $response->json('choices.0.message.content', '');
-            $sources = $articles->map(fn ($a) => ['id' => $a->id, 'title' => $a->title])->values()->all();
+            $sources = $articles->map(fn ($a) => [
+                'id' => $a->id,
+                'title' => $a->title,
+                'brand' => $a->brand?->name,
+            ])->values()->all();
 
             return ['answer' => $answer, 'sources' => $sources];
         } catch (\Throwable $e) {
             Log::error('AiAnswerService: request failed', ['error' => $e->getMessage()]);
             return null;
         }
+    }
+
+    private function buildSystemPrompt(Organization $org, ?int $brandId, string $context): string
+    {
+        $base = "You are a helpful customer support assistant. Answer the user's question using ONLY the context provided below. If the context doesn't contain enough information, say so. Keep your answer concise and direct.";
+
+        // Add brand-specific AI context if available
+        if ($brandId) {
+            $brand = Brand::withoutGlobalScopes()->find($brandId);
+            if ($brand && $brand->getAiContext()) {
+                $base .= "\n\nBrand context for {$brand->name}:\n{$brand->getAiContext()}";
+            }
+        }
+
+        $base .= "\n\nIMPORTANT: The context may include articles from multiple brands within the same organization. Each article is labeled with its brand name in brackets. When answering, clearly identify which brand or location the information belongs to. If asked about a specific brand, prioritize that brand's articles.";
+
+        $base .= "\n\nContext:\n{$context}";
+
+        return $base;
     }
 
     public function isEnabled(Organization $org): bool

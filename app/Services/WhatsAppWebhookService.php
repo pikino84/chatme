@@ -108,6 +108,7 @@ class WhatsAppWebhookService
 
         $conversation = Conversation::create([
             'organization_id' => $channel->organization_id,
+            'brand_id' => $channel->brand_id,
             'channel_id' => $channel->id,
             'contact_name' => $contactName,
             'contact_identifier' => $waId,

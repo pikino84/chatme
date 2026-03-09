@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
@@ -16,12 +17,18 @@ class Channel extends Model
 
     protected $fillable = [
         'organization_id',
+        'brand_id',
         'uuid',
         'type',
         'name',
         'configuration',
         'is_active',
     ];
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
 
     protected function casts(): array
     {

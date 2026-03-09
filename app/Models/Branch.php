@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Branch extends Model
 {
@@ -13,11 +14,17 @@ class Branch extends Model
 
     protected $fillable = [
         'organization_id',
+        'brand_id',
         'name',
         'address',
         'phone',
         'is_active',
     ];
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
 
     protected function casts(): array
     {

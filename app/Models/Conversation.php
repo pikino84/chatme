@@ -15,6 +15,7 @@ class Conversation extends Model
 
     protected $fillable = [
         'organization_id',
+        'brand_id',
         'channel_id',
         'assigned_user_id',
         'branch_id',
@@ -41,6 +42,11 @@ class Conversation extends Model
     public function channel(): BelongsTo
     {
         return $this->belongsTo(Channel::class);
+    }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
     }
 
     public function assignedUser(): BelongsTo

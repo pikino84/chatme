@@ -22,8 +22,13 @@
                         Deals
                     </x-nav-link>
                     <x-nav-link href="{{ route('kb.articles') }}" :active="request()->routeIs('kb.*')">
-                        Knowledge Base
+                        KB
                     </x-nav-link>
+                    @can('brands.view')
+                    <x-nav-link href="{{ route('brands.index') }}" :active="request()->routeIs('brands.*')">
+                        Marcas
+                    </x-nav-link>
+                    @endcan
                     @can('settings.manage')
                     <x-nav-link href="{{ route('settings.show') }}" :active="request()->routeIs('settings.*')">
                         Settings
@@ -163,8 +168,13 @@
                 Deals
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ route('kb.articles') }}" :active="request()->routeIs('kb.*')">
-                Knowledge Base
+                KB
             </x-responsive-nav-link>
+            @can('brands.view')
+            <x-responsive-nav-link href="{{ route('brands.index') }}" :active="request()->routeIs('brands.*')">
+                Marcas
+            </x-responsive-nav-link>
+            @endcan
             @can('settings.manage')
             <x-responsive-nav-link href="{{ route('settings.show') }}" :active="request()->routeIs('settings.*')">
                 Settings

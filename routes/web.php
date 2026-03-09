@@ -15,6 +15,7 @@ use App\Http\Controllers\Tenant\DripController;
 use App\Http\Controllers\Tenant\KbArticleController;
 use App\Http\Controllers\Tenant\KbCategoryController;
 use App\Http\Controllers\Tenant\MessageController;
+use App\Http\Controllers\Tenant\BrandController;
 use App\Http\Controllers\Tenant\ChannelController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\TeamController;
@@ -87,6 +88,15 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/deals/{deal}/move', [DealController::class, 'move'])->name('deals.move');
             Route::post('/deals/{deal}/assign', [DealController::class, 'assign'])->name('deals.assign');
             Route::post('/deals/{deal}/notes', [DealController::class, 'addNote'])->name('deals.notes.store');
+
+            // Brands
+            Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+            Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
+            Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
+            Route::get('/brands/{brand}', [BrandController::class, 'show'])->name('brands.show');
+            Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
+            Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+            Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
             // Tenant Settings
             Route::get('/settings', [SettingsController::class, 'show'])->name('settings.show');

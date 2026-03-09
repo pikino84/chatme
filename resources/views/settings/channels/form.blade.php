@@ -24,6 +24,22 @@
                 @enderror
             </div>
 
+            @if($brands->isNotEmpty())
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marca</label>
+                    <select name="brand_id"
+                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                        <option value="">Sin marca (global)</option>
+                        @foreach($brands as $brand)
+                            <option value="{{ $brand->id }}" @selected(old('brand_id', $channel?->brand_id) == $brand->id)>
+                                {{ $brand->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Asocia este canal a una marca para filtrar conversaciones e IA por marca.</p>
+                </div>
+            @endif
+
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
                 @if($channel)

@@ -11,7 +11,11 @@
       "Bash(find:*)",
       "Bash(git reset:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git:*)",
+      "Bash(composer show:*)"
     ]
   }
 }

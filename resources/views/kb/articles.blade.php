@@ -21,8 +21,8 @@
             </div>
         @endif
 
-        <div class="flex gap-3 mb-4">
-            <form method="GET" action="{{ route('kb.articles') }}" class="flex gap-3">
+        <div class="flex flex-wrap gap-3 mb-4">
+            <form method="GET" action="{{ route('kb.articles') }}" class="flex flex-wrap gap-3">
                 <select name="category_id" onchange="this.form.submit()"
                         class="text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
                     <option value="">Todas las Categorías</option>
@@ -37,6 +37,16 @@
                     <option value="published" @selected(request('status') === 'published')>Publicado</option>
                     <option value="archived" @selected(request('status') === 'archived')>Archivado</option>
                 </select>
+                @if($brands->isNotEmpty())
+                    <select name="brand_id" onchange="this.form.submit()"
+                            class="text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                        <option value="">Todas las Marcas</option>
+                        <option value="global" @selected(request('brand_id') === 'global')>Global (sin marca)</option>
+                        @foreach($brands as $brand)
+                            <option value="{{ $brand->id }}" @selected(request('brand_id') == $brand->id)>{{ $brand->name }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </form>
         </div>
 
@@ -45,9 +55,9 @@
                 <thead class="bg-gray-50 dark:bg-gray-700 text-left">
                     <tr>
                         <th class="px-4 py-2 text-gray-500 dark:text-gray-400 font-medium">Título</th>
+                        <th class="px-4 py-2 text-gray-500 dark:text-gray-400 font-medium">Marca</th>
                         <th class="px-4 py-2 text-gray-500 dark:text-gray-400 font-medium">Categoría</th>
                         <th class="px-4 py-2 text-gray-500 dark:text-gray-400 font-medium text-center">Estado</th>
-                        <th class="px-4 py-2 text-gray-500 dark:text-gray-400 font-medium">Creador</th>
                         <th class="px-4 py-2 text-gray-500 dark:text-gray-400 font-medium">Actualizado</th>
                     </tr>
                 </thead>
@@ -59,6 +69,15 @@
                                     {{ $article->title }}
                                 </a>
                             </td>
+                            <td class="px-4 py-3">
+                                @if($article->brand)
+                                    <span class="text-xs px-2 py-0.5 rounded-full text-white" style="background-color: {{ $article->brand->color }}">
+                                        {{ $article->brand->name }}
+                                    </span>
+                                @else
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">Global</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $article->category?->name ?? '-' }}</td>
                             <td class="px-4 py-3 text-center">
                                 @if($article->status === 'published')
@@ -69,7 +88,6 @@
                                     <span class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">Borrador</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $article->creator?->name ?? '-' }}</td>
                             <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $article->updated_at?->diffForHumans() }}</td>
                         </tr>
                     @empty

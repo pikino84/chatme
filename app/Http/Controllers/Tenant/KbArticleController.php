@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\KbArticle;
 use App\Models\KbCategory;
 use App\Services\KnowledgeBaseService;
@@ -21,7 +22,7 @@ class KbArticleController extends Controller
             abort(403);
         }
 
-        $query = KbArticle::with('category', 'creator');
+        $query = KbArticle::with('category', 'creator', 'brand');
 
         if ($request->filled('category_id')) {
             $query->where('kb_category_id', $request->input('category_id'));
@@ -31,10 +32,19 @@ class KbArticleController extends Controller
             $query->where('status', $request->input('status'));
         }
 
+        if ($request->filled('brand_id')) {
+            if ($request->input('brand_id') === 'global') {
+                $query->whereNull('brand_id');
+            } else {
+                $query->where('brand_id', $request->input('brand_id'));
+            }
+        }
+
         $articles = $query->latest('updated_at')->paginate(25);
         $categories = KbCategory::orderBy('position')->get();
+        $brands = Brand::where('is_active', true)->select('id', 'name', 'color')->orderBy('name')->get();
 
-        return view('kb.articles', compact('articles', 'categories'));
+        return view('kb.articles', compact('articles', 'categories', 'brands'));
     }
 
     public function create(Request $request)
@@ -42,10 +52,12 @@ class KbArticleController extends Controller
         $this->authorize('create', KbArticle::class);
 
         $categories = KbCategory::orderBy('position')->get();
+        $brands = Brand::where('is_active', true)->orderBy('name')->get();
 
         return view('kb.article-form', [
             'article' => null,
             'categories' => $categories,
+            'brands' => $brands,
         ]);
     }
 
@@ -57,6 +69,7 @@ class KbArticleController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'kb_category_id' => 'required|exists:kb_categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
             'priority' => 'nullable|integer|min:0|max:100',
             'visible_on_webchat' => 'nullable|boolean',
             'visible_on_whatsapp' => 'nullable|boolean',
@@ -66,6 +79,7 @@ class KbArticleController extends Controller
 
         $data['organization_id'] = app('tenant')->id;
         $data['priority'] = $data['priority'] ?? 0;
+        $data['brand_id'] = $data['brand_id'] ?? null;
         $data['visible_on_webchat'] = $request->has('visible_on_webchat');
         $data['visible_on_whatsapp'] = $request->has('visible_on_whatsapp');
         $data['visible_on_instagram'] = $request->has('visible_on_instagram');
@@ -91,8 +105,9 @@ class KbArticleController extends Controller
         $this->authorize('update', $article);
 
         $categories = KbCategory::orderBy('position')->get();
+        $brands = Brand::where('is_active', true)->orderBy('name')->get();
 
-        return view('kb.article-form', compact('article', 'categories'));
+        return view('kb.article-form', compact('article', 'categories', 'brands'));
     }
 
     public function update(Request $request, KbArticle $article)
@@ -103,6 +118,7 @@ class KbArticleController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'kb_category_id' => 'required|exists:kb_categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
             'priority' => 'nullable|integer|min:0|max:100',
             'change_summary' => 'nullable|string|max:500',
             'visible_on_webchat' => 'nullable|boolean',
@@ -110,6 +126,8 @@ class KbArticleController extends Controller
             'visible_on_instagram' => 'nullable|boolean',
             'visible_on_facebook' => 'nullable|boolean',
         ]);
+
+        $data['brand_id'] = $data['brand_id'] ?? null;
 
         $data['visible_on_webchat'] = $request->has('visible_on_webchat');
         $data['visible_on_whatsapp'] = $request->has('visible_on_whatsapp');

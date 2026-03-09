@@ -24,6 +24,7 @@ class KbArticle extends Model
 
     protected $fillable = [
         'organization_id',
+        'brand_id',
         'kb_category_id',
         'created_by',
         'updated_by',
@@ -49,6 +50,11 @@ class KbArticle extends Model
             'visible_on_facebook' => 'boolean',
             'published_at' => 'datetime',
         ];
+    }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
     }
 
     public function category(): BelongsTo

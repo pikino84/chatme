@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\Channel;
 use App\Models\Conversation;
 use App\Models\User;
@@ -14,7 +15,7 @@ class InboxController extends Controller
     {
         $user = $request->user();
 
-        $query = Conversation::with(['channel', 'assignedUser', 'messages' => fn ($q) => $q->latest()->limit(1)])
+        $query = Conversation::with(['channel', 'assignedUser', 'brand', 'messages' => fn ($q) => $q->latest()->limit(1)])
             ->latest('last_message_at');
 
         if (! $user->hasPermissionTo('conversations.view-all')) {
@@ -33,6 +34,10 @@ class InboxController extends Controller
             $query->where('assigned_user_id', $request->input('assigned_user_id'));
         }
 
+        if ($request->filled('brand_id')) {
+            $query->where('brand_id', $request->input('brand_id'));
+        }
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -47,7 +52,8 @@ class InboxController extends Controller
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
+        $brands = Brand::where('is_active', true)->select('id', 'name', 'color')->orderBy('name')->get();
 
-        return view('inbox.index', compact('conversations', 'channels', 'agents'));
+        return view('inbox.index', compact('conversations', 'channels', 'agents', 'brands'));
     }
 }

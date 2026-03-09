@@ -17,24 +17,29 @@ class VectorSearchService
 
     /**
      * Search published KB articles by semantic similarity.
+     * Supports brand-aware cross-brand search with priority weighting.
      *
+     * @param  int|null  $brandId  The brand of the current conversation/channel
      * @return Collection<int, KbArticle> Articles sorted by relevance, each with a `similarity_score` attribute.
      */
-    public function search(Organization $org, string $query, int $limit = 5, ?string $channel = null): Collection
+    public function search(Organization $org, string $query, int $limit = 5, ?string $channel = null, ?int $brandId = null): Collection
     {
         if (! $this->isAvailable()) {
-            return $this->fallbackSearch($org, $query, $limit, $channel);
+            return $this->fallbackSearch($org, $query, $limit, $channel, $brandId);
         }
 
         $queryEmbedding = $this->embeddingService->generate($query);
 
         if (! $queryEmbedding) {
-            return $this->fallbackSearch($org, $query, $limit, $channel);
+            return $this->fallbackSearch($org, $query, $limit, $channel, $brandId);
         }
 
         $vector = '[' . implode(',', $queryEmbedding) . ']';
 
-        $sql = "SELECT id, (embedding <=> ?::vector) AS distance
+        // Fetch more results to allow re-ranking by brand priority
+        $fetchLimit = $brandId ? $limit * 3 : $limit;
+
+        $sql = "SELECT id, brand_id, (embedding <=> ?::vector) AS distance
                 FROM kb_articles
                 WHERE organization_id = ?
                   AND status = 'published'
@@ -50,13 +55,13 @@ class VectorSearchService
         }
 
         $sql .= " ORDER BY distance ASC LIMIT ?";
-        $bindings[] = $limit;
+        $bindings[] = $fetchLimit;
 
         try {
             $rows = DB::select($sql, $bindings);
         } catch (\Throwable $e) {
             Log::error('VectorSearchService: query failed', ['error' => $e->getMessage()]);
-            return $this->fallbackSearch($org, $query, $limit, $channel);
+            return $this->fallbackSearch($org, $query, $limit, $channel, $brandId);
         }
 
         if (empty($rows)) {
@@ -67,16 +72,42 @@ class VectorSearchService
         $distances = collect($rows)->keyBy('id');
 
         $articles = KbArticle::withoutGlobalScopes()
+            ->with('brand:id,name,color')
             ->whereIn('id', $ids)
-            ->get()
-            ->sortBy(fn ($a) => $distances[$a->id]->distance ?? 1);
+            ->get();
 
+        // Apply brand-aware scoring
         foreach ($articles as $article) {
             $dist = $distances[$article->id]->distance ?? 1;
-            $article->setAttribute('similarity_score', round(1 - $dist, 4));
+            $baseSimilarity = 1 - $dist;
+
+            $weight = $this->getBrandWeight($article->brand_id, $brandId);
+            $article->setAttribute('similarity_score', round($baseSimilarity * $weight, 4));
         }
 
-        return $articles->values();
+        return $articles->sortByDesc('similarity_score')->take($limit)->values();
+    }
+
+    /**
+     * Get brand priority weight for scoring.
+     *
+     * Priority: same brand (1.0) > global/null (0.9) > other brands (0.8)
+     */
+    private function getBrandWeight(?int $articleBrandId, ?int $conversationBrandId): float
+    {
+        if (! $conversationBrandId) {
+            return 1.0; // No brand context — no weighting
+        }
+
+        if ($articleBrandId === $conversationBrandId) {
+            return 1.0; // Same brand — highest priority
+        }
+
+        if ($articleBrandId === null) {
+            return 0.9; // Global article — high priority
+        }
+
+        return 0.8; // Other brand — lower but still included
     }
 
     public function isAvailable(): bool
@@ -91,9 +122,12 @@ class VectorSearchService
     /**
      * Keyword-based fallback when pgvector is unavailable.
      */
-    private function fallbackSearch(Organization $org, string $query, int $limit, ?string $channel = null): Collection
+    private function fallbackSearch(Organization $org, string $query, int $limit, ?string $channel = null, ?int $brandId = null): Collection
     {
+        $fetchLimit = $brandId ? $limit * 3 : $limit;
+
         $q = KbArticle::withoutGlobalScopes()
+            ->with('brand:id,name,color')
             ->where('organization_id', $org->id)
             ->where('status', 'published')
             ->where(function ($qb) use ($query) {
@@ -108,6 +142,16 @@ class VectorSearchService
             }
         }
 
-        return $q->orderByDesc('priority')->limit($limit)->get();
+        $articles = $q->orderByDesc('priority')->limit($fetchLimit)->get();
+
+        if (! $brandId) {
+            return $articles->take($limit);
+        }
+
+        // Re-rank by brand priority
+        return $articles->sortByDesc(function ($article) use ($brandId) {
+            $brandWeight = $this->getBrandWeight($article->brand_id, $brandId);
+            return ($article->priority * $brandWeight);
+        })->take($limit)->values();
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\Channel;
 use App\Models\ChannelForm;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -18,7 +19,8 @@ class ChannelController extends Controller
             abort(403);
         }
 
-        $channels = Channel::withCount('conversations')
+        $channels = Channel::with('brand:id,name,color')
+            ->withCount('conversations')
             ->orderBy('name')
             ->get();
 
@@ -31,7 +33,9 @@ class ChannelController extends Controller
             abort(403);
         }
 
-        return view('settings.channels.form', ['channel' => null]);
+        $brands = Brand::where('is_active', true)->orderBy('name')->get();
+
+        return view('settings.channels.form', ['channel' => null, 'brands' => $brands]);
     }
 
     public function store(Request $request)
@@ -55,10 +59,15 @@ class ChannelController extends Controller
             'instagram_account_id' => 'required_if:type,instagram|nullable|string|max:255',
         ]);
 
+        $request->validate([
+            'brand_id' => 'nullable|exists:brands,id',
+        ]);
+
         $config = $this->buildConfig($request);
 
         $channel = Channel::create([
             'organization_id' => app('tenant')->id,
+            'brand_id' => $request->input('brand_id') ?: null,
             'name' => $request->input('name'),
             'type' => $request->input('type'),
             'configuration' => $config,
@@ -112,7 +121,9 @@ class ChannelController extends Controller
             abort(404);
         }
 
-        return view('settings.channels.form', compact('channel'));
+        $brands = Brand::where('is_active', true)->orderBy('name')->get();
+
+        return view('settings.channels.form', compact('channel', 'brands'));
     }
 
     public function update(Request $request, Channel $channel)
@@ -140,9 +151,14 @@ class ChannelController extends Controller
             'instagram_account_id' => 'nullable|string|max:255',
         ]);
 
+        $request->validate([
+            'brand_id' => 'nullable|exists:brands,id',
+        ]);
+
         $config = $this->buildConfig($request, $channel);
         $channel->update([
             'name' => $request->input('name'),
+            'brand_id' => $request->input('brand_id') ?: null,
             'configuration' => $config,
         ]);
 

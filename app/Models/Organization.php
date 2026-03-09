@@ -63,6 +63,11 @@ class Organization extends Model
         return $this->hasMany(User::class);
     }
 
+    public function brands(): HasMany
+    {
+        return $this->hasMany(Brand::class);
+    }
+
     public function branches(): HasMany
     {
         return $this->hasMany(Branch::class);

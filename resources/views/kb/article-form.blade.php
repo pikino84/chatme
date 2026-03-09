@@ -25,17 +25,35 @@
                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
-                <select name="kb_category_id" required
-                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
-                    <option value="">Seleccionar categoría</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}" @selected(old('kb_category_id', $article?->kb_category_id) == $cat->id)>
-                            {{ $cat->name }}
-                        </option>
-                    @endforeach
-                </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
+                    <select name="kb_category_id" required
+                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                        <option value="">Seleccionar categoría</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" @selected(old('kb_category_id', $article?->kb_category_id) == $cat->id)>
+                                {{ $cat->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if($brands->isNotEmpty())
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marca</label>
+                        <select name="brand_id"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                            <option value="">Global (todas las marcas)</option>
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand->id }}" @selected(old('brand_id', $article?->brand_id) == $brand->id)>
+                                    {{ $brand->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Los artículos globales son accesibles para todas las marcas.</p>
+                    </div>
+                @endif
             </div>
 
             <div>

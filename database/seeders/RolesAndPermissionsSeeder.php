@@ -100,6 +100,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'automations.update',
             'automations.delete',
 
+            // Brands
+            'brands.view',
+            'brands.create',
+            'brands.update',
+            'brands.delete',
+
             // Reports
             'reports.view',
             'reports.export',
@@ -137,6 +143,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'campaigns.view', 'campaigns.create', 'campaigns.send', 'campaigns.delete',
             'drip.view', 'drip.create', 'drip.update', 'drip.delete',
             'automations.view', 'automations.create', 'automations.update', 'automations.delete',
+            'brands.view', 'brands.create', 'brands.update', 'brands.delete',
             'kb.view', 'kb.create', 'kb.update', 'kb.delete', 'kb.publish',
             'reports.view', 'reports.export',
             'settings.view', 'settings.update',
@@ -159,6 +166,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'campaigns.view',
             'drip.view',
             'automations.view',
+            'brands.view',
             'kb.view', 'kb.create', 'kb.update',
             'reports.view',
         ]);
@@ -168,6 +176,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $agent->syncPermissions([
             'organization.view',
             'conversations.view',
+            'brands.view',
             'conversations.close',
             'messages.view', 'messages.send', 'messages.internal-note',
             'contacts.view', 'contacts.create',

@@ -47,7 +47,10 @@
                         @foreach($channels as $channel)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    {{ $channel->name }}
+                                    <div>{{ $channel->name }}</div>
+                                    @if($channel->brand)
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded text-white" style="background-color: {{ $channel->brand->color }}">{{ $channel->brand->name }}</span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     @if($channel->type === 'whatsapp')

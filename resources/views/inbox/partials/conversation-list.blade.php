@@ -37,9 +37,17 @@
         </div>
     </div>
 
-    @if($conv->assignedUser)
-        <div class="mt-1 text-[10px] text-gray-400 dark:text-gray-500 truncate">
-            {{ $conv->assignedUser->name }}
-        </div>
-    @endif
+    <div class="flex items-center gap-1 mt-1">
+        @if($conv->brand)
+            <span class="text-[10px] px-1.5 py-0.5 rounded text-white truncate max-w-[100px]"
+                  style="background-color: {{ $conv->brand->color }}">
+                {{ $conv->brand->name }}
+            </span>
+        @endif
+        @if($conv->assignedUser)
+            <span class="text-[10px] text-gray-400 dark:text-gray-500 truncate">
+                {{ $conv->assignedUser->name }}
+            </span>
+        @endif
+    </div>
 </a>

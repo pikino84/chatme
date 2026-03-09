@@ -14,6 +14,7 @@ class KbCategory extends Model
 
     protected $fillable = [
         'organization_id',
+        'brand_id',
         'name',
         'description',
         'position',
@@ -27,6 +28,11 @@ class KbCategory extends Model
             'position' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
     }
 
     public function articles(): HasMany

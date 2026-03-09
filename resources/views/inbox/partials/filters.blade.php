@@ -20,6 +20,15 @@
     </div>
 
     <div class="flex gap-2">
+        @if($brands->isNotEmpty())
+            <select name="brand_id" class="flex-1 text-xs rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                <option value="">Todas las marcas</option>
+                @foreach($brands as $brand)
+                    <option value="{{ $brand->id }}" @selected(request('brand_id')==$brand->id)>{{ $brand->name }}</option>
+                @endforeach
+            </select>
+        @endif
+
         <select name="assigned_user_id" class="flex-1 text-xs rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
             <option value="">Todos los agentes</option>
             @foreach($agents as $agent)
