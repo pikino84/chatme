@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Webchat\WebchatController;
+use App\Http\Controllers\Webhooks\StripeWebhookController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,9 @@ Route::prefix('webhooks/whatsapp/{channelUuid}')->group(function () {
     Route::get('/', [WhatsAppWebhookController::class, 'verify']);
     Route::post('/', [WhatsAppWebhookController::class, 'handle']);
 });
+
+// Stripe webhooks (no auth - validated by signature)
+Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
 
 // Webchat public API (no auth middleware - validated by encrypted session token)
 Route::prefix('webchat/{channelUuid}')->group(function () {

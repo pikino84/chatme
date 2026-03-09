@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('monitor:performance')->everyFiveMinutes();
+Schedule::job(new \App\Jobs\CheckStaleConversations)->everyFiveMinutes();
+Schedule::job(new \App\Jobs\ProcessDripStep)->everyFiveMinutes();

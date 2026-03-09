@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(\App\Http\Middleware\EnsureProductionSafety::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         $middleware->alias([
             'tenant' => \App\Http\Middleware\ResolveTenant::class,
             'subscription' => \App\Http\Middleware\EnsureActiveSubscription::class,

@@ -8,6 +8,10 @@ use App\Http\Controllers\Tenant\DealController;
 use App\Http\Controllers\Tenant\InboxController;
 use App\Http\Controllers\Tenant\AiConfigController;
 use App\Http\Controllers\Tenant\AnalyticsController;
+use App\Http\Controllers\Tenant\AutomationController;
+use App\Http\Controllers\Tenant\CampaignController;
+use App\Http\Controllers\Tenant\ContactController;
+use App\Http\Controllers\Tenant\DripController;
 use App\Http\Controllers\Tenant\KbArticleController;
 use App\Http\Controllers\Tenant\KbCategoryController;
 use App\Http\Controllers\Tenant\MessageController;
@@ -66,7 +70,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             return view('dashboard');
         })->name('dashboard');
 
-        Route::middleware([\App\Http\Middleware\ResolveUserTenant::class])->group(function () {
+        Route::middleware([\App\Http\Middleware\ResolveUserTenant::class, 'throttle:tenant-api'])->group(function () {
             Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
             Route::get('/inbox/conversations/{conversation}', [ConversationsController::class, 'show'])->name('inbox.conversations.show');
             Route::post('/inbox/conversations/{conversation}/read', [ConversationsController::class, 'markAsRead'])->name('inbox.conversations.read');
@@ -95,6 +99,10 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
             Route::get('/billing/plans', [BillingController::class, 'plans'])->name('billing.plans');
             Route::post('/billing/change-plan', [BillingController::class, 'changePlan'])->name('billing.change-plan');
+            Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+            Route::get('/billing/checkout/success', [BillingController::class, 'checkoutSuccess'])->name('billing.checkout.success');
+            Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
+            Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
 
             // Knowledge Base
             Route::get('/kb/categories', [KbCategoryController::class, 'index'])->name('kb.categories');
@@ -125,6 +133,62 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             // AI Configuration
             Route::get('/settings/ai', [AiConfigController::class, 'show'])->name('settings.ai');
             Route::post('/settings/ai', [AiConfigController::class, 'update'])->name('settings.ai.update');
+
+            // Contacts
+            Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+            Route::get('/contacts/create', [ContactController::class, 'create'])->name('contacts.create');
+            Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
+            Route::get('/contacts/import', [ContactController::class, 'importForm'])->name('contacts.import.form');
+            Route::post('/contacts/import', [ContactController::class, 'import'])->name('contacts.import');
+            Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
+            Route::get('/contacts/{contact}/edit', [ContactController::class, 'edit'])->name('contacts.edit');
+            Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
+            Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+
+            // Campaigns
+            Route::middleware(['feature:campaigns_enabled'])->group(function () {
+                Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns.index');
+                Route::get('/campaigns/create', [CampaignController::class, 'create'])->name('campaigns.create');
+                Route::post('/campaigns', [CampaignController::class, 'store'])->name('campaigns.store');
+                Route::get('/campaigns/{campaign}', [CampaignController::class, 'show'])->name('campaigns.show');
+                Route::get('/campaigns/{campaign}/edit', [CampaignController::class, 'edit'])->name('campaigns.edit');
+                Route::put('/campaigns/{campaign}', [CampaignController::class, 'update'])->name('campaigns.update');
+                Route::post('/campaigns/{campaign}/send', [CampaignController::class, 'send'])->name('campaigns.send');
+                Route::post('/campaigns/{campaign}/cancel', [CampaignController::class, 'cancel'])->name('campaigns.cancel');
+                Route::delete('/campaigns/{campaign}', [CampaignController::class, 'destroy'])->name('campaigns.destroy');
+                Route::get('/campaigns/{campaign}/recipients/select', [CampaignController::class, 'selectRecipients'])->name('campaigns.recipients.select');
+                Route::post('/campaigns/{campaign}/recipients', [CampaignController::class, 'addRecipients'])->name('campaigns.recipients.add');
+                Route::delete('/campaigns/{campaign}/recipients/{contactId}', [CampaignController::class, 'removeRecipient'])->name('campaigns.recipients.remove');
+            });
+
+            // Drip Sequences
+            Route::middleware(['feature:drip_sequences_enabled'])->group(function () {
+                Route::get('/drip', [DripController::class, 'index'])->name('drip.index');
+                Route::get('/drip/create', [DripController::class, 'create'])->name('drip.create');
+                Route::post('/drip', [DripController::class, 'store'])->name('drip.store');
+                Route::get('/drip/{sequence}', [DripController::class, 'show'])->name('drip.show');
+                Route::get('/drip/{sequence}/edit', [DripController::class, 'edit'])->name('drip.edit');
+                Route::put('/drip/{sequence}', [DripController::class, 'update'])->name('drip.update');
+                Route::post('/drip/{sequence}/activate', [DripController::class, 'activate'])->name('drip.activate');
+                Route::post('/drip/{sequence}/pause', [DripController::class, 'pause'])->name('drip.pause');
+                Route::delete('/drip/{sequence}', [DripController::class, 'destroy'])->name('drip.destroy');
+                Route::post('/drip/{sequence}/steps', [DripController::class, 'addStep'])->name('drip.steps.add');
+                Route::put('/drip/{sequence}/steps/{step}', [DripController::class, 'updateStep'])->name('drip.steps.update');
+                Route::delete('/drip/{sequence}/steps/{step}', [DripController::class, 'removeStep'])->name('drip.steps.remove');
+                Route::post('/drip/{sequence}/enroll', [DripController::class, 'enroll'])->name('drip.enroll');
+                Route::post('/drip/{sequence}/enrollments/{enrollment}/cancel', [DripController::class, 'cancelEnrollment'])->name('drip.enrollments.cancel');
+            });
+
+            // Automations
+            Route::middleware(['feature:automations_enabled'])->group(function () {
+                Route::get('/automations', [AutomationController::class, 'index'])->name('automations.index');
+                Route::get('/automations/create', [AutomationController::class, 'create'])->name('automations.create');
+                Route::post('/automations', [AutomationController::class, 'store'])->name('automations.store');
+                Route::get('/automations/{rule}/edit', [AutomationController::class, 'edit'])->name('automations.edit');
+                Route::put('/automations/{rule}', [AutomationController::class, 'update'])->name('automations.update');
+                Route::post('/automations/{rule}/toggle', [AutomationController::class, 'toggleActive'])->name('automations.toggle');
+                Route::delete('/automations/{rule}', [AutomationController::class, 'destroy'])->name('automations.destroy');
+            });
 
             // Analytics
             Route::middleware(['feature:reports_enabled'])->group(function () {

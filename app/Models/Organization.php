@@ -103,6 +103,16 @@ class Organization extends Model
         return $this->hasMany(KbArticle::class);
     }
 
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class);
+    }
+
+    public function automationRules(): HasMany
+    {
+        return $this->hasMany(AutomationRule::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

@@ -2,8 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\ConversationCreated;
+use App\Listeners\AuditLoginListener;
+use App\Listeners\AutomationListener;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -22,10 +29,30 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->configureRateLimiting();
+        $this->registerAuditListeners();
+        $this->registerAutomationListeners();
+    }
+
+    private function registerAuditListeners(): void
+    {
+        Event::listen(Login::class, [AuditLoginListener::class, 'handleLogin']);
+        Event::listen(Failed::class, [AuditLoginListener::class, 'handleFailed']);
+        Event::listen(Logout::class, [AuditLoginListener::class, 'handleLogout']);
+    }
+
+    private function registerAutomationListeners(): void
+    {
+        Event::listen(ConversationCreated::class, AutomationListener::class);
     }
 
     private function configureRateLimiting(): void
     {
+        RateLimiter::for('tenant-api', function (Request $request) {
+            $key = $request->user()?->organization_id ?? $request->ip();
+            $limit = config('security.tenant_api_rate_limit', 60);
+            return Limit::perMinute($limit)->by('tenant-api:' . $key);
+        });
+
         RateLimiter::for('webchat-session', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });

@@ -19,6 +19,7 @@ class Deal extends Model
         'pipeline_stage_id',
         'conversation_id',
         'assigned_user_id',
+        'contact_id',
         'contact_name',
         'contact_email',
         'contact_phone',
@@ -48,6 +49,11 @@ class Deal extends Model
     public function stage(): BelongsTo
     {
         return $this->belongsTo(PipelineStage::class, 'pipeline_stage_id');
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 
     public function conversation(): BelongsTo

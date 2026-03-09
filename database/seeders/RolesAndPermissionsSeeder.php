@@ -75,6 +75,31 @@ class RolesAndPermissionsSeeder extends Seeder
             'kb.delete',
             'kb.publish',
 
+            // Contacts
+            'contacts.view',
+            'contacts.create',
+            'contacts.update',
+            'contacts.delete',
+            'contacts.import',
+
+            // Campaigns
+            'campaigns.view',
+            'campaigns.create',
+            'campaigns.send',
+            'campaigns.delete',
+
+            // Drip Sequences
+            'drip.view',
+            'drip.create',
+            'drip.update',
+            'drip.delete',
+
+            // Automations
+            'automations.view',
+            'automations.create',
+            'automations.update',
+            'automations.delete',
+
             // Reports
             'reports.view',
             'reports.export',
@@ -108,6 +133,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'deals.view', 'deals.view-all', 'deals.create', 'deals.update', 'deals.delete',
             'deals.assign', 'deals.manage-commissions',
             'pipelines.view', 'pipelines.create', 'pipelines.update', 'pipelines.delete',
+            'contacts.view', 'contacts.create', 'contacts.update', 'contacts.delete', 'contacts.import',
+            'campaigns.view', 'campaigns.create', 'campaigns.send', 'campaigns.delete',
+            'drip.view', 'drip.create', 'drip.update', 'drip.delete',
+            'automations.view', 'automations.create', 'automations.update', 'automations.delete',
             'kb.view', 'kb.create', 'kb.update', 'kb.delete', 'kb.publish',
             'reports.view', 'reports.export',
             'settings.view', 'settings.update',
@@ -126,6 +155,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'sla.view',
             'deals.view', 'deals.view-all', 'deals.create', 'deals.update', 'deals.assign',
             'pipelines.view',
+            'contacts.view', 'contacts.create', 'contacts.update',
+            'campaigns.view',
+            'drip.view',
+            'automations.view',
             'kb.view', 'kb.create', 'kb.update',
             'reports.view',
         ]);
@@ -137,6 +170,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'conversations.view',
             'conversations.close',
             'messages.view', 'messages.send', 'messages.internal-note',
+            'contacts.view', 'contacts.create',
             'deals.view', 'deals.create', 'deals.update',
             'pipelines.view',
             'kb.view',

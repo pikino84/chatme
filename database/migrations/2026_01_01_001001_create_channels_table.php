@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->enum('type', ['whatsapp', 'webchat', 'email'])->default('whatsapp');
+            $table->enum('type', ['whatsapp', 'webchat', 'email', 'facebook', 'instagram'])->default('whatsapp');
             $table->string('name');
             $table->text('configuration')->nullable();
             $table->boolean('is_active')->default(true);

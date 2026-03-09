@@ -27,11 +27,13 @@ class MessageController extends Controller
             'type' => 'nullable|in:text,internal_note',
         ]);
 
+        $body = strip_tags($request->input('body'));
+
         $message = Message::create([
             'organization_id' => $conversation->organization_id,
             'conversation_id' => $conversation->id,
             'user_id' => $request->user()->id,
-            'body' => $request->input('body'),
+            'body' => $body,
             'type' => $type,
             'direction' => 'outbound',
         ]);

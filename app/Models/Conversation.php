@@ -18,6 +18,7 @@ class Conversation extends Model
         'channel_id',
         'assigned_user_id',
         'branch_id',
+        'contact_id',
         'status',
         'subject',
         'contact_name',
@@ -70,6 +71,11 @@ class Conversation extends Model
     public function slaLogs(): HasMany
     {
         return $this->hasMany(ConversationSlaLog::class);
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 
     public function deals(): HasMany

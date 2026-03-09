@@ -13,6 +13,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-4 px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm rounded">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @foreach($plans as $plan)
                 @php
@@ -71,6 +77,27 @@
                             <span class="block w-full text-center px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-md">
                                 Plan Actual
                             </span>
+                        @elseif($stripeConfigured)
+                            <div class="space-y-2">
+                                <form method="POST" action="{{ route('billing.checkout') }}">
+                                    @csrf
+                                    <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                                    <input type="hidden" name="cycle" value="monthly">
+                                    <button type="submit"
+                                            class="block w-full text-center px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
+                                        {{ $plan->name }} Mensual
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('billing.checkout') }}">
+                                    @csrf
+                                    <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                                    <input type="hidden" name="cycle" value="yearly">
+                                    <button type="submit"
+                                            class="block w-full text-center px-4 py-2 text-sm bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition">
+                                        {{ $plan->name }} Anual
+                                    </button>
+                                </form>
+                            </div>
                         @else
                             <form method="POST" action="{{ route('billing.change-plan') }}">
                                 @csrf

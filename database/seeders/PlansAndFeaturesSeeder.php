@@ -26,6 +26,11 @@ class PlansAndFeaturesSeeder extends Seeder
             ['code' => 'ai_suggestions_enabled', 'description' => 'AI-powered answers', 'type' => 'boolean'],
             ['code' => 'ai_queries_monthly', 'description' => 'Monthly AI queries', 'type' => 'limit'],
             ['code' => 'reports_enabled', 'description' => 'Analytics and reports', 'type' => 'boolean'],
+            ['code' => 'max_contacts', 'description' => 'Maximum contacts', 'type' => 'limit'],
+            ['code' => 'campaigns_enabled', 'description' => 'Broadcast campaigns', 'type' => 'boolean'],
+            ['code' => 'max_campaigns_monthly', 'description' => 'Monthly campaign limit', 'type' => 'limit'],
+            ['code' => 'drip_sequences_enabled', 'description' => 'Drip sequences', 'type' => 'boolean'],
+            ['code' => 'automations_enabled', 'description' => 'Automation rules', 'type' => 'boolean'],
         ];
 
         foreach ($features as $feature) {
@@ -56,6 +61,11 @@ class PlansAndFeaturesSeeder extends Seeder
                     'ai_suggestions_enabled' => 'false',
                     'ai_queries_monthly' => '0',
                     'reports_enabled' => 'false',
+                    'max_contacts' => '100',
+                    'campaigns_enabled' => 'false',
+                    'max_campaigns_monthly' => '0',
+                    'drip_sequences_enabled' => 'false',
+                    'automations_enabled' => 'false',
                 ],
             ],
             [
@@ -80,6 +90,11 @@ class PlansAndFeaturesSeeder extends Seeder
                     'ai_suggestions_enabled' => 'true',
                     'ai_queries_monthly' => '500',
                     'reports_enabled' => 'true',
+                    'max_contacts' => '5000',
+                    'campaigns_enabled' => 'true',
+                    'max_campaigns_monthly' => '10',
+                    'drip_sequences_enabled' => 'true',
+                    'automations_enabled' => 'true',
                 ],
             ],
             [
@@ -104,6 +119,11 @@ class PlansAndFeaturesSeeder extends Seeder
                     'ai_suggestions_enabled' => 'true',
                     'ai_queries_monthly' => 'unlimited',
                     'reports_enabled' => 'true',
+                    'max_contacts' => 'unlimited',
+                    'campaigns_enabled' => 'true',
+                    'max_campaigns_monthly' => 'unlimited',
+                    'drip_sequences_enabled' => 'true',
+                    'automations_enabled' => 'true',
                 ],
             ],
         ];

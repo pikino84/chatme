@@ -142,25 +142,29 @@
 [x] Tests (11 tests, 37 assertions: acceso, permisos, feature gating, métricas, tenant isolation, CSV, filtros)
 
 ## Phase 11.8 – Security Hardening
-[ ] Rate limiting por tenant en rutas API
-[ ] CSP headers configurables
-[ ] Audit log para acciones críticas (login, cambios de rol, eliminaciones)
-[ ] Sanitización de inputs en mensajes (XSS prevention)
-[ ] CORS configuración por canal
-[ ] Review de queries N+1 en controllers principales
-[ ] Tests de seguridad
+[x] SecurityHeaders middleware (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy, HSTS, CSP)
+[x] CSP configurable via env SECURITY_CSP + config/security.php
+[x] Rate limiting por tenant: throttle:tenant-api (60 req/min configurable) en todas las rutas tenant
+[x] Audit log system: audit_logs table, AuditLog model, AuditService (log, logAuth, logModelChange)
+[x] Audit login/logout/failed via AuditLoginListener + Laravel auth events
+[x] Audit role changes + user activation/deactivation en TeamController
+[x] Sanitización XSS: strip_tags en MessageController body
+[x] CORS config publicado: config/cors.php con allowed_origins via env, headers específicos
+[x] Tests (10 tests, 27 assertions: headers, CSP, audit CRUD, audit disabled, role change audit, toggle audit, login audit, XSS, rate limiter, CORS)
 
 ## Phase 12 – Contacts + Campaigns
-[ ] 12.1 Contacts Module
-    [ ] contacts table (name, email, phone, external_id, channel_type, company, notes, metadata)
-    [ ] Contact model + BelongsToOrganization + factory
-    [ ] ContactPolicy (tenant-aware)
-    [ ] ContactService (create, update, merge duplicates, import CSV)
-    [ ] Vincular conversations.contact_id y deals.contact_id (FK nullable)
-    [ ] ContactController + UI (index con búsqueda, show con historial de conversaciones y deals)
-    [ ] Features: max_contacts (limit por plan)
-    [ ] Permissions: contacts.view, contacts.create, contacts.update, contacts.delete, contacts.import
-    [ ] Tests
+[x] 12.1 Contacts Module
+    [x] contacts table + conversations.contact_id + deals.contact_id (FK nullable)
+    [x] Contact model + BelongsToOrganization + ContactFactory
+    [x] ContactPolicy (tenant-aware, permission-based)
+    [x] ContactService (create with billing limit, update, delete, findOrCreateByPhone/Email, merge, importCsv)
+    [x] BillingLimitException for plan enforcement
+    [x] ContactController (index+search, show+history, create, edit, update, destroy, importForm, import CSV)
+    [x] Views: index (search+pagination), show (info+conversations+deals), form (create/edit), import
+    [x] Features: max_contacts (Starter=100, Professional=5000, Enterprise=unlimited)
+    [x] Permissions: contacts.view/create/update/delete/import (org_admin all, supervisor view+create+update, agent view+create)
+    [x] Sidebar link "Contactos"
+    [x] Tests (17 tests, 35 assertions: CRUD, search, tenant isolation, merge, CSV import, billing limit)
 [ ] 12.2 Broadcast Campaigns
     [ ] campaigns table (channel_id, name, type=broadcast, status, message_template, scheduled_at, stats)
     [ ] campaign_recipients table (campaign_id, contact_id, status, sent_at, error)

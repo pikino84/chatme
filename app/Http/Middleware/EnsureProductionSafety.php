@@ -13,6 +13,7 @@ class EnsureProductionSafety
     {
         if (app()->environment('production') && config('app.debug') === true) {
             Log::critical('APP_DEBUG is enabled in production! This is a security risk.');
+            config(['app.debug' => false]);
         }
 
         return $next($request);

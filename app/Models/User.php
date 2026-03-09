@@ -42,6 +42,11 @@ class User extends Authenticatable
         return $this->belongsTo(Organization::class);
     }
 
+    public function assignedConversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'assigned_user_id');
+    }
+
     public function deals(): HasMany
     {
         return $this->hasMany(Deal::class, 'assigned_user_id');

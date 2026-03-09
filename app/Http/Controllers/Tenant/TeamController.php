@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
 {
     use AuthorizesRequests;
+
+    public function __construct(private AuditService $auditService)
+    {
+    }
 
     public function index(Request $request)
     {
@@ -43,7 +48,15 @@ class TeamController extends Controller
             return back()->with('error', 'You cannot demote yourself.');
         }
 
+        $oldRole = $user->getRoleNames()->first();
         $user->syncRoles([$request->input('role')]);
+
+        $this->auditService->logModelChange(
+            'user.role_changed',
+            $user,
+            ['role' => $oldRole],
+            $request,
+        );
 
         return back()->with('success', "Role updated for {$user->name}.");
     }
@@ -62,7 +75,15 @@ class TeamController extends Controller
             return back()->with('error', 'You cannot deactivate yourself.');
         }
 
+        $oldActive = $user->is_active;
         $user->update(['is_active' => ! $user->is_active]);
+
+        $this->auditService->logModelChange(
+            $user->is_active ? 'user.activated' : 'user.deactivated',
+            $user,
+            ['is_active' => $oldActive],
+            $request,
+        );
 
         $status = $user->is_active ? 'activated' : 'deactivated';
 

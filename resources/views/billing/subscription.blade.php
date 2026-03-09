@@ -13,6 +13,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-4 px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm rounded">
+                {{ session('error') }}
+            </div>
+        @endif
+
         @include('billing.partials.limit-banner', ['atLimit' => $atLimit])
 
         @if(! $subscription)
@@ -78,6 +84,29 @@
                         </div>
                     @endif
                 </dl>
+
+                <div class="flex gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    @if($stripeConfigured && !$subscription->isManual())
+                        <form method="POST" action="{{ route('billing.portal') }}">
+                            @csrf
+                            <button type="submit" class="px-4 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                                Portal de Facturación
+                            </button>
+                        </form>
+                    @endif
+
+                    @if($subscription->isActive() || $subscription->isTrialing())
+                        <a href="{{ route('billing.plans') }}" class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                            Cambiar Plan
+                        </a>
+                        <form method="POST" action="{{ route('billing.cancel') }}" onsubmit="return confirm('¿Cancelar suscripción? Tendrás acceso hasta el fin del periodo.')">
+                            @csrf
+                            <button type="submit" class="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">
+                                Cancelar Suscripción
+                            </button>
+                        </form>
+                    @endif
+                </div>
             </div>
 
             {{-- Features --}}
