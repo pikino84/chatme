@@ -7,6 +7,7 @@ use App\Http\Controllers\Tenant\DealBoardController;
 use App\Http\Controllers\Tenant\DealController;
 use App\Http\Controllers\Tenant\InboxController;
 use App\Http\Controllers\Tenant\AiConfigController;
+use App\Http\Controllers\Tenant\AnalyticsController;
 use App\Http\Controllers\Tenant\KbArticleController;
 use App\Http\Controllers\Tenant\KbCategoryController;
 use App\Http\Controllers\Tenant\MessageController;
@@ -124,6 +125,12 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             // AI Configuration
             Route::get('/settings/ai', [AiConfigController::class, 'show'])->name('settings.ai');
             Route::post('/settings/ai', [AiConfigController::class, 'update'])->name('settings.ai.update');
+
+            // Analytics
+            Route::middleware(['feature:reports_enabled'])->group(function () {
+                Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+                Route::get('/analytics/export', [AnalyticsController::class, 'export'])->name('analytics.export');
+            });
 
             // Tenant aliases
             Route::get('/tenant/inbox', [InboxController::class, 'index'])->name('tenant.inbox');

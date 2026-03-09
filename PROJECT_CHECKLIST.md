@@ -39,10 +39,10 @@
 [x] organization_subscriptions
 [x] BillingService (subscribe, cancel, changePlan, checkFeature, checkLimit, usage)
 [x] billing middleware (subscription, feature, usage.limit)
-[x] PlansAndFeaturesSeeder (3 plans, 9 features)
+[x] PlansAndFeaturesSeeder (3 plans, 12 features)
 [x] tests (47 tests, 87 assertions)
-[ ] stripe gateway (deferred — system works with manual subscriptions)
-[ ] stripe webhooks (deferred)
+[ ] stripe gateway (deferred to Phase 14)
+[ ] stripe webhooks (deferred to Phase 14)
 
 ## Phase 7 – Admin Backoffice
 [x] saas_admin role + ResolveSaaSAdmin middleware
@@ -124,5 +124,139 @@
 [x] Billing UX (BillingController, subscription/plans/usage views, limit banners, 7 tests)
 [x] Knowledge Base UI (KbCategoryController, KbArticleController, category/article CRUD, version history, 10 tests)
 [x] AI Layer (EmbeddingService, VectorSearchService, AiAnswerService, GenerateArticleEmbedding job, AiConfigController, 10 tests)
-[ ] Analytics
-[ ] Security Hardening Improvements
+[ ] 11.7 Analytics Dashboard
+[ ] 11.8 Security Hardening Improvements
+
+## Phase 11.7 – Analytics Dashboard
+[x] AnalyticsService con métricas por periodo (hoy, 7d, 30d, custom)
+[x] AnalyticsController (index + export CSV)
+[x] Métricas de conversaciones: total, por status, por canal, por prioridad, tiempo promedio de resolución
+[x] Métricas de agentes: conversaciones atendidas, cerradas, tiempo promedio resolución
+[x] Métricas CRM: deals creados, ganados, perdidos, valor total/ganado, tasa de conversión, tiempo cierre promedio
+[x] Métricas de mensajes: total, entrantes, salientes, volumen diario
+[x] Métricas SLA: total, incumplidos, cumplidos, tasa de cumplimiento
+[x] Gráficas con Chart.js (tendencia conversaciones, volumen mensajes, canal doughnut, deals doughnut)
+[x] Export CSV de reportes completo (conversaciones, mensajes, deals, agentes, SLA)
+[x] Feature gating: reports_enabled (Starter=false, Professional=true, Enterprise=true)
+[x] Sidebar link "Reportes" en app layout
+[x] Tests (11 tests, 37 assertions: acceso, permisos, feature gating, métricas, tenant isolation, CSV, filtros)
+
+## Phase 11.8 – Security Hardening
+[ ] Rate limiting por tenant en rutas API
+[ ] CSP headers configurables
+[ ] Audit log para acciones críticas (login, cambios de rol, eliminaciones)
+[ ] Sanitización de inputs en mensajes (XSS prevention)
+[ ] CORS configuración por canal
+[ ] Review de queries N+1 en controllers principales
+[ ] Tests de seguridad
+
+## Phase 12 – Contacts + Campaigns
+[ ] 12.1 Contacts Module
+    [ ] contacts table (name, email, phone, external_id, channel_type, company, notes, metadata)
+    [ ] Contact model + BelongsToOrganization + factory
+    [ ] ContactPolicy (tenant-aware)
+    [ ] ContactService (create, update, merge duplicates, import CSV)
+    [ ] Vincular conversations.contact_id y deals.contact_id (FK nullable)
+    [ ] ContactController + UI (index con búsqueda, show con historial de conversaciones y deals)
+    [ ] Features: max_contacts (limit por plan)
+    [ ] Permissions: contacts.view, contacts.create, contacts.update, contacts.delete, contacts.import
+    [ ] Tests
+[ ] 12.2 Broadcast Campaigns
+    [ ] campaigns table (channel_id, name, type=broadcast, status, message_template, scheduled_at, stats)
+    [ ] campaign_recipients table (campaign_id, contact_id, status, sent_at, error)
+    [ ] Campaign model + CampaignRecipient model + factories
+    [ ] CampaignPolicy (tenant-aware)
+    [ ] CampaignService (create, schedule, send, pause, cancel, stats)
+    [ ] SendCampaignMessage job (dispatched to default queue, respects rate limits)
+    [ ] CampaignController + UI (create, recipient selection, preview, schedule, status dashboard)
+    [ ] Features: campaigns_enabled (boolean), max_campaigns_monthly (limit)
+    [ ] Permissions: campaigns.view, campaigns.create, campaigns.send, campaigns.delete
+    [ ] Tests
+[ ] 12.3 Drip Sequences
+    [ ] drip_sequences table (name, status, trigger_event)
+    [ ] drip_sequence_steps table (position, delay_minutes, message_template, channel_type)
+    [ ] drip_enrollments table (contact_id, current_step, status, next_step_at)
+    [ ] DripSequence, DripSequenceStep, DripEnrollment models + factories
+    [ ] DripService (create, enroll contact, process next step, pause, cancel enrollment)
+    [ ] ProcessDripStep job (scheduled, processes pending enrollments)
+    [ ] DripController + UI (builder de secuencia, enrollment list, stats)
+    [ ] Features: drip_sequences_enabled (boolean)
+    [ ] Permissions: drip.view, drip.create, drip.update, drip.delete
+    [ ] Tests
+
+## Phase 13 – Automations
+[ ] 13.1 Auto-Assignment
+    [ ] automations table (name, type, is_active, configuration jsonb, schedule jsonb)
+    [ ] automation_logs table (automation_id, trigger_type, trigger_id, result, details)
+    [ ] Automation model + AutomationLog model + factories
+    [ ] AutomationPolicy (tenant-aware)
+    [ ] AutoAssignService (round-robin, least-busy, by-channel, by-branch)
+    [ ] Trigger: on new conversation created → auto-assign agent
+    [ ] Configuration: { strategy: "round_robin|least_busy", agent_ids: [...], channel_ids: [...] }
+    [ ] Tests
+[ ] 13.2 Auto-Responses
+    [ ] AutoResponseService (respuesta automática por horario fuera de oficina)
+    [ ] Configuration: { message: "...", schedule: { days: [...], start: "HH:mm", end: "HH:mm" } }
+    [ ] Trigger: on new inbound message outside business hours → send auto-response
+    [ ] Respeta rate limit: máximo 1 auto-respuesta por conversación por periodo
+    [ ] Tests
+[ ] 13.3 Stale Deal Alerts
+    [ ] Extender PerformanceMonitorService.checkDealStaleness() existente
+    [ ] Automation config: { pipeline_id: X, max_hours: Y, notify: "email|alert|both" }
+    [ ] NotifyDealStale job → genera SaasAlert + opcionalmente email al agente asignado
+    [ ] Tests
+[ ] 13.4 Automations UI
+    [ ] AutomationController + views (index, create/edit form por tipo, logs viewer)
+    [ ] Features: automations_enabled (boolean), max_automations (limit)
+    [ ] Permissions: automations.view, automations.create, automations.update, automations.delete
+    [ ] Tests
+
+## Phase 14 – Stripe Integration
+[ ] 14.1 Stripe Configuration
+    [ ] config/services.php stripe section (api_key, webhook_secret, publishable_key)
+    [ ] StripeService (createCustomer, createSubscription, cancelSubscription, changePlan, createCheckoutSession)
+    [ ] Graceful degradation: si no hay credenciales, billing funciona en modo manual (como ahora)
+    [ ] organization.settings: stripe_customer_id
+    [ ] Tests con mocks
+[ ] 14.2 Stripe Checkout
+    [ ] Checkout session creation para nuevas suscripciones
+    [ ] Customer portal para gestionar método de pago
+    [ ] BillingController actualizado: botón "Pagar con Stripe" o "Gestionar con Stripe"
+    [ ] Tests
+[ ] 14.3 Stripe Webhooks
+    [ ] POST /webhooks/stripe endpoint
+    [ ] Eventos: checkout.session.completed, invoice.paid, invoice.payment_failed, customer.subscription.updated, customer.subscription.deleted
+    [ ] Sincronización automática de status de suscripción
+    [ ] Signature validation
+    [ ] Tests
+[ ] 14.4 Admin Panel Stripe
+    [ ] Vista de pagos y facturas por organización
+    [ ] Indicador de modo (manual vs Stripe) en admin
+    [ ] Tests
+
+## Phase 15 – Production Readiness
+[ ] 15.1 Migration Consolidation
+    [ ] Consolidar todas las migraciones en máximo 7 archivos (ver CHATME_SYSTEM_PROMPT.md)
+    [ ] Verificar fresh migrate + seed funciona limpio
+    [ ] Tests completos pasan después de consolidación
+[ ] 15.2 Environment Configuration
+    [ ] .env.example completo con todas las variables necesarias
+    [ ] config/ files review: todas las credenciales via env()
+    [ ] Docker Compose para desarrollo (PostgreSQL, Redis, app)
+    [ ] Documentación de setup para nuevos desarrolladores
+[ ] 15.3 Performance Optimization
+    [ ] Eager loading review en todos los controllers (N+1 queries)
+    [ ] Database indices review
+    [ ] Cache strategy para queries frecuentes (plans, features, org settings)
+    [ ] Horizon tuning para producción
+[ ] 15.4 Security Final Review
+    [ ] OWASP top 10 checklist
+    [ ] Dependency audit (composer audit)
+    [ ] .env secrets rotation plan
+    [ ] Backup strategy documentation
+[ ] 15.5 Deploy
+    [ ] CI/CD pipeline (GitHub Actions: tests, lint, deploy)
+    [ ] Production server provisioning guide
+    [ ] SSL/domain configuration
+    [ ] Monitoring + alerting setup
+    [ ] Rollback procedure documented

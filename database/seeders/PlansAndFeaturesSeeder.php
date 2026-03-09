@@ -25,6 +25,7 @@ class PlansAndFeaturesSeeder extends Seeder
             ['code' => 'kb_articles_limit', 'description' => 'Maximum KB articles', 'type' => 'limit'],
             ['code' => 'ai_suggestions_enabled', 'description' => 'AI-powered answers', 'type' => 'boolean'],
             ['code' => 'ai_queries_monthly', 'description' => 'Monthly AI queries', 'type' => 'limit'],
+            ['code' => 'reports_enabled', 'description' => 'Analytics and reports', 'type' => 'boolean'],
         ];
 
         foreach ($features as $feature) {
@@ -54,6 +55,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'kb_articles_limit' => '20',
                     'ai_suggestions_enabled' => 'false',
                     'ai_queries_monthly' => '0',
+                    'reports_enabled' => 'false',
                 ],
             ],
             [
@@ -77,6 +79,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'kb_articles_limit' => '200',
                     'ai_suggestions_enabled' => 'true',
                     'ai_queries_monthly' => '500',
+                    'reports_enabled' => 'true',
                 ],
             ],
             [
@@ -100,6 +103,7 @@ class PlansAndFeaturesSeeder extends Seeder
                     'kb_articles_limit' => 'unlimited',
                     'ai_suggestions_enabled' => 'true',
                     'ai_queries_monthly' => 'unlimited',
+                    'reports_enabled' => 'true',
                 ],
             ],
         ];
