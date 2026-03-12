@@ -50,33 +50,32 @@ class ChannelController extends Controller
             'brand_id' => 'nullable|exists:brands,id',
         ];
 
-        match ($request->input('type')) {
-            'whatsapp' => $rules += [
-                'phone_number_id' => 'required|string|max:255',
-                'waba_id' => 'required|string|max:255',
-                'access_token' => 'required|string|max:1000',
-                'verify_token' => 'required|string|max:255',
-                'app_secret' => 'required|string|max:255',
-                'display_phone' => 'required|string|max:50',
-            ],
-            'webchat' => $rules += [
-                'allowed_origins' => 'nullable|string',
-            ],
-            'facebook' => $rules += [
-                'page_id' => 'required|string|max:255',
-                'page_access_token' => 'required|string|max:1000',
-                'app_secret' => 'required|string|max:255',
-                'verify_token' => 'required|string|max:255',
-            ],
-            'instagram' => $rules += [
-                'instagram_account_id' => 'required|string|max:255',
-                'page_id' => 'required|string|max:255',
-                'page_access_token' => 'required|string|max:1000',
-                'app_secret' => 'required|string|max:255',
-                'verify_token' => 'required|string|max:255',
-            ],
-            default => null,
-        };
+        switch ($request->input('type')) {
+            case 'whatsapp':
+                $rules['phone_number_id'] = 'required|string|max:255';
+                $rules['waba_id'] = 'required|string|max:255';
+                $rules['access_token'] = 'required|string|max:1000';
+                $rules['verify_token'] = 'required|string|max:255';
+                $rules['app_secret'] = 'required|string|max:255';
+                $rules['display_phone'] = 'required|string|max:50';
+                break;
+            case 'webchat':
+                $rules['allowed_origins'] = 'nullable|string';
+                break;
+            case 'facebook':
+                $rules['page_id'] = 'required|string|max:255';
+                $rules['page_access_token'] = 'required|string|max:1000';
+                $rules['app_secret'] = 'required|string|max:255';
+                $rules['verify_token'] = 'required|string|max:255';
+                break;
+            case 'instagram':
+                $rules['instagram_account_id'] = 'required|string|max:255';
+                $rules['page_id'] = 'required|string|max:255';
+                $rules['page_access_token'] = 'required|string|max:1000';
+                $rules['app_secret'] = 'required|string|max:255';
+                $rules['verify_token'] = 'required|string|max:255';
+                break;
+        }
 
         $request->validate($rules);
 
