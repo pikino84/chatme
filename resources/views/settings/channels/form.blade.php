@@ -47,23 +47,23 @@
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 text-sm bg-gray-100 dark:bg-gray-800">
                 @else
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        <label class="relative flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer text-sm"
-                               :class="type === 'whatsapp' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'">
+                        <label class="relative flex items-center justify-center px-4 py-2.5 rounded-md border cursor-pointer text-sm font-medium transition-colors"
+                               :class="type === 'whatsapp' ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400'">
                             <input type="radio" name="type" value="whatsapp" x-model="type" class="sr-only">
                             <span>WhatsApp</span>
                         </label>
-                        <label class="relative flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer text-sm"
-                               :class="type === 'webchat' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'">
+                        <label class="relative flex items-center justify-center px-4 py-2.5 rounded-md border cursor-pointer text-sm font-medium transition-colors"
+                               :class="type === 'webchat' ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400'">
                             <input type="radio" name="type" value="webchat" x-model="type" class="sr-only">
                             <span>Webchat</span>
                         </label>
-                        <label class="relative flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer text-sm"
-                               :class="type === 'facebook' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'">
+                        <label class="relative flex items-center justify-center px-4 py-2.5 rounded-md border cursor-pointer text-sm font-medium transition-colors"
+                               :class="type === 'facebook' ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400'">
                             <input type="radio" name="type" value="facebook" x-model="type" class="sr-only">
                             <span>Facebook</span>
                         </label>
-                        <label class="relative flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer text-sm"
-                               :class="type === 'instagram' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'">
+                        <label class="relative flex items-center justify-center px-4 py-2.5 rounded-md border cursor-pointer text-sm font-medium transition-colors"
+                               :class="type === 'instagram' ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400'">
                             <input type="radio" name="type" value="instagram" x-model="type" class="sr-only">
                             <span>Instagram</span>
                         </label>
@@ -85,6 +85,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Phone Number ID</label>
                     <input type="text" name="phone_number_id" value="{{ old('phone_number_id', $waConfig['phone_number_id'] ?? '') }}"
+                           :disabled="type !== 'whatsapp'"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('phone_number_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -92,6 +93,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">WABA ID</label>
                     <input type="text" name="waba_id" value="{{ old('waba_id', $waConfig['waba_id'] ?? '') }}"
+                           :disabled="type !== 'whatsapp'"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('waba_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -99,6 +101,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Access Token</label>
                     <input type="password" name="access_token"
+                           :disabled="type !== 'whatsapp'"
                            placeholder="{{ $channel && !empty($waConfig['access_token']) ? '********' . substr($waConfig['access_token'], -8) : '' }}"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @if($channel)
@@ -110,6 +113,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Verify Token</label>
                     <input type="text" name="verify_token" value="{{ old('verify_token', $waConfig['verify_token'] ?? '') }}"
+                           :disabled="type !== 'whatsapp'"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('verify_token') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -117,6 +121,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">App Secret</label>
                     <input type="password" name="app_secret"
+                           :disabled="type !== 'whatsapp'"
                            placeholder="{{ $channel && !empty($waConfig['app_secret']) ? '********' . substr($waConfig['app_secret'], -8) : '' }}"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @if($channel)
@@ -128,6 +133,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">N&uacute;mero de tel&eacute;fono visible</label>
                     <input type="text" name="display_phone" value="{{ old('display_phone', $waConfig['display_phone'] ?? '') }}"
+                           :disabled="type !== 'whatsapp'"
                            placeholder="+52 1 555 123 4567"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('display_phone') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -146,6 +152,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Or&iacute;genes permitidos (uno por l&iacute;nea)</label>
                     <textarea name="allowed_origins" rows="3"
+                              :disabled="type !== 'webchat'"
                               placeholder="https://ejemplo.com&#10;https://tienda.ejemplo.com"
                               class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">{{ old('allowed_origins', $origins) }}</textarea>
                     @error('allowed_origins') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -163,6 +170,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Page ID</label>
                     <input type="text" name="page_id" value="{{ old('page_id', $fbConfig['page_id'] ?? '') }}"
+                           :disabled="type !== 'facebook'"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('page_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -170,6 +178,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Page Access Token</label>
                     <input type="password" name="page_access_token"
+                           :disabled="type !== 'facebook'"
                            placeholder="{{ $channel && !empty($fbConfig['page_access_token']) ? '********' . substr($fbConfig['page_access_token'], -8) : '' }}"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @if($channel)
@@ -181,6 +190,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">App Secret</label>
                     <input type="password" name="app_secret"
+                           :disabled="type !== 'facebook'"
                            placeholder="{{ $channel && !empty($fbConfig['app_secret']) ? '********' . substr($fbConfig['app_secret'], -8) : '' }}"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @if($channel)
@@ -192,6 +202,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Verify Token</label>
                     <input type="text" name="verify_token" value="{{ old('verify_token', $fbConfig['verify_token'] ?? '') }}"
+                           :disabled="type !== 'facebook'"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('verify_token') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -208,6 +219,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Instagram Account ID</label>
                     <input type="text" name="instagram_account_id" value="{{ old('instagram_account_id', $igConfig['instagram_account_id'] ?? '') }}"
+                           :disabled="type !== 'instagram'"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('instagram_account_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -215,6 +227,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Page ID (p&aacute;gina vinculada)</label>
                     <input type="text" name="page_id" value="{{ old('page_id', $igConfig['page_id'] ?? '') }}"
+                           :disabled="type !== 'instagram'"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('page_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -222,6 +235,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Page Access Token</label>
                     <input type="password" name="page_access_token"
+                           :disabled="type !== 'instagram'"
                            placeholder="{{ $channel && !empty($igConfig['page_access_token']) ? '********' . substr($igConfig['page_access_token'], -8) : '' }}"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @if($channel)
@@ -233,6 +247,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">App Secret</label>
                     <input type="password" name="app_secret"
+                           :disabled="type !== 'instagram'"
                            placeholder="{{ $channel && !empty($igConfig['app_secret']) ? '********' . substr($igConfig['app_secret'], -8) : '' }}"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @if($channel)
@@ -244,6 +259,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Verify Token</label>
                     <input type="text" name="verify_token" value="{{ old('verify_token', $igConfig['verify_token'] ?? '') }}"
+                           :disabled="type !== 'instagram'"
                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
                     @error('verify_token') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
