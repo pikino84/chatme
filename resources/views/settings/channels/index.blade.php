@@ -3,9 +3,9 @@
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Canales</h2>
             @can('channels.manage')
-                <a href="{{ route('settings.channels.create') }}"
+                <a href="{{ route('settings.channels.wizard') }}"
                    class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                    Agregar Canal
+                    Conectar Canal
                 </a>
             @endcan
         </div>
@@ -26,8 +26,8 @@
             <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <p class="text-gray-500 dark:text-gray-400">No hay canales configurados.</p>
                 @can('channels.manage')
-                    <a href="{{ route('settings.channels.create') }}" class="mt-2 inline-block text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                        Agrega tu primer canal
+                    <a href="{{ route('settings.channels.wizard') }}" class="mt-2 inline-block text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+                        Conecta tu primer canal
                     </a>
                 @endcan
             </div>

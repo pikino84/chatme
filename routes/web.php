@@ -132,6 +132,9 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
 
             // Channels
             Route::get('/settings/channels', [ChannelController::class, 'index'])->name('settings.channels');
+            Route::get('/settings/channels/wizard', [ChannelController::class, 'wizard'])->name('settings.channels.wizard');
+            Route::post('/settings/channels/wizard/validate', [ChannelController::class, 'wizardValidate'])->name('settings.channels.wizard.validate');
+            Route::post('/settings/channels/wizard/store', [ChannelController::class, 'wizardStore'])->name('settings.channels.wizard.store');
             Route::get('/settings/channels/create', [ChannelController::class, 'create'])->name('settings.channels.create');
             Route::post('/settings/channels', [ChannelController::class, 'store'])->name('settings.channels.store');
             Route::get('/settings/channels/{channel}', [ChannelController::class, 'show'])->name('settings.channels.show');
