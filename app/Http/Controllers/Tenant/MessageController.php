@@ -16,9 +16,24 @@ class MessageController extends Controller
     {
         $this->authorize('view', $conversation);
 
-        return response()->json([
-            'count' => $conversation->messages()->count(),
-        ]);
+        $afterId = (int) $request->query('after_id', 0);
+
+        $messages = $conversation->messages()
+            ->with('user')
+            ->when($afterId, fn ($q) => $q->where('id', '>', $afterId))
+            ->oldest()
+            ->limit(50)
+            ->get()
+            ->map(fn ($msg) => [
+                'id' => $msg->id,
+                'body' => e($msg->body),
+                'type' => $msg->type,
+                'direction' => $msg->direction,
+                'user_name' => $msg->user?->name ?? ($msg->isInbound() ? null : 'Agent'),
+                'time' => $msg->created_at->format('H:i'),
+            ]);
+
+        return response()->json(['messages' => $messages]);
     }
 
     public function store(Request $request, Conversation $conversation)

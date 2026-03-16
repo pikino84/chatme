@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Optimistically append the message to the thread
         var msgDiv = document.createElement('div');
+        msgDiv.setAttribute('data-optimistic', 'true');
         if (type === 'internal_note') {
             msgDiv.className = 'flex justify-center';
             msgDiv.innerHTML = '<div class="max-w-md px-3 py-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-xs text-yellow-700 dark:text-yellow-300">' +
@@ -66,11 +67,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         thread.appendChild(msgDiv);
         thread.scrollTop = thread.scrollHeight;
-
-        // Increment message count so polling doesn't trigger a reload for our own message
-        if (window.__chatmeMessageCount !== undefined) {
-            window.__chatmeMessageCount++;
-        }
 
         // Clear input
         bodyInput.value = '';
@@ -92,10 +88,20 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(function(r) {
             if (!r.ok) throw new Error('Send failed');
+            return r.json();
+        })
+        .then(function(data) {
+            // Mark the optimistic message with the real ID so polling skips it
+            if (data.message && data.message.id) {
+                msgDiv.setAttribute('data-msg-id', data.message.id);
+                msgDiv.removeAttribute('data-optimistic');
+                if (window.__chatmeSentIds) {
+                    window.__chatmeSentIds[data.message.id] = true;
+                }
+            }
             sending = false;
         })
         .catch(function() {
-            // On error, reload to show actual state
             sending = false;
             window.location.reload();
         });

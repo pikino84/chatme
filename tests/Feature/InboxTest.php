@@ -211,7 +211,7 @@ class InboxTest extends TestCase
         ]);
     }
 
-    public function test_agent_can_poll_message_count(): void
+    public function test_agent_can_poll_new_messages(): void
     {
         $conv = Conversation::factory()->create([
             'organization_id' => $this->org->id,
@@ -220,16 +220,24 @@ class InboxTest extends TestCase
             'contact_identifier' => '+5215500010001',
         ]);
 
-        Message::factory()->count(3)->create([
+        $msgs = Message::factory()->count(3)->create([
             'organization_id' => $this->org->id,
             'conversation_id' => $conv->id,
         ]);
 
+        // Poll all messages (no after_id)
         $response = $this->actingAs($this->agent)
             ->getJson($this->inboxUrl("/conversations/{$conv->id}/messages/poll"));
 
         $response->assertOk();
-        $response->assertJson(['count' => 3]);
+        $response->assertJsonCount(3, 'messages');
+
+        // Poll only messages after the first one
+        $response = $this->actingAs($this->agent)
+            ->getJson($this->inboxUrl("/conversations/{$conv->id}/messages/poll?after_id={$msgs[0]->id}"));
+
+        $response->assertOk();
+        $response->assertJsonCount(2, 'messages');
     }
 
     public function test_cross_tenant_isolation(): void
