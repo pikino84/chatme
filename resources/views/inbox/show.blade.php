@@ -60,6 +60,8 @@
         // IDs of messages we sent optimistically (already in DOM)
         var sentIds = {};
         window.__chatmeSentIds = sentIds;
+        // Whether Echo/WebSocket is connected
+        var echoConnected = false;
 
         function initLastId() {
             var thread = document.getElementById('message-thread');
@@ -70,8 +72,16 @@
             }
         }
 
+        function escapeHtml(text) {
+            var d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
         function appendMessage(msg) {
-            // Skip if already rendered optimistically
+            // Skip if already in DOM
+            if (document.querySelector('[data-msg-id="' + msg.id + '"]')) return;
+            // Skip if sent optimistically
             if (sentIds[msg.id]) {
                 delete sentIds[msg.id];
                 return;
@@ -82,24 +92,27 @@
 
             var div = document.createElement('div');
             div.setAttribute('data-msg-id', msg.id);
+            var safeBody = escapeHtml(msg.body);
+            var time = msg.time || '';
 
             if (msg.type === 'internal_note') {
                 div.className = 'flex justify-center';
                 div.innerHTML = '<div class="max-w-md px-3 py-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-xs text-yellow-700 dark:text-yellow-300">' +
-                    '<span class="font-medium">' + (msg.user_name || 'System') + ':</span> ' +
-                    msg.body + ' <span class="text-yellow-400 ml-2">' + msg.time + '</span></div>';
+                    '<span class="font-medium">' + escapeHtml(msg.user_name || 'System') + ':</span> ' +
+                    safeBody + ' <span class="text-yellow-400 ml-2">' + time + '</span></div>';
             } else if (msg.direction === 'inbound') {
                 div.className = 'flex justify-start';
                 div.innerHTML = '<div class="max-w-md px-4 py-2 rounded-2xl rounded-bl-sm bg-white dark:bg-gray-700 shadow-sm text-sm text-gray-800 dark:text-gray-200">' +
-                    msg.body + '<div class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 text-right">' + msg.time + '</div></div>';
+                    safeBody + '<div class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 text-right">' + time + '</div></div>';
             } else {
                 div.className = 'flex justify-end';
                 div.innerHTML = '<div class="max-w-md px-4 py-2 rounded-2xl rounded-br-sm bg-indigo-600 text-white text-sm shadow-sm">' +
-                    msg.body + '<div class="text-[10px] text-indigo-200 mt-1 text-right">' + (msg.user_name || 'Agent') + ' &middot; ' + msg.time + '</div></div>';
+                    safeBody + '<div class="text-[10px] text-indigo-200 mt-1 text-right">' + escapeHtml(msg.user_name || 'Agent') + ' &middot; ' + time + '</div></div>';
             }
 
             thread.appendChild(div);
             thread.scrollTop = thread.scrollHeight;
+            if (msg.id > lastMsgId) lastMsgId = msg.id;
         }
 
         function pollMessages() {
@@ -112,19 +125,18 @@
                 if (data.messages && data.messages.length) {
                     data.messages.forEach(function(msg) {
                         appendMessage(msg);
-                        if (msg.id > lastMsgId) lastMsgId = msg.id;
                     });
                 }
             })
             .catch(function() { /* silent */ });
         }
 
-        // Try Echo/WebSocket — on event, poll immediately instead of full reload
         function initEcho() {
-            if (!window.Echo) return;
+            if (!window.Echo) return false;
             try {
                 window.Echo.private('conversation.' + orgId + '.' + convId)
-                    .listen('MessageReceivedEvent', function() { pollMessages(); });
+                    .listen('MessageReceivedEvent', function(e) { appendMessage(e); })
+                    .listen('MessageSentEvent', function(e) { appendMessage(e); });
 
                 window.Echo.private('organization.' + orgId)
                     .listen('ConversationAssignedEvent', function(e) {
@@ -133,13 +145,22 @@
                     .listen('ConversationClosedEvent', function(e) {
                         if (e.conversation_id === convId) window.location.reload();
                     });
-            } catch (err) { /* fallback to polling */ }
+
+                echoConnected = true;
+                return true;
+            } catch (err) {
+                console.warn('[ChatMe] Echo init failed, using polling fallback', err);
+                return false;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
             initLastId();
-            initEcho();
-            setInterval(pollMessages, 5000);
+            var wsOk = initEcho();
+
+            // Polling fallback: 30s if WebSocket connected (safety net), 5s if no WebSocket
+            var interval = wsOk ? 30000 : 5000;
+            setInterval(pollMessages, interval);
         });
     })();
     </script>

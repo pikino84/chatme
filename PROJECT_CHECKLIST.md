@@ -238,6 +238,30 @@
     [ ] Indicador de modo (manual vs Stripe) en admin
     [ ] Tests
 
+## Phase 17 – Channel Wizard + Meta Embedded Signup
+[x] 17.1 Channel Connection Wizard
+    [x] Wizard blade view (vanilla JS, 4 steps, no Alpine)
+    [x] ChannelController: wizard(), wizardValidate(), wizardStore()
+    [x] Real credential validation via Meta Graph API v21.0
+    [x] Billing limit enforcement (counts real channels vs plan limit)
+    [x] Brand association support
+    [x] Contextual help text per channel type (where to find credentials in Meta Console)
+    [x] Copy-to-clipboard for webhook URLs and verify tokens
+    [x] Routes: wizard, wizard/validate, wizard/store
+    [x] Tests (17 tests, 55 assertions)
+[ ] 17.2 Meta Embedded Signup (next step — waiting on Meta App Review)
+    [ ] Meta App: register as Tech Provider, request permissions, enable Embedded Signup
+    [ ] config/services.php: meta_app_id, meta_app_secret, meta_redirect_uri
+    [ ] MetaOAuthService (exchangeCodeForToken, getLongLivedToken, refreshToken, getWABAs, getPhoneNumbers, subscribeWebhook)
+    [ ] MetaOAuthController: redirect(), callback() — handles OAuth code exchange
+    [ ] Route: GET /auth/meta/callback
+    [ ] Update channel configuration: add meta_user_id, business_id, refresh_token, token_expires_at, token_type (oauth|manual)
+    [ ] Update wizard Step 2: "Conectar con Facebook" button (JS SDK popup) for WhatsApp/FB/IG, keep manual fallback
+    [ ] RefreshMetaTokens job: scheduled every 12h, renew tokens expiring within 7 days, SaasAlert on failure
+    [ ] Auto-subscribe webhooks programmatically after OAuth
+    [ ] Backward compatible: existing manual channels (token_type=manual) keep working
+    [ ] Tests
+
 ## Phase 15 – Production Readiness
 [ ] 15.1 Migration Consolidation
     [ ] Consolidar todas las migraciones en máximo 7 archivos (ver CHATME_SYSTEM_PROMPT.md)

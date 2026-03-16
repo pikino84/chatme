@@ -34,6 +34,8 @@ class MessageReceivedEvent implements ShouldBroadcast
             'body' => $this->message->body,
             'type' => $this->message->type,
             'direction' => $this->message->direction,
+            'user_name' => $this->message->user?->name,
+            'time' => $this->message->created_at->format('H:i'),
             'created_at' => $this->message->created_at->toISOString(),
         ];
     }
