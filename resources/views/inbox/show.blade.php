@@ -48,7 +48,6 @@
         </div>
     </div>
 
-    @push('scripts')
     <script>
     (function() {
         var orgId = {{ $conversation->organization_id }};
@@ -164,5 +163,4 @@
         });
     })();
     </script>
-    @endpush
 </x-app-layout>
