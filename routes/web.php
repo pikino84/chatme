@@ -19,6 +19,7 @@ use App\Http\Controllers\Tenant\BrandController;
 use App\Http\Controllers\Tenant\ChannelController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\TeamController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -67,6 +68,8 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
     });
 
     Route::middleware(['auth'])->group(function () {
+        Broadcast::routes();
+
         Route::get('/dashboard', function () {
             return view('dashboard');
         })->name('dashboard');
