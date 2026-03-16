@@ -12,6 +12,15 @@ use Illuminate\Http\Request;
 class MessageController extends Controller
 {
     use AuthorizesRequests;
+    public function poll(Request $request, Conversation $conversation)
+    {
+        $this->authorize('view', $conversation);
+
+        return response()->json([
+            'count' => $conversation->messages()->count(),
+        ]);
+    }
+
     public function store(Request $request, Conversation $conversation)
     {
         $type = $request->input('type', 'text');

@@ -211,6 +211,27 @@ class InboxTest extends TestCase
         ]);
     }
 
+    public function test_agent_can_poll_message_count(): void
+    {
+        $conv = Conversation::factory()->create([
+            'organization_id' => $this->org->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $this->agent->id,
+            'contact_identifier' => '+5215500010001',
+        ]);
+
+        Message::factory()->count(3)->create([
+            'organization_id' => $this->org->id,
+            'conversation_id' => $conv->id,
+        ]);
+
+        $response = $this->actingAs($this->agent)
+            ->getJson($this->inboxUrl("/conversations/{$conv->id}/messages/poll"));
+
+        $response->assertOk();
+        $response->assertJson(['count' => 3]);
+    }
+
     public function test_cross_tenant_isolation(): void
     {
         $otherOrg = Organization::factory()->create();

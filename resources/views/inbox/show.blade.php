@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="flex h-[calc(100vh-64px)]" x-data="conversationApp()" x-init="init()">
+    <div class="flex h-[calc(100vh-64px)]" id="conversation-container">
         {{-- Left: Back + Conversation Info --}}
         <div class="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800 shrink-0 overflow-y-auto">
             <div class="p-3 border-b border-gray-200 dark:border-gray-700">
@@ -48,28 +48,63 @@
         </div>
     </div>
 
-    @push('modals')
+    @push('scripts')
     <script>
-    function conversationApp() {
-        return {
-            orgId: {{ $conversation->organization_id }},
-            convId: {{ $conversation->id }},
-            init() {
-                if (!window.Echo) return;
+    (function() {
+        var orgId = {{ $conversation->organization_id }};
+        var convId = {{ $conversation->id }};
+        var lastMessageCount = {{ $messages->total() }};
+        window.__chatmeMessageCount = lastMessageCount;
+        var pollUrl = '{{ route('inbox.conversations.messages.poll', $conversation) }}';
+        var echoConnected = false;
 
-                window.Echo.private(`conversation.${this.orgId}.${this.convId}`)
-                    .listen('MessageReceivedEvent', () => { window.location.reload(); });
+        // Try Echo/WebSocket for real-time updates
+        function initEcho() {
+            if (!window.Echo) return;
 
-                window.Echo.private(`organization.${this.orgId}`)
-                    .listen('ConversationAssignedEvent', (e) => {
-                        if (e.conversation_id === this.convId) window.location.reload();
+            try {
+                window.Echo.private('conversation.' + orgId + '.' + convId)
+                    .listen('MessageReceivedEvent', function() { window.location.reload(); });
+
+                window.Echo.private('organization.' + orgId)
+                    .listen('ConversationAssignedEvent', function(e) {
+                        if (e.conversation_id === convId) window.location.reload();
                     })
-                    .listen('ConversationClosedEvent', (e) => {
-                        if (e.conversation_id === this.convId) window.location.reload();
+                    .listen('ConversationClosedEvent', function(e) {
+                        if (e.conversation_id === convId) window.location.reload();
                     });
+
+                echoConnected = true;
+            } catch (err) {
+                console.warn('Echo connection failed, using polling fallback');
             }
         }
-    }
+
+        // Polling fallback: check for new messages every 5 seconds
+        function startPolling() {
+            setInterval(function() {
+                fetch(pollUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.count > window.__chatmeMessageCount) {
+                        window.location.reload();
+                    }
+                })
+                .catch(function() { /* silent fail */ });
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initEcho();
+            // Always use polling as fallback (Echo/Reverb may not be running in production)
+            startPolling();
+        });
+    })();
     </script>
     @endpush
 </x-app-layout>

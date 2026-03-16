@@ -80,6 +80,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/inbox/conversations/{conversation}/assign', [ConversationsController::class, 'assign'])->name('inbox.conversations.assign');
             Route::post('/inbox/conversations/{conversation}/transfer', [ConversationsController::class, 'transfer'])->name('inbox.conversations.transfer');
             Route::post('/inbox/conversations/{conversation}/messages', [MessageController::class, 'store'])->name('inbox.conversations.messages.store');
+            Route::get('/inbox/conversations/{conversation}/messages/poll', [MessageController::class, 'poll'])->name('inbox.conversations.messages.poll');
 
             // CRM Kanban
             Route::get('/deals', [DealBoardController::class, 'index'])->name('deals.board');
