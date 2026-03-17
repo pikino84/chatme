@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Tenant;
 
-use App\Events\MessageReceivedEvent;
+use App\Events\MessageSentEvent;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendWhatsAppMessage;
 use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -64,7 +65,13 @@ class MessageController extends Controller
 
         $conversation->update(['last_message_at' => now()]);
 
-        MessageReceivedEvent::dispatch($message);
+        // Broadcast to other agents viewing this conversation
+        MessageSentEvent::dispatch($message);
+
+        // Send to WhatsApp if the channel is WhatsApp and not an internal note
+        if ($type !== 'internal_note' && $conversation->channel?->isWhatsApp()) {
+            SendWhatsAppMessage::dispatch($message);
+        }
 
         if ($request->wantsJson()) {
             return response()->json(['message' => $message], 201);
