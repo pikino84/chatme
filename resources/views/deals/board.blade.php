@@ -49,7 +49,7 @@
 
         {{-- Deal detail drawer --}}
         @isset($selectedDeal)
-            @include('deals.partials.deal-drawer', ['deal' => $selectedDeal, 'dealStages' => $dealStages, 'agents' => $agents])
+            @include('deals.partials.deal-drawer', ['deal' => $selectedDeal, 'dealStages' => $dealStages, 'agents' => $agents, 'allTags' => $allTags ?? collect()])
         @endisset
     </div>
 </x-app-layout>

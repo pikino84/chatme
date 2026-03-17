@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class PipelinePolicy extends TenantPolicy
 {
+    public function viewAny(User $user): bool
+    {
+        return $user->organization_id !== null
+            && $user->hasPermissionTo('pipelines.view');
+    }
+
     public function view(User $user, Model $pipeline): bool
     {
         return $this->belongsToSameOrganization($user, $pipeline)

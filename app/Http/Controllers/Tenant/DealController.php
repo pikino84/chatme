@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Deal;
+use App\Models\DealAttachment;
+use App\Models\DealCommission;
 use App\Models\DealNote;
 use App\Models\Pipeline;
 use App\Models\PipelineStage;
+use App\Models\Tag;
 use App\Models\User;
 use App\Services\DealService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DealController extends Controller
 {
@@ -98,5 +102,111 @@ class DealController extends Controller
         $this->dealService->addNote($deal, $request->user(), $request->input('body'));
 
         return back()->with('success', 'Note added.');
+    }
+
+    // ── Attachments ──
+
+    public function addAttachment(Request $request, Deal $deal)
+    {
+        $this->authorize('update', $deal);
+
+        $request->validate([
+            'file' => 'required|file|max:10240', // 10MB max
+        ]);
+
+        $this->dealService->addAttachment($deal, $request->user(), $request->file('file'));
+
+        return back()->with('success', 'Archivo adjunto agregado.');
+    }
+
+    public function deleteAttachment(Request $request, Deal $deal, DealAttachment $attachment)
+    {
+        $this->authorize('update', $deal);
+
+        if ($attachment->deal_id !== $deal->id) {
+            abort(404);
+        }
+
+        Storage::disk('local')->delete($attachment->file_path);
+        $attachment->delete();
+
+        return back()->with('success', 'Archivo eliminado.');
+    }
+
+    // ── Tags ──
+
+    public function syncTags(Request $request, Deal $deal)
+    {
+        $this->authorize('update', $deal);
+
+        $request->validate([
+            'tag_ids' => 'nullable|array',
+            'tag_ids.*' => 'integer|exists:tags,id',
+        ]);
+
+        $deal->tags()->sync($request->input('tag_ids', []));
+
+        return back()->with('success', 'Etiquetas actualizadas.');
+    }
+
+    // ── Commissions ──
+
+    public function addCommission(Request $request, Deal $deal)
+    {
+        $this->authorize('view', $deal);
+        $request->user()->hasPermissionTo('deals.manage-commissions') || abort(403);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'percentage' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $assignee = User::findOrFail($validated['user_id']);
+        if ($assignee->organization_id !== $request->user()->organization_id) {
+            abort(403);
+        }
+
+        $amount = ($deal->value * $validated['percentage']) / 100;
+
+        DealCommission::create([
+            'organization_id' => $request->user()->organization_id,
+            'deal_id' => $deal->id,
+            'user_id' => $validated['user_id'],
+            'percentage' => $validated['percentage'],
+            'amount' => $amount,
+            'status' => 'pending',
+        ]);
+
+        return back()->with('success', 'Comisión agregada.');
+    }
+
+    public function updateCommissionStatus(Request $request, Deal $deal, DealCommission $commission)
+    {
+        $request->user()->hasPermissionTo('deals.manage-commissions') || abort(403);
+
+        if ($commission->deal_id !== $deal->id) {
+            abort(404);
+        }
+
+        $request->validate([
+            'status' => 'required|in:pending,approved,paid,cancelled',
+        ]);
+
+        $commission->update(['status' => $request->input('status')]);
+
+        return back()->with('success', 'Estado de comisión actualizado.');
+    }
+
+    public function deleteCommission(Request $request, Deal $deal, DealCommission $commission)
+    {
+        $request->user()->hasPermissionTo('deals.manage-commissions') || abort(403);
+
+        if ($commission->deal_id !== $deal->id) {
+            abort(404);
+        }
+
+        $commission->delete();
+
+        return back()->with('success', 'Comisión eliminada.');
     }
 }

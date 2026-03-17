@@ -17,6 +17,8 @@ use App\Http\Controllers\Tenant\KbCategoryController;
 use App\Http\Controllers\Tenant\MessageController;
 use App\Http\Controllers\Tenant\BrandController;
 use App\Http\Controllers\Tenant\ChannelController;
+use App\Http\Controllers\Tenant\PipelineController;
+use App\Http\Controllers\Tenant\TagController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\TeamController;
 use Illuminate\Support\Facades\Broadcast;
@@ -92,6 +94,27 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/deals/{deal}/move', [DealController::class, 'move'])->name('deals.move');
             Route::post('/deals/{deal}/assign', [DealController::class, 'assign'])->name('deals.assign');
             Route::post('/deals/{deal}/notes', [DealController::class, 'addNote'])->name('deals.notes.store');
+            Route::post('/deals/{deal}/attachments', [DealController::class, 'addAttachment'])->name('deals.attachments.store');
+            Route::delete('/deals/{deal}/attachments/{attachment}', [DealController::class, 'deleteAttachment'])->name('deals.attachments.destroy');
+            Route::post('/deals/{deal}/commissions', [DealController::class, 'addCommission'])->name('deals.commissions.store');
+            Route::post('/deals/{deal}/commissions/{commission}/status', [DealController::class, 'updateCommissionStatus'])->name('deals.commissions.status');
+            Route::delete('/deals/{deal}/commissions/{commission}', [DealController::class, 'deleteCommission'])->name('deals.commissions.destroy');
+            Route::post('/deals/{deal}/tags', [DealController::class, 'syncTags'])->name('deals.tags.sync');
+
+            // Pipelines
+            Route::get('/pipelines', [PipelineController::class, 'index'])->name('pipelines.index');
+            Route::get('/pipelines/create', [PipelineController::class, 'create'])->name('pipelines.create');
+            Route::post('/pipelines', [PipelineController::class, 'store'])->name('pipelines.store');
+            Route::get('/pipelines/{pipeline}/edit', [PipelineController::class, 'edit'])->name('pipelines.edit');
+            Route::put('/pipelines/{pipeline}', [PipelineController::class, 'update'])->name('pipelines.update');
+            Route::delete('/pipelines/{pipeline}', [PipelineController::class, 'destroy'])->name('pipelines.destroy');
+            Route::post('/pipelines/{pipeline}/default', [PipelineController::class, 'setDefault'])->name('pipelines.set-default');
+
+            // Tags
+            Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
+            Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
+            Route::put('/tags/{tag}', [TagController::class, 'update'])->name('tags.update');
+            Route::delete('/tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
 
             // Brands
             Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');

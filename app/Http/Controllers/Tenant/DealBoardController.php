@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Deal;
 use App\Models\Pipeline;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -68,6 +69,8 @@ class DealBoardController extends Controller
             'assignedUser',
             'tags',
             'notes' => fn ($q) => $q->with('user')->latest(),
+            'attachments' => fn ($q) => $q->with('user')->latest(),
+            'commissions' => fn ($q) => $q->with('user')->latest(),
             'stageHistory' => fn ($q) => $q->with(['fromStage', 'toStage', 'changedByUser'])->latest('changed_at'),
             'conversation',
         ]);
@@ -94,6 +97,8 @@ class DealBoardController extends Controller
             ->orderBy('name')
             ->get();
 
+        $allTags = Tag::orderBy('name')->get();
+
         return view('deals.board', [
             'pipelines' => $pipelines,
             'activePipeline' => $deal->pipeline,
@@ -101,6 +106,7 @@ class DealBoardController extends Controller
             'agents' => $agents,
             'selectedDeal' => $deal,
             'dealStages' => $dealStages,
+            'allTags' => $allTags,
         ]);
     }
 }

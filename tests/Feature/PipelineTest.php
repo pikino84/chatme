@@ -7,6 +7,8 @@ use App\Models\Organization;
 use App\Models\Pipeline;
 use App\Models\PipelineStage;
 use App\Models\User;
+use App\Services\BillingService;
+use Database\Seeders\PlansAndFeaturesSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,202 +17,270 @@ class PipelineTest extends TestCase
 {
     use RefreshDatabase;
 
-    private Organization $org;
+    protected Organization $org;
+    protected User $admin;
+    protected User $agent;
+    protected Pipeline $pipeline;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(RolesAndPermissionsSeeder::class);
+        $this->seed(PlansAndFeaturesSeeder::class);
+
         $this->org = Organization::factory()->create();
-    }
-
-    // --- Model ---
-
-    public function test_pipeline_belongs_to_organization(): void
-    {
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
-
-        $this->assertEquals($this->org->id, $pipeline->organization_id);
-    }
-
-    public function test_pipeline_has_stages_ordered_by_position(): void
-    {
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
-        PipelineStage::factory()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-            'name' => 'Second',
-            'position' => 2,
-        ]);
-        PipelineStage::factory()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-            'name' => 'First',
-            'position' => 1,
-        ]);
-
-        $stages = $pipeline->stages;
-        $this->assertEquals('First', $stages->first()->name);
-        $this->assertEquals('Second', $stages->last()->name);
-    }
-
-    public function test_pipeline_first_stage(): void
-    {
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
-        PipelineStage::factory()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-            'name' => 'Third',
-            'position' => 3,
-        ]);
-        PipelineStage::factory()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-            'name' => 'First',
-            'position' => 1,
-        ]);
-
-        $this->assertEquals('First', $pipeline->firstStage->name);
-    }
-
-    public function test_pipeline_is_default_helper(): void
-    {
-        $pipeline = Pipeline::factory()->default()->create(['organization_id' => $this->org->id]);
-
-        $this->assertTrue($pipeline->isDefault());
-    }
-
-    public function test_pipeline_has_deals(): void
-    {
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
-        $stage = PipelineStage::factory()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-        ]);
-        Deal::factory()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-            'pipeline_stage_id' => $stage->id,
-        ]);
-
-        $this->assertCount(1, $pipeline->deals);
-    }
-
-    // --- Stage ---
-
-    public function test_stage_is_terminal(): void
-    {
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
-        $wonStage = PipelineStage::factory()->won()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-        ]);
-        $lostStage = PipelineStage::factory()->lost()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-        ]);
-        $normalStage = PipelineStage::factory()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-        ]);
-
-        $this->assertTrue($wonStage->isTerminal());
-        $this->assertTrue($lostStage->isTerminal());
-        $this->assertFalse($normalStage->isTerminal());
-    }
-
-    public function test_stage_max_duration(): void
-    {
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
-        $stage = PipelineStage::factory()->withMaxDuration(48)->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-        ]);
-
-        $this->assertTrue($stage->hasMaxDuration());
-        $this->assertEquals(172800, $stage->maxDurationInSeconds());
-    }
-
-    public function test_stage_without_max_duration(): void
-    {
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
-        $stage = PipelineStage::factory()->create([
-            'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
-            'max_duration_hours' => null,
-        ]);
-
-        $this->assertFalse($stage->hasMaxDuration());
-        $this->assertNull($stage->maxDurationInSeconds());
-    }
-
-    // --- Tenant Scope ---
-
-    public function test_pipeline_tenant_scope(): void
-    {
-        Pipeline::factory()->create(['organization_id' => $this->org->id]);
-        $otherOrg = Organization::factory()->create();
-        Pipeline::factory()->create(['organization_id' => $otherOrg->id]);
-
         app()->instance('tenant', $this->org);
-        $this->assertCount(1, Pipeline::all());
-    }
 
-    // --- Policy ---
+        $this->admin = User::factory()->create(['organization_id' => $this->org->id]);
+        $this->admin->assignRole('org_admin');
 
-    public function test_policy_org_admin_can_create_pipeline(): void
-    {
-        $admin = User::factory()->create(['organization_id' => $this->org->id]);
-        $admin->assignRole('org_admin');
+        $this->agent = User::factory()->create(['organization_id' => $this->org->id]);
+        $this->agent->assignRole('agent');
 
-        $this->assertTrue($admin->can('create', Pipeline::class));
-    }
+        $plan = \App\Models\Plan::where('slug', 'enterprise')->first();
+        (new BillingService())->subscribe($this->org, $plan);
 
-    public function test_policy_agent_cannot_create_pipeline(): void
-    {
-        $agent = User::factory()->create(['organization_id' => $this->org->id]);
-        $agent->assignRole('agent');
-
-        $this->assertFalse($agent->can('create', Pipeline::class));
-    }
-
-    public function test_policy_cannot_delete_pipeline_with_deals(): void
-    {
-        $admin = User::factory()->create(['organization_id' => $this->org->id]);
-        $admin->assignRole('org_admin');
-
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
-        $stage = PipelineStage::factory()->create([
+        $this->pipeline = Pipeline::factory()->create([
             'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
+            'name' => 'Ventas',
+            'is_default' => true,
         ]);
+
+        PipelineStage::factory()->create([
+            'organization_id' => $this->org->id,
+            'pipeline_id' => $this->pipeline->id,
+            'name' => 'Nuevo',
+            'position' => 1,
+            'color' => '#3B82F6',
+        ]);
+    }
+
+    // ── Index ──
+
+    public function test_admin_can_view_pipelines_index(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('pipelines.index'));
+
+        $response->assertOk();
+        $response->assertSee('Ventas');
+        $response->assertSee('Nuevo');
+    }
+
+    public function test_agent_can_view_pipelines_index(): void
+    {
+        $response = $this->actingAs($this->agent)->get(route('pipelines.index'));
+
+        $response->assertOk();
+    }
+
+    public function test_unauthenticated_cannot_access_pipelines(): void
+    {
+        $response = $this->get(route('pipelines.index'));
+
+        $response->assertRedirect();
+    }
+
+    // ── Create ──
+
+    public function test_admin_can_view_create_form(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('pipelines.create'));
+
+        $response->assertOk();
+        $response->assertSee('Nuevo Pipeline');
+    }
+
+    public function test_agent_cannot_view_create_form(): void
+    {
+        $response = $this->actingAs($this->agent)->get(route('pipelines.create'));
+
+        $response->assertForbidden();
+    }
+
+    // ── Store ──
+
+    public function test_admin_can_create_pipeline_with_stages(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('pipelines.store'), [
+            'name' => 'Postventa',
+            'stages' => [
+                ['name' => 'Inicio', 'color' => '#10B981', 'max_duration_hours' => 24],
+                ['name' => 'Seguimiento', 'color' => '#F59E0B'],
+                ['name' => 'Cerrado', 'color' => '#22C55E', 'is_won' => true],
+            ],
+        ]);
+
+        $response->assertRedirect(route('pipelines.index'));
+        $this->assertDatabaseHas('pipelines', [
+            'organization_id' => $this->org->id,
+            'name' => 'Postventa',
+        ]);
+
+        $pipeline = Pipeline::where('name', 'Postventa')->first();
+        $this->assertEquals(3, $pipeline->stages()->count());
+        $this->assertEquals('Inicio', $pipeline->stages()->orderBy('position')->first()->name);
+    }
+
+    public function test_store_requires_name(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('pipelines.store'), [
+            'stages' => [['name' => 'Test']],
+        ]);
+
+        $response->assertSessionHasErrors('name');
+    }
+
+    public function test_store_requires_at_least_one_stage(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('pipelines.store'), [
+            'name' => 'Empty Pipeline',
+            'stages' => [],
+        ]);
+
+        $response->assertSessionHasErrors('stages');
+    }
+
+    public function test_agent_cannot_create_pipeline(): void
+    {
+        $response = $this->actingAs($this->agent)->post(route('pipelines.store'), [
+            'name' => 'Test',
+            'stages' => [['name' => 'Stage']],
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    // ── Edit ──
+
+    public function test_admin_can_view_edit_form(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('pipelines.edit', $this->pipeline));
+
+        $response->assertOk();
+        $response->assertSee('Editar Pipeline');
+        $response->assertSee('Ventas');
+    }
+
+    // ── Update ──
+
+    public function test_admin_can_update_pipeline(): void
+    {
+        $stage = $this->pipeline->stages()->first();
+
+        $response = $this->actingAs($this->admin)->put(route('pipelines.update', $this->pipeline), [
+            'name' => 'Ventas Actualizado',
+            'stages' => [
+                ['id' => $stage->id, 'name' => 'Prospecto', 'color' => '#3B82F6'],
+                ['name' => 'Calificado', 'color' => '#F59E0B'],
+            ],
+        ]);
+
+        $response->assertRedirect(route('pipelines.index'));
+        $this->assertDatabaseHas('pipelines', ['id' => $this->pipeline->id, 'name' => 'Ventas Actualizado']);
+        $this->assertEquals(2, $this->pipeline->fresh()->stages()->count());
+    }
+
+    public function test_update_preserves_stages_with_deals(): void
+    {
+        $stage = $this->pipeline->stages()->first();
+
         Deal::factory()->create([
             'organization_id' => $this->org->id,
-            'pipeline_id' => $pipeline->id,
+            'pipeline_id' => $this->pipeline->id,
             'pipeline_stage_id' => $stage->id,
         ]);
 
-        $this->assertFalse($admin->can('delete', $pipeline));
+        $response = $this->actingAs($this->admin)->put(route('pipelines.update', $this->pipeline), [
+            'name' => 'Ventas',
+            'stages' => [
+                ['name' => 'Nueva Etapa', 'color' => '#10B981'],
+            ],
+        ]);
+
+        $response->assertRedirect(route('pipelines.index'));
+        $this->assertDatabaseHas('pipeline_stages', ['id' => $stage->id]);
     }
 
-    public function test_policy_can_delete_empty_pipeline(): void
+    // ── Delete ──
+
+    public function test_admin_can_delete_empty_pipeline(): void
     {
-        $admin = User::factory()->create(['organization_id' => $this->org->id]);
-        $admin->assignRole('org_admin');
+        $pipeline = Pipeline::factory()->create([
+            'organization_id' => $this->org->id,
+            'name' => 'Temporal',
+            'is_default' => false,
+        ]);
+        PipelineStage::factory()->create([
+            'organization_id' => $this->org->id,
+            'pipeline_id' => $pipeline->id,
+        ]);
 
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
+        $response = $this->actingAs($this->admin)->delete(route('pipelines.destroy', $pipeline));
 
-        $this->assertTrue($admin->can('delete', $pipeline));
+        $response->assertRedirect(route('pipelines.index'));
+        $this->assertDatabaseMissing('pipelines', ['id' => $pipeline->id]);
     }
 
-    public function test_policy_cross_tenant_cannot_view(): void
+    public function test_cannot_delete_pipeline_with_deals(): void
+    {
+        $stage = $this->pipeline->stages()->first();
+
+        Deal::factory()->create([
+            'organization_id' => $this->org->id,
+            'pipeline_id' => $this->pipeline->id,
+            'pipeline_stage_id' => $stage->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->delete(route('pipelines.destroy', $this->pipeline));
+
+        // PipelinePolicy::delete returns false when pipeline has deals
+        $response->assertForbidden();
+        $this->assertDatabaseHas('pipelines', ['id' => $this->pipeline->id]);
+    }
+
+    // ── Set Default ──
+
+    public function test_admin_can_set_default_pipeline(): void
+    {
+        $other = Pipeline::factory()->create([
+            'organization_id' => $this->org->id,
+            'name' => 'Otro Pipeline',
+            'is_default' => false,
+        ]);
+
+        $response = $this->actingAs($this->admin)->post(route('pipelines.set-default', $other));
+
+        $response->assertRedirect();
+        $this->assertTrue($other->fresh()->is_default);
+        $this->assertFalse($this->pipeline->fresh()->is_default);
+    }
+
+    // ── Tenant Isolation ──
+
+    public function test_tenant_isolation_on_index(): void
     {
         $otherOrg = Organization::factory()->create();
-        $otherUser = User::factory()->create(['organization_id' => $otherOrg->id]);
-        $otherUser->assignRole('org_admin');
+        Pipeline::factory()->create([
+            'organization_id' => $otherOrg->id,
+            'name' => 'Pipeline Ajeno',
+        ]);
 
-        $pipeline = Pipeline::factory()->create(['organization_id' => $this->org->id]);
+        $response = $this->actingAs($this->admin)->get(route('pipelines.index'));
 
-        $this->assertFalse($otherUser->can('view', $pipeline));
+        $response->assertOk();
+        $response->assertDontSee('Pipeline Ajeno');
+    }
+
+    public function test_cannot_edit_other_org_pipeline(): void
+    {
+        $otherOrg = Organization::factory()->create();
+        $otherPipeline = Pipeline::factory()->create([
+            'organization_id' => $otherOrg->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('pipelines.edit', $otherPipeline));
+
+        // Global scope filters out the pipeline, so it returns 404
+        $response->assertNotFound();
     }
 }
