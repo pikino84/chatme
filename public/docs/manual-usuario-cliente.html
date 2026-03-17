@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatMe - Manual del Usuario</title>
+<style>
+    @page { size: A4; margin: 2cm; }
+    @media print {
+        .page-break { page-break-before: always; }
+        body { font-size: 11pt; }
+        h1 { font-size: 22pt; }
+        h2 { font-size: 16pt; }
+        h3 { font-size: 13pt; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; color: #1a1a2e; max-width: 900px; margin: 0 auto; padding: 40px 30px; }
+    h1 { color: #4f46e5; font-size: 28px; margin-bottom: 8px; border-bottom: 3px solid #4f46e5; padding-bottom: 10px; }
+    h2 { color: #312e81; font-size: 22px; margin-top: 40px; margin-bottom: 12px; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; }
+    h3 { color: #4338ca; font-size: 17px; margin-top: 24px; margin-bottom: 8px; }
+    h4 { color: #6366f1; font-size: 14px; margin-top: 16px; margin-bottom: 6px; }
+    p { margin-bottom: 10px; }
+    ul, ol { margin-left: 24px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+    th { background: #4f46e5; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+    td { padding: 8px 12px; border: 1px solid #e5e7eb; }
+    tr:nth-child(even) { background: #f9fafb; }
+    .cover { text-align: center; padding: 120px 0 80px; }
+    .cover h1 { font-size: 42px; border: none; margin-bottom: 16px; }
+    .cover .subtitle { font-size: 20px; color: #6366f1; margin-bottom: 8px; }
+    .cover .version { font-size: 14px; color: #9ca3af; margin-top: 40px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-yellow { background: #fef9c3; color: #854d0e; }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-indigo { background: #e0e7ff; color: #3730a3; }
+    .badge-gray { background: #f3f4f6; color: #374151; }
+    .tip { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 13px; }
+    .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 13px; }
+    .toc { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px 30px; margin: 30px 0; }
+    .toc h2 { margin-top: 0; border: none; }
+    .toc ol { line-height: 2; }
+    .toc a { color: #4f46e5; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    .step { display: flex; gap: 12px; margin-bottom: 16px; }
+    .step-num { width: 28px; height: 28px; background: #4f46e5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .step-content { flex: 1; }
+    .role-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 6px; }
+    .role-admin { background: #fce7f3; color: #9d174d; }
+    .role-supervisor { background: #e0e7ff; color: #3730a3; }
+    .role-agent { background: #d1fae5; color: #065f46; }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+    <h1>ChatMe</h1>
+    <div class="subtitle">Manual del Usuario</div>
+    <p style="color:#6b7280; font-size:16px;">Guia completa para usar la plataforma de atencion al cliente multicanal</p>
+    <div class="version">
+        Version 1.0 &mdash; Marzo 2026<br>
+        app.chatme.com.mx
+    </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- TOC -->
+<div class="toc">
+    <h2>Contenido</h2>
+    <ol>
+        <li><a href="#inicio">Primeros Pasos</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#inbox">Bandeja de Entrada (Inbox)</a></li>
+        <li><a href="#crm">CRM - Negocios (Deals)</a></li>
+        <li><a href="#pipelines">Configurar Pipelines</a></li>
+        <li><a href="#tags">Etiquetas</a></li>
+        <li><a href="#contactos">Contactos</a></li>
+        <li><a href="#campanas">Campanas de Difusion</a></li>
+        <li><a href="#drip">Secuencias Drip</a></li>
+        <li><a href="#automations">Automatizaciones</a></li>
+        <li><a href="#kb">Base de Conocimiento</a></li>
+        <li><a href="#analytics">Reportes y Analitica</a></li>
+        <li><a href="#brands">Marcas</a></li>
+        <li><a href="#settings">Configuracion</a></li>
+        <li><a href="#channels">Canales de Comunicacion</a></li>
+        <li><a href="#billing">Facturacion y Plan</a></li>
+        <li><a href="#roles">Roles y Permisos</a></li>
+    </ol>
+</div>
+
+<div class="page-break"></div>
+
+<!-- 1. PRIMEROS PASOS -->
+<h2 id="inicio">1. Primeros Pasos</h2>
+
+<h3>1.1 Acceso a la Plataforma</h3>
+<p>Accede a ChatMe desde tu navegador en:</p>
+<p><code>https://app.chatme.com.mx</code></p>
+
+<h3>1.2 Iniciar Sesion</h3>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Ingresa tu <strong>email</strong> y <strong>contrasena</strong></div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Si tienes <strong>autenticacion de dos factores (2FA)</strong> activada, ingresa el codigo de tu aplicacion autenticadora</div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Seras redirigido al <strong>Dashboard</strong></div>
+</div>
+
+<h3>1.3 Navegacion</h3>
+<p>La barra lateral izquierda contiene los modulos principales:</p>
+
+<table>
+    <tr><th>Modulo</th><th>Descripcion</th><th>Roles</th></tr>
+    <tr><td><strong>Inicio</strong></td><td>Dashboard con accesos rapidos</td><td>Todos</td></tr>
+    <tr><td><strong>Bandeja</strong></td><td>Conversaciones con clientes</td><td>Todos</td></tr>
+    <tr><td><strong>Negocios</strong></td><td>Pipeline de ventas (Kanban)</td><td>Todos</td></tr>
+    <tr><td><strong>Campanas</strong></td><td>Envios masivos</td><td>Admin, Supervisor</td></tr>
+    <tr><td><strong>Contactos</strong></td><td>Directorio de contactos</td><td>Todos</td></tr>
+    <tr><td><strong>Base de Conocimiento</strong></td><td>Articulos de ayuda</td><td>Todos</td></tr>
+    <tr><td><strong>Reportes</strong></td><td>Analitica y metricas</td><td>Admin, Supervisor</td></tr>
+</table>
+
+<p>La seccion <strong>Admin</strong> (solo visible para administradores) incluye:</p>
+<ul>
+    <li>Canales &mdash; Configurar WhatsApp, Webchat, etc.</li>
+    <li>Facturacion &mdash; Plan y suscripcion</li>
+    <li>Configuracion &mdash; Datos de la organizacion</li>
+    <li>Equipo &mdash; Gestion de miembros</li>
+    <li>Pipelines &mdash; Configurar embudos de venta</li>
+    <li>Etiquetas &mdash; Crear etiquetas para negocios</li>
+</ul>
+
+<h3>1.4 Perfil y Seguridad</h3>
+<p>Desde tu foto de perfil (esquina inferior izquierda) puedes:</p>
+<ul>
+    <li>Editar tu nombre y email</li>
+    <li>Cambiar contrasena</li>
+    <li>Activar/desactivar autenticacion de dos factores (2FA)</li>
+    <li>Cerrar sesiones en otros dispositivos</li>
+    <li>Cerrar sesion</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- 2. DASHBOARD -->
+<h2 id="dashboard">2. Dashboard</h2>
+<p>El Dashboard muestra un saludo personalizado con el nombre de tu organizacion y tarjetas de acceso rapido a los modulos principales: Bandeja, Negocios, Base de Conocimiento, Facturacion, y Configuracion.</p>
+
+<div class="page-break"></div>
+
+<!-- 3. INBOX -->
+<h2 id="inbox">3. Bandeja de Entrada (Inbox)</h2>
+
+<p>La Bandeja es el centro de operaciones donde gestionas todas las conversaciones con tus clientes, sin importar el canal (WhatsApp, Webchat, etc.).</p>
+
+<h3>3.1 Lista de Conversaciones</h3>
+<p>En el panel izquierdo veras todas las conversaciones con:</p>
+<ul>
+    <li><strong>Nombre del contacto</strong> o identificador</li>
+    <li><strong>Vista previa</strong> del ultimo mensaje</li>
+    <li><strong>Tiempo</strong> desde el ultimo mensaje</li>
+    <li><strong>Estado:</strong> <span class="badge badge-green">Abierta</span> <span class="badge badge-yellow">Pendiente</span> <span class="badge badge-gray">Cerrada</span></li>
+    <li><strong>Canal:</strong> WhatsApp, Webchat, etc.</li>
+    <li><strong>Marca</strong> (si aplica)</li>
+    <li><strong>Agente asignado</strong></li>
+</ul>
+
+<h4>Filtros Disponibles</h4>
+<ul>
+    <li><strong>Buscar:</strong> Por nombre o identificador del contacto</li>
+    <li><strong>Estado:</strong> Todos, Abiertas, Pendientes, Cerradas</li>
+    <li><strong>Canal:</strong> Filtrar por canal especifico</li>
+    <li><strong>Marca:</strong> Filtrar por marca</li>
+    <li><strong>Agente:</strong> Filtrar por agente asignado</li>
+</ul>
+
+<h3>3.2 Vista de Conversacion</h3>
+<p>Al seleccionar una conversacion, veras tres areas:</p>
+
+<h4>Panel Izquierdo - Metadata</h4>
+<ul>
+    <li>Nombre del contacto, identificador, canal</li>
+    <li>Estado, prioridad, agente asignado</li>
+    <li>Fecha de creacion y metadatos adicionales</li>
+</ul>
+
+<h4>Panel Central - Hilo de Mensajes</h4>
+<ul>
+    <li><strong>Mensajes entrantes</strong> (del cliente): alineados a la izquierda</li>
+    <li><strong>Mensajes salientes</strong> (tuyos): alineados a la derecha, fondo indigo</li>
+    <li><strong>Notas internas:</strong> fondo amarillo, solo visibles para el equipo</li>
+    <li>Cada mensaje muestra hora y nombre del agente</li>
+</ul>
+
+<h4>Enviar Mensaje</h4>
+<ul>
+    <li>Escribe en el area de texto inferior</li>
+    <li>Presiona <strong>Enter</strong> para enviar o <strong>Shift+Enter</strong> para nueva linea</li>
+    <li>Haz clic en <strong>"Nota"</strong> para enviar una nota interna (no visible para el cliente)</li>
+</ul>
+
+<h3>3.3 Acciones sobre Conversaciones</h3>
+<table>
+    <tr><th>Accion</th><th>Descripcion</th><th>Rol Minimo</th></tr>
+    <tr><td><strong>Cerrar</strong></td><td>Marca la conversacion como resuelta</td><td>Agent</td></tr>
+    <tr><td><strong>Reabrir</strong></td><td>Reabre una conversacion cerrada</td><td>Agent</td></tr>
+    <tr><td><strong>Asignar</strong></td><td>Asignar a un agente del equipo</td><td>Supervisor</td></tr>
+    <tr><td><strong>Transferir</strong></td><td>Transferir a otro agente (con razon opcional)</td><td>Supervisor</td></tr>
+</table>
+
+<h3>3.4 Mensajes en Tiempo Real</h3>
+<p>Los mensajes nuevos aparecen automaticamente gracias a WebSocket. No necesitas recargar la pagina. Si la conexion WebSocket no esta disponible, el sistema hace polling cada 5 segundos como respaldo.</p>
+
+<div class="tip">
+    <strong>Consejo:</strong> Las notas internas son excelentes para documentar informacion importante de la conversacion sin que el cliente las vea.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 4. CRM -->
+<h2 id="crm">4. CRM - Negocios (Deals)</h2>
+
+<p>El modulo de Negocios te permite gestionar oportunidades de venta usando un tablero Kanban visual.</p>
+
+<h3>4.1 Tablero Kanban</h3>
+<p>El tablero muestra columnas para cada etapa del pipeline seleccionado. Los negocios aparecen como tarjetas dentro de cada columna.</p>
+
+<h4>Selector de Pipeline</h4>
+<p>Si tienes mas de un pipeline, usa el dropdown en la parte superior para cambiar entre ellos.</p>
+
+<h4>Tarjetas de Negocio</h4>
+<p>Cada tarjeta muestra:</p>
+<ul>
+    <li>Nombre del contacto</li>
+    <li>Valor del negocio (ej: $10,000.00 MXN)</li>
+    <li>Agente asignado</li>
+    <li>Etiquetas (badges de colores)</li>
+    <li>Tiempo en la etapa actual</li>
+</ul>
+
+<h3>4.2 Crear Negocio</h3>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Haz clic en <strong>"+ Nuevo Negocio"</strong></div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Completa el formulario:
+        <ul>
+            <li><strong>Nombre del contacto</strong> (obligatorio)</li>
+            <li>Email y telefono (opcional)</li>
+            <li><strong>Valor</strong> del negocio</li>
+            <li>Fecha de cierre esperada</li>
+            <li>Agente asignado</li>
+        </ul>
+    </div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">El negocio se crea en la primera etapa del pipeline</div>
+</div>
+
+<h3>4.3 Detalle del Negocio (Drawer)</h3>
+<p>Al hacer clic en una tarjeta, se abre un panel lateral con toda la informacion:</p>
+
+<h4>Informacion del Contacto</h4>
+<p>Nombre, email y telefono del contacto.</p>
+
+<h4>Informacion del Negocio</h4>
+<p>Pipeline, etapa actual (con color), valor, estado, fecha de cierre esperada y agente asignado.</p>
+
+<h4>Etiquetas</h4>
+<p>Muestra las etiquetas asignadas. Puedes agregar o quitar etiquetas usando los checkboxes y presionando "Actualizar Etiquetas".</p>
+
+<h4>Mover Etapa</h4>
+<p>Selecciona una nueva etapa del dropdown y haz clic en "Mover". El negocio se mueve a la nueva columna del tablero.</p>
+
+<h4>Reasignar</h4>
+<p>Cambia el agente responsable del negocio.</p>
+
+<h4>Archivos Adjuntos</h4>
+<p>Sube documentos relacionados al negocio (contratos, cotizaciones, etc.). Maximo 10 MB por archivo. Puedes ver y descargar archivos existentes o eliminarlos.</p>
+
+<h4>Notas</h4>
+<p>Agrega notas sobre el negocio. Cada nota muestra quien la escribio y cuando.</p>
+
+<h4>Comisiones</h4>
+<span class="role-tag role-admin">Solo Admin</span>
+<p>Gestiona comisiones para los agentes:</p>
+<ul>
+    <li>Selecciona el agente y el porcentaje de comision</li>
+    <li>El monto se calcula automaticamente del valor del negocio</li>
+    <li>Flujo de estados: <span class="badge badge-yellow">Pendiente</span> &rarr; <span class="badge badge-blue">Aprobada</span> &rarr; <span class="badge badge-green">Pagada</span></li>
+    <li>Tambien se puede cancelar: <span class="badge badge-red">Cancelada</span></li>
+</ul>
+
+<h4>Historial de Etapas</h4>
+<p>Linea de tiempo con todos los movimientos del negocio entre etapas.</p>
+
+<h4>Conversacion Vinculada</h4>
+<p>Si el negocio se creo desde una conversacion, se muestra un enlace directo a ella.</p>
+
+<div class="page-break"></div>
+
+<!-- 5. PIPELINES -->
+<h2 id="pipelines">5. Configurar Pipelines</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+
+<p>Los pipelines definen las etapas por las que pasan tus negocios. Puedes tener multiples pipelines (ej: Ventas, Postventa, Renovaciones).</p>
+
+<h3>5.1 Lista de Pipelines</h3>
+<p>Muestra todos los pipelines con:</p>
+<ul>
+    <li>Nombre y badge <span class="badge badge-indigo">Predeterminado</span></li>
+    <li>Cantidad de etapas y negocios</li>
+    <li>Vista previa visual de las etapas (con colores y flechas)</li>
+</ul>
+
+<h3>5.2 Crear Pipeline</h3>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Haz clic en <strong>"+ Nuevo Pipeline"</strong></div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Ingresa el <strong>nombre del pipeline</strong> (ej: "Ventas Principal")</div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Configura las <strong>etapas</strong>:
+        <ul>
+            <li><strong>Nombre:</strong> Nombre de la etapa (ej: "Prospecto", "Negociacion")</li>
+            <li><strong>Color:</strong> Color identificador de la etapa</li>
+            <li><strong>Max horas:</strong> Duracion maxima esperada en esta etapa (SLA)</li>
+            <li><strong>Ganado:</strong> Marca si esta etapa indica cierre exitoso</li>
+            <li><strong>Perdido:</strong> Marca si esta etapa indica cierre fallido</li>
+        </ul>
+    </div>
+</div>
+<div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content"><strong>Arrastra</strong> las etapas para reordenarlas</div>
+</div>
+
+<div class="tip">
+    <strong>Consejo:</strong> Todo pipeline necesita al menos una etapa marcada como "Ganado" y una como "Perdido" para cerrar negocios correctamente.
+</div>
+
+<h3>5.3 Pipeline Predeterminado</h3>
+<p>El pipeline predeterminado es el que se usa al crear nuevos negocios. Haz clic en "Hacer predeterminado" junto al pipeline que desees.</p>
+
+<h3>5.4 Eliminar Pipeline</h3>
+<p>Solo se pueden eliminar pipelines que <strong>no tengan negocios asociados</strong>. Si tiene negocios, primero debes moverlos a otro pipeline.</p>
+
+<div class="page-break"></div>
+
+<!-- 6. TAGS -->
+<h2 id="tags">6. Etiquetas</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+
+<p>Las etiquetas permiten clasificar y filtrar negocios. Cada etiqueta tiene un nombre y un color.</p>
+
+<h3>6.1 Crear Etiqueta</h3>
+<p>En la parte superior de la pagina, ingresa el nombre, selecciona un color y haz clic en "Crear".</p>
+
+<h3>6.2 Editar Etiqueta</h3>
+<p>Haz clic en "Editar" junto a la etiqueta. Se abrira un formulario inline donde puedes cambiar nombre y color.</p>
+
+<h3>6.3 Eliminar Etiqueta</h3>
+<p>Al eliminar una etiqueta, se desasocia automaticamente de todos los negocios. Los negocios no se ven afectados.</p>
+
+<h3>6.4 Asignar Etiquetas a Negocios</h3>
+<p>Desde el detalle de un negocio (drawer), usa los checkboxes en la seccion "Etiquetas" para asignar o quitar etiquetas.</p>
+
+<div class="page-break"></div>
+
+<!-- 7. CONTACTOS -->
+<h2 id="contactos">7. Contactos</h2>
+
+<p>El modulo de Contactos es tu directorio centralizado de clientes y prospectos.</p>
+
+<h3>7.1 Buscar Contactos</h3>
+<p>Usa la barra de busqueda para encontrar contactos por nombre, email o telefono.</p>
+
+<h3>7.2 Crear Contacto</h3>
+<table>
+    <tr><th>Campo</th><th>Obligatorio</th><th>Descripcion</th></tr>
+    <tr><td>Nombre</td><td>Si</td><td>Nombre completo del contacto</td></tr>
+    <tr><td>Email</td><td>No</td><td>Correo electronico</td></tr>
+    <tr><td>Telefono</td><td>No</td><td>Numero de telefono (formato internacional para WhatsApp)</td></tr>
+    <tr><td>Empresa</td><td>No</td><td>Nombre de la empresa del contacto</td></tr>
+    <tr><td>Notas</td><td>No</td><td>Notas adicionales</td></tr>
+</table>
+
+<h3>7.3 Perfil del Contacto</h3>
+<p>Al ver un contacto, se muestra:</p>
+<ul>
+    <li><strong>Informacion de contacto:</strong> Todos los datos registrados</li>
+    <li><strong>Conversaciones:</strong> Historial de conversaciones con el contacto</li>
+    <li><strong>Negocios:</strong> Deals asociados con valor y estado</li>
+</ul>
+
+<h3>7.4 Importar desde CSV</h3>
+<span class="role-tag role-admin">Solo Admin</span>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Haz clic en <strong>"Importar CSV"</strong></div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Prepara tu archivo CSV con las columnas: <code>name</code> (obligatorio), <code>email</code>, <code>phone</code>, <code>company</code>, <code>notes</code>. La primera fila debe ser el encabezado.</div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Selecciona el archivo y haz clic en <strong>"Importar"</strong></div>
+</div>
+
+<div class="warning">
+    <strong>Limite:</strong> La cantidad maxima de contactos depende de tu plan. Starter: 100, Professional: 5,000, Enterprise: Ilimitado.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 8. CAMPANAS -->
+<h2 id="campanas">8. Campanas de Difusion</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+<p><em>Disponible en planes Professional y Enterprise</em></p>
+
+<p>Las campanas permiten enviar mensajes masivos a multiples contactos a traves de un canal.</p>
+
+<h3>8.1 Crear Campana</h3>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Haz clic en <strong>"+ Nueva Campana"</strong></div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Completa:
+        <ul>
+            <li><strong>Nombre:</strong> Nombre identificador de la campana</li>
+            <li><strong>Canal:</strong> Canal de envio (WhatsApp, Webchat, etc.)</li>
+            <li><strong>Mensaje:</strong> Template del mensaje a enviar</li>
+        </ul>
+    </div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Agrega destinatarios:</strong> Selecciona contactos que tengan telefono registrado</div>
+</div>
+<div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Haz clic en <strong>"Enviar Ahora"</strong> cuando estes listo</div>
+</div>
+
+<h3>8.2 Estados de Campana</h3>
+<table>
+    <tr><th>Estado</th><th>Descripcion</th></tr>
+    <tr><td><span class="badge badge-gray">Borrador</span></td><td>En preparacion, aun no enviada</td></tr>
+    <tr><td><span class="badge badge-blue">Programada</span></td><td>Programada para envio futuro</td></tr>
+    <tr><td><span class="badge badge-yellow">Enviando</span></td><td>En proceso de envio</td></tr>
+    <tr><td><span class="badge badge-green">Completada</span></td><td>Todos los mensajes enviados</td></tr>
+    <tr><td><span class="badge badge-red">Cancelada</span></td><td>Envio cancelado</td></tr>
+</table>
+
+<h3>8.3 Metricas de Campana</h3>
+<p>Cada campana muestra: total destinatarios, enviados exitosamente, fallidos y tasa de envio.</p>
+
+<div class="page-break"></div>
+
+<!-- 9. DRIP -->
+<h2 id="drip">9. Secuencias Drip</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+<p><em>Disponible en planes Professional y Enterprise</em></p>
+
+<p>Las secuencias Drip envian mensajes automaticos a contactos en intervalos programados.</p>
+
+<h3>9.1 Crear Secuencia</h3>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Crea la secuencia con un nombre y trigger (evento que la activa)</div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Agrega <strong>pasos</strong>:
+        <ul>
+            <li><strong>Espera:</strong> Minutos de retraso antes de enviar</li>
+            <li><strong>Canal:</strong> WhatsApp o Webchat</li>
+            <li><strong>Mensaje:</strong> Template del mensaje</li>
+        </ul>
+    </div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Activa</strong> la secuencia cuando estes listo</div>
+</div>
+
+<h3>9.2 Inscribir Contactos</h3>
+<p>Desde el detalle de la secuencia, puedes inscribir contactos manualmente ingresando su ID. Los contactos inscritos avanzaran automaticamente por los pasos segun los tiempos configurados.</p>
+
+<h3>9.3 Estados de Inscripcion</h3>
+<ul>
+    <li><span class="badge badge-green">Activa</span> &mdash; El contacto esta recibiendo mensajes</li>
+    <li><span class="badge badge-gray">Completada</span> &mdash; Todos los pasos fueron ejecutados</li>
+    <li><span class="badge badge-red">Cancelada</span> &mdash; La inscripcion fue cancelada manualmente</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- 10. AUTOMATIONS -->
+<h2 id="automations">10. Automatizaciones</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+<p><em>Disponible en planes Professional y Enterprise</em></p>
+
+<p>Las automatizaciones ejecutan acciones automaticas basadas en eventos del sistema.</p>
+
+<h3>10.1 Tipos de Automatizacion</h3>
+
+<table>
+    <tr><th>Tipo</th><th>Descripcion</th><th>Configuracion</th></tr>
+    <tr>
+        <td><strong>Auto-asignacion</strong></td>
+        <td>Asigna conversaciones nuevas automaticamente a un agente</td>
+        <td>Metodo: Round Robin (turno) o Least Busy (menos ocupado)</td>
+    </tr>
+    <tr>
+        <td><strong>Auto-respuesta</strong></td>
+        <td>Envia un mensaje automatico cuando llega una conversacion nueva</td>
+        <td>Template del mensaje automatico</td>
+    </tr>
+    <tr>
+        <td><strong>Alerta de inactividad</strong></td>
+        <td>Genera alerta cuando una conversacion lleva mucho tiempo sin respuesta</td>
+        <td>Umbral en minutos (minimo 5, por defecto 30)</td>
+    </tr>
+</table>
+
+<h3>10.2 Crear Regla</h3>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Haz clic en <strong>"Nueva Regla"</strong></div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Selecciona el <strong>tipo</strong> de automatizacion</div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Opcionalmente, selecciona un <strong>canal especifico</strong> o deja "Todos"</div>
+</div>
+<div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Configura los parametros especificos del tipo</div>
+</div>
+
+<h3>10.3 Activar / Desactivar</h3>
+<p>Desde la lista de automatizaciones, haz clic en el badge de estado para activar o desactivar una regla sin eliminarla.</p>
+
+<div class="page-break"></div>
+
+<!-- 11. KB -->
+<h2 id="kb">11. Base de Conocimiento</h2>
+
+<p>La Base de Conocimiento almacena articulos de ayuda que la IA puede usar para responder preguntas de tus clientes automaticamente.</p>
+
+<h3>11.1 Categorias</h3>
+<p>Organiza tus articulos en categorias. Cada categoria tiene nombre, descripcion, posicion (orden) y estado.</p>
+
+<h3>11.2 Crear Articulo</h3>
+<table>
+    <tr><th>Campo</th><th>Descripcion</th></tr>
+    <tr><td>Titulo</td><td>Titulo descriptivo del articulo</td></tr>
+    <tr><td>Categoria</td><td>Categoria a la que pertenece</td></tr>
+    <tr><td>Marca</td><td>Marca asociada o "Global" (visible para todas las marcas)</td></tr>
+    <tr><td>Contenido</td><td>Contenido completo del articulo</td></tr>
+    <tr><td>Prioridad</td><td>0-100, mayor prioridad = mas relevante en busquedas</td></tr>
+    <tr><td>Visibilidad</td><td>En que canales se muestra (Webchat, WhatsApp, Instagram, Facebook)</td></tr>
+</table>
+
+<h3>11.3 Flujo de Publicacion</h3>
+<ul>
+    <li><span class="badge badge-gray">Borrador</span> &rarr; El articulo no es visible ni se usa en busquedas</li>
+    <li><span class="badge badge-green">Publicado</span> &rarr; Visible y disponible para la IA</li>
+    <li><span class="badge badge-yellow">Archivado</span> &rarr; Oculto pero no eliminado</li>
+</ul>
+
+<h3>11.4 Versionamiento</h3>
+<p>Cada edicion de un articulo crea una nueva version. Puedes ver el historial de versiones en la vista de detalle del articulo.</p>
+
+<div class="tip">
+    <strong>Consejo:</strong> Escribe articulos claros y detallados. La IA los usa para generar respuestas, asi que entre mejor sea el contenido, mejor sera la calidad de las respuestas automaticas.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 12. ANALYTICS -->
+<h2 id="analytics">12. Reportes y Analitica</h2>
+<span class="role-tag role-admin">Admin</span> <span class="role-tag role-supervisor">Supervisor</span>
+<p><em>Disponible en planes Professional y Enterprise</em></p>
+
+<h3>12.1 Periodos</h3>
+<p>Selecciona el periodo de analisis: Hoy, Ultimos 7 dias, Ultimos 30 dias, o un rango personalizado.</p>
+
+<h3>12.2 Metricas Principales</h3>
+<table>
+    <tr><th>Metrica</th><th>Descripcion</th></tr>
+    <tr><td>Conversaciones</td><td>Total, abiertas y cerradas en el periodo</td></tr>
+    <tr><td>Mensajes</td><td>Total, entrantes y salientes</td></tr>
+    <tr><td>Negocios</td><td>Total, ganados y perdidos</td></tr>
+    <tr><td>Valor Ganado</td><td>Monto total de negocios ganados y tasa de conversion</td></tr>
+    <tr><td>Resolucion Promedio</td><td>Tiempo promedio para cerrar una conversacion (minutos)</td></tr>
+    <tr><td>Cierre Promedio Deals</td><td>Tiempo promedio para cerrar un negocio (dias)</td></tr>
+    <tr><td>SLA Cumplimiento</td><td>Porcentaje de SLA cumplidos</td></tr>
+</table>
+
+<h3>12.3 Graficas</h3>
+<ul>
+    <li><strong>Tendencia de Conversaciones:</strong> Grafica de linea con conversaciones diarias</li>
+    <li><strong>Volumen de Mensajes:</strong> Grafica de barras con mensajes diarios</li>
+    <li><strong>Conversaciones por Canal:</strong> Grafica de dona (WhatsApp vs Webchat, etc.)</li>
+    <li><strong>Estado de Negocios:</strong> Grafica de dona (abiertos, ganados, perdidos)</li>
+</ul>
+
+<h3>12.4 Rendimiento de Agentes</h3>
+<p>Tabla con metricas por agente: conversaciones atendidas, cerradas y tiempo promedio de resolucion.</p>
+
+<h3>12.5 Exportar CSV</h3>
+<p>Haz clic en "Exportar CSV" para descargar un reporte completo con secciones de conversaciones, mensajes, deals, agentes y SLA.</p>
+
+<div class="page-break"></div>
+
+<!-- 13. BRANDS -->
+<h2 id="brands">13. Marcas</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+
+<p>Si tu negocio maneja multiples marcas, puedes crear una marca por cada una. Las marcas se asocian a canales, conversaciones y articulos de KB.</p>
+
+<h3>13.1 Crear Marca</h3>
+<table>
+    <tr><th>Campo</th><th>Descripcion</th></tr>
+    <tr><td>Nombre</td><td>Nombre de la marca (ej: "Rosanegra Polanco")</td></tr>
+    <tr><td>Descripcion</td><td>Breve descripcion</td></tr>
+    <tr><td>Color</td><td>Color visual para identificar la marca</td></tr>
+    <tr><td>Contexto IA</td><td>Instrucciones especificas para que la IA responda en nombre de esta marca</td></tr>
+</table>
+
+<h3>13.2 Vista de Marca</h3>
+<p>Muestra estadisticas: sucursales, canales, conversaciones y articulos KB asociados.</p>
+
+<div class="tip">
+    <strong>Contexto IA:</strong> Escribe informacion como tipo de negocio, horarios, direccion, politicas, tono de comunicacion. La IA usara esto para personalizar sus respuestas.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 14. SETTINGS -->
+<h2 id="settings">14. Configuracion</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+
+<h3>14.1 Organizacion</h3>
+<ul>
+    <li><strong>Nombre:</strong> Nombre de tu empresa</li>
+    <li><strong>Zona Horaria:</strong> Importante para reportes y SLA</li>
+    <li><strong>Logo:</strong> Logo de la empresa (max 1 MB, JPG/PNG/SVG)</li>
+</ul>
+
+<h3>14.2 Equipo</h3>
+<p>Gestiona los miembros de tu equipo:</p>
+<ul>
+    <li><strong>Ver miembros:</strong> Nombre, email, rol y estado de cada miembro</li>
+    <li><strong>Cambiar rol:</strong> Selecciona un nuevo rol del dropdown y haz clic en "Asignar"</li>
+    <li><strong>Activar/Desactivar:</strong> Bloquea o restaura el acceso de un usuario sin eliminarlo</li>
+</ul>
+
+<h3>14.3 Configuracion de IA</h3>
+<p>Configura el asistente de IA para respuestas automaticas:</p>
+<ul>
+    <li><strong>Habilitar IA:</strong> Activa/desactiva respuestas automaticas</li>
+    <li><strong>Modelo:</strong> Selecciona el modelo (gpt-4o-mini, gpt-4o, gpt-4-turbo)</li>
+    <li><strong>Temperatura:</strong> 0 = respuestas precisas, 1 = respuestas creativas</li>
+</ul>
+<p>La pantalla muestra indicadores de estado: si la IA esta habilitada en tu plan, si la clave API esta configurada, y cuantas consultas de IA has usado este mes.</p>
+
+<div class="page-break"></div>
+
+<!-- 15. CHANNELS -->
+<h2 id="channels">15. Canales de Comunicacion</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+
+<p>Los canales conectan ChatMe con plataformas de mensajeria externas.</p>
+
+<h3>15.1 Tipos de Canal</h3>
+<table>
+    <tr><th>Canal</th><th>Descripcion</th><th>Requisitos</th></tr>
+    <tr><td><strong>WhatsApp</strong></td><td>Mensajeria via WhatsApp Business API</td><td>Phone Number ID + Access Token de Meta</td></tr>
+    <tr><td><strong>Webchat</strong></td><td>Widget de chat en tu sitio web</td><td>Solo nombre (se genera token automaticamente)</td></tr>
+    <tr><td><strong>Facebook</strong></td><td>Messenger de Facebook</td><td>Page ID + Access Token</td></tr>
+    <tr><td><strong>Instagram</strong></td><td>DMs de Instagram</td><td>Page ID + Access Token</td></tr>
+</table>
+
+<h3>15.2 Asistente de Conexion (Wizard)</h3>
+<p>El wizard de 4 pasos te guia para conectar un nuevo canal:</p>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Tipo:</strong> Selecciona el tipo de canal</div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Configurar:</strong> Ingresa las credenciales del canal</div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Verificar:</strong> El sistema valida las credenciales con la API correspondiente</div>
+</div>
+<div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content"><strong>Listo:</strong> Canal conectado y activo</div>
+</div>
+
+<h3>15.3 Gestionar Canales</h3>
+<p>Desde la lista de canales puedes ver el detalle, editar credenciales, o activar/desactivar un canal.</p>
+
+<div class="warning">
+    <strong>Limite:</strong> La cantidad de canales depende de tu plan. Starter: 1, Professional: 5, Enterprise: Ilimitado.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 16. BILLING -->
+<h2 id="billing">16. Facturacion y Plan</h2>
+<span class="role-tag role-admin">Solo Admin</span>
+
+<h3>16.1 Tu Suscripcion</h3>
+<p>Muestra el plan actual, estado, ciclo de facturacion, precio y fechas.</p>
+
+<h3>16.2 Funciones de tu Plan</h3>
+<p>Lista de funciones habilitadas/deshabilitadas con indicadores visuales.</p>
+
+<h3>16.3 Uso Actual</h3>
+<p>Barras de progreso mostrando cuanto has consumido de cada limite (agentes, canales, conversaciones, mensajes, contactos, etc.).</p>
+
+<h3>16.4 Cambiar Plan</h3>
+<p>Desde "Cambiar Plan" puedes ver los planes disponibles con sus precios y funciones, y seleccionar uno nuevo.</p>
+
+<h3>16.5 Cancelar Suscripcion</h3>
+<p>Al cancelar, tienes un periodo de gracia de 7 dias donde puedes seguir usando la plataforma en modo lectura. Despues de ese periodo, el acceso se restringe.</p>
+
+<div class="page-break"></div>
+
+<!-- 17. ROLES -->
+<h2 id="roles">17. Roles y Permisos</h2>
+
+<h3>17.1 Administrador (org_admin)</h3>
+<p>Acceso completo a todas las funciones de la organizacion:</p>
+<ul>
+    <li>Configurar canales, equipo, facturacion</li>
+    <li>Crear y gestionar pipelines, etiquetas, marcas</li>
+    <li>Enviar campanas y configurar automatizaciones</li>
+    <li>Ver reportes y exportar datos</li>
+    <li>Gestionar comisiones de deals</li>
+    <li>Importar contactos</li>
+</ul>
+
+<h3>17.2 Supervisor</h3>
+<p>Gestiona agentes y conversaciones:</p>
+<ul>
+    <li>Ver todas las conversaciones (no solo las asignadas)</li>
+    <li>Asignar y transferir conversaciones</li>
+    <li>Crear y editar deals, contactos, articulos KB</li>
+    <li>Ver reportes (sin exportar)</li>
+    <li><strong>No puede:</strong> configurar canales, equipo, facturacion, pipelines, campanas, automatizaciones, comisiones</li>
+</ul>
+
+<h3>17.3 Agente</h3>
+<p>Maneja las conversaciones que le son asignadas:</p>
+<ul>
+    <li>Ver y responder conversaciones asignadas</li>
+    <li>Cerrar conversaciones</li>
+    <li>Crear contactos y deals basicos</li>
+    <li>Ver articulos de KB (solo lectura)</li>
+    <li><strong>No puede:</strong> ver conversaciones de otros, asignar/transferir, acceder a configuracion, reportes, campanas, automatizaciones</li>
+</ul>
+
+<div style="margin-top:60px; text-align:center; color:#9ca3af; font-size:12px;">
+    <p>&mdash; Fin del Manual del Usuario &mdash;</p>
+    <p>ChatMe v1.0 &bull; Marzo 2026</p>
+</div>
+
+</body>
+</html>

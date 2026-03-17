@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatMe - Manual del Administrador SaaS</title>
+<style>
+    @page { size: A4; margin: 2cm; }
+    @media print {
+        .page-break { page-break-before: always; }
+        body { font-size: 11pt; }
+        h1 { font-size: 22pt; }
+        h2 { font-size: 16pt; }
+        h3 { font-size: 13pt; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; color: #1a1a2e; max-width: 900px; margin: 0 auto; padding: 40px 30px; }
+    h1 { color: #4f46e5; font-size: 28px; margin-bottom: 8px; border-bottom: 3px solid #4f46e5; padding-bottom: 10px; }
+    h2 { color: #312e81; font-size: 22px; margin-top: 40px; margin-bottom: 12px; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; }
+    h3 { color: #4338ca; font-size: 17px; margin-top: 24px; margin-bottom: 8px; }
+    h4 { color: #6366f1; font-size: 14px; margin-top: 16px; margin-bottom: 6px; }
+    p { margin-bottom: 10px; }
+    ul, ol { margin-left: 24px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+    th { background: #4f46e5; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+    td { padding: 8px 12px; border: 1px solid #e5e7eb; }
+    tr:nth-child(even) { background: #f9fafb; }
+    .cover { text-align: center; padding: 120px 0 80px; }
+    .cover h1 { font-size: 42px; border: none; margin-bottom: 16px; }
+    .cover .subtitle { font-size: 20px; color: #6366f1; margin-bottom: 8px; }
+    .cover .version { font-size: 14px; color: #9ca3af; margin-top: 40px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-yellow { background: #fef9c3; color: #854d0e; }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-gray { background: #f3f4f6; color: #374151; }
+    .tip { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 13px; }
+    .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 13px; }
+    .danger { background: #fee2e2; border-left: 4px solid #ef4444; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 13px; }
+    .toc { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px 30px; margin: 30px 0; }
+    .toc h2 { margin-top: 0; border: none; }
+    .toc ol { line-height: 2; }
+    .toc a { color: #4f46e5; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: 'Consolas', monospace; }
+    .step { display: flex; gap: 12px; margin-bottom: 16px; }
+    .step-num { width: 28px; height: 28px; background: #4f46e5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .step-content { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+    <h1>ChatMe</h1>
+    <div class="subtitle">Manual del Administrador SaaS</div>
+    <p style="color:#6b7280; font-size:16px;">Guia completa para la administracion de la plataforma y gestion de clientes</p>
+    <div class="version">
+        Version 1.0 &mdash; Marzo 2026<br>
+        app.chatme.com.mx
+    </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- TABLA DE CONTENIDOS -->
+<div class="toc">
+    <h2>Contenido</h2>
+    <ol>
+        <li><a href="#acceso">Acceso al Panel de Administracion</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#organizaciones">Gestion de Organizaciones</a></li>
+        <li><a href="#usuarios">Gestion de Usuarios</a></li>
+        <li><a href="#planes">Planes y Caracteristicas</a></li>
+        <li><a href="#suscripciones">Suscripciones</a></li>
+        <li><a href="#uso">Monitoreo de Uso</a></li>
+        <li><a href="#alertas">Alertas del Sistema</a></li>
+        <li><a href="#formularios">Formularios de Canal</a></li>
+        <li><a href="#mantenimiento">Modo Mantenimiento</a></li>
+        <li><a href="#horizon">Monitoreo de Colas (Horizon)</a></li>
+        <li><a href="#roles">Roles y Permisos</a></li>
+        <li><a href="#planes-detalle">Detalle de Planes</a></li>
+        <li><a href="#troubleshooting">Resolucion de Problemas</a></li>
+    </ol>
+</div>
+
+<div class="page-break"></div>
+
+<!-- 1. ACCESO -->
+<h2 id="acceso">1. Acceso al Panel de Administracion</h2>
+
+<h3>Requisitos</h3>
+<p>Para acceder al panel de administracion SaaS, el usuario debe cumplir:</p>
+<ul>
+    <li>Tener el rol <code>saas_admin</code> asignado</li>
+    <li><strong>No pertenecer a ninguna organizacion</strong> (organization_id debe ser nulo)</li>
+    <li>Tener credenciales activas (email + password)</li>
+</ul>
+
+<h3>URL de Acceso</h3>
+<p>El panel de administracion se accede desde:</p>
+<p><code>https://admin.chatme.com.mx/panel</code></p>
+<p>Ingresa con tu email y contrasena. El sistema validara automaticamente que tienes el rol adecuado.</p>
+
+<div class="tip">
+    <strong>Nota:</strong> Si un usuario tiene organization_id asignado, sera redirigido al dashboard de la aplicacion aunque tenga el rol saas_admin.
+</div>
+
+<h3>Navegacion</h3>
+<p>El panel cuenta con una barra lateral izquierda con los siguientes modulos:</p>
+<ul>
+    <li><strong>Dashboard</strong> &mdash; Metricas generales de la plataforma</li>
+    <li><strong>Organizaciones</strong> &mdash; CRUD de clientes</li>
+    <li><strong>Usuarios</strong> &mdash; Gestion de usuarios de toda la plataforma</li>
+    <li><strong>Planes</strong> &mdash; Configuracion de planes y features</li>
+    <li><strong>Suscripciones</strong> &mdash; Gestion de suscripciones activas</li>
+    <li><strong>Uso</strong> &mdash; Monitoreo de consumo por organizacion</li>
+    <li><strong>Alertas</strong> &mdash; Alertas del sistema</li>
+    <li><strong>Formularios</strong> &mdash; Templates de formularios de webchat</li>
+    <li><strong>Mantenimiento</strong> &mdash; Modo mantenimiento por organizacion</li>
+    <li><strong>Horizon</strong> &mdash; Monitoreo de colas Redis (enlace externo)</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- 2. DASHBOARD -->
+<h2 id="dashboard">2. Dashboard</h2>
+
+<p>El Dashboard muestra un resumen en tiempo real del estado de la plataforma.</p>
+
+<h3>Metricas Principales</h3>
+<table>
+    <tr><th>Metrica</th><th>Descripcion</th></tr>
+    <tr><td>Total Organizaciones</td><td>Cantidad total de clientes registrados</td></tr>
+    <tr><td>Organizaciones Activas</td><td>Clientes con status "active" <span class="badge badge-green">activo</span></td></tr>
+    <tr><td>Organizaciones Suspendidas</td><td>Clientes suspendidos <span class="badge badge-red">suspendido</span></td></tr>
+    <tr><td>Suscripciones Activas</td><td>Suscripciones con status active o trialing</td></tr>
+    <tr><td>Suscripciones Canceladas</td><td>Suscripciones canceladas</td></tr>
+    <tr><td>Ingresos Mensuales Estimados</td><td>Suma de precios mensuales de suscripciones activas</td></tr>
+    <tr><td>Alertas Activas</td><td>Alertas sin resolver (rojo si > 0)</td></tr>
+</table>
+
+<h3>Organizaciones Recientes</h3>
+<p>Tabla con las 5 organizaciones mas recientes mostrando nombre, slug, estado y fecha de creacion.</p>
+
+<div class="page-break"></div>
+
+<!-- 3. ORGANIZACIONES -->
+<h2 id="organizaciones">3. Gestion de Organizaciones</h2>
+
+<p>Las organizaciones son los clientes de la plataforma. Cada organizacion es un tenant aislado con sus propios usuarios, conversaciones, negocios y configuraciones.</p>
+
+<h3>3.1 Listar Organizaciones</h3>
+<p>La vista principal muestra todas las organizaciones con filtros:</p>
+<ul>
+    <li><strong>Busqueda:</strong> Por nombre o slug</li>
+    <li><strong>Filtro de estado:</strong> Activo, Suspendido, Trial, o Todos</li>
+    <li><strong>Paginacion:</strong> 20 organizaciones por pagina</li>
+</ul>
+
+<h3>3.2 Crear Organizacion</h3>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Haz clic en <strong>"Nueva Organizacion"</strong> en la esquina superior derecha.</div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Completa el formulario:
+        <ul>
+            <li><strong>Nombre:</strong> Nombre de la empresa cliente (obligatorio)</li>
+            <li><strong>Estado:</strong> Selecciona "active" o "trial"</li>
+        </ul>
+        El slug se genera automaticamente del nombre.
+    </div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Haz clic en <strong>"Crear"</strong>. La organizacion aparecera en el listado.</div>
+</div>
+
+<h3>3.3 Ver Detalle</h3>
+<p>Al hacer clic en una organizacion se muestra:</p>
+<ul>
+    <li>Nombre y subdominio (slug.chatme.com.mx)</li>
+    <li>Estado actual</li>
+    <li>Cantidad de usuarios y sucursales</li>
+    <li>Plan de suscripcion actual</li>
+    <li>Tabla de todos los usuarios de la organizacion</li>
+</ul>
+
+<h3>3.4 Suspender / Activar</h3>
+<p>Desde el detalle de la organizacion:</p>
+<ul>
+    <li><strong>Suspender:</strong> Bloquea el acceso de todos los usuarios de la organizacion. Muestra confirmacion antes de ejecutar.</li>
+    <li><strong>Activar:</strong> Restaura el acceso. Solo disponible para organizaciones suspendidas.</li>
+</ul>
+
+<div class="warning">
+    <strong>Importante:</strong> Al suspender una organizacion, TODOS sus usuarios perderan acceso inmediatamente. Las conversaciones y datos se mantienen intactos.
+</div>
+
+<h3>3.5 Editar</h3>
+<p>Se puede modificar el nombre. El slug solo se puede cambiar si la organizacion no tiene usuarios, sucursales ni suscripciones.</p>
+
+<h3>3.6 Eliminar</h3>
+<p>Solo se puede eliminar una organizacion que <strong>no tenga usuarios</strong>. Esta accion es irreversible.</p>
+
+<div class="danger">
+    <strong>Precaucion:</strong> Antes de eliminar, asegurate de reasignar o eliminar todos los usuarios de la organizacion.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 4. USUARIOS -->
+<h2 id="usuarios">4. Gestion de Usuarios</h2>
+
+<h3>4.1 Listar Usuarios</h3>
+<p>Muestra todos los usuarios de la plataforma con filtros:</p>
+<ul>
+    <li><strong>Busqueda:</strong> Por nombre o email</li>
+    <li><strong>Filtro por rol:</strong> Todos los roles disponibles</li>
+    <li><strong>Filtro por organizacion:</strong> Dropdown de todas las organizaciones</li>
+</ul>
+
+<h3>4.2 Crear Usuario</h3>
+<table>
+    <tr><th>Campo</th><th>Obligatorio</th><th>Descripcion</th></tr>
+    <tr><td>Nombre</td><td>Si</td><td>Nombre completo del usuario</td></tr>
+    <tr><td>Email</td><td>Si</td><td>Email unico en toda la plataforma</td></tr>
+    <tr><td>Contrasena</td><td>Si</td><td>Debe cumplir reglas de seguridad de Laravel</td></tr>
+    <tr><td>Organizacion</td><td>No</td><td>Asignar a una organizacion o dejarlo como usuario de plataforma</td></tr>
+    <tr><td>Rol</td><td>Si</td><td>org_admin, supervisor, agent, o saas_admin</td></tr>
+</table>
+
+<div class="tip">
+    <strong>Usuarios SaaS Admin:</strong> Para crear otro administrador de plataforma, deja la organizacion vacia y asigna el rol "saas_admin".
+</div>
+
+<h3>4.3 Editar Usuario</h3>
+<p>Se pueden modificar todos los campos. La contrasena es opcional (dejar vacia para mantener la actual). Se puede activar/desactivar el usuario con el checkbox "Activo".</p>
+
+<h3>4.4 Eliminar Usuario</h3>
+<p>No puedes eliminarte a ti mismo. Se requiere confirmacion.</p>
+
+<div class="page-break"></div>
+
+<!-- 5. PLANES -->
+<h2 id="planes">5. Planes y Caracteristicas</h2>
+
+<h3>5.1 Estructura de Planes</h3>
+<p>Cada plan define:</p>
+<ul>
+    <li><strong>Precio mensual y anual</strong> (en centavos MXN)</li>
+    <li><strong>Dias de prueba</strong></li>
+    <li><strong>Valores de features</strong> (limites y funciones habilitadas)</li>
+</ul>
+
+<h3>5.2 Planes Predeterminados</h3>
+
+<table>
+    <tr><th>Plan</th><th>Precio/mes</th><th>Precio/ano</th><th>Trial</th><th>Agentes</th><th>Canales</th></tr>
+    <tr><td><strong>Starter</strong></td><td>$499 MXN</td><td>$4,990 MXN</td><td>14 dias</td><td>3</td><td>1</td></tr>
+    <tr><td><strong>Professional</strong></td><td>$999 MXN</td><td>$9,990 MXN</td><td>14 dias</td><td>10</td><td>5</td></tr>
+    <tr><td><strong>Enterprise</strong></td><td>$2,499 MXN</td><td>$24,990 MXN</td><td>0</td><td>Ilimitados</td><td>Ilimitados</td></tr>
+</table>
+
+<h3>5.3 Crear / Editar Plan</h3>
+<p>Al crear o editar un plan, se configuran los valores de cada feature. Los tipos de feature son:</p>
+<ul>
+    <li><strong>Booleanos:</strong> true/false (ej: webchat_enabled, reports_enabled)</li>
+    <li><strong>Limites:</strong> numero o "unlimited" (ej: max_agents, max_channels)</li>
+</ul>
+
+<div class="warning">
+    <strong>No se puede eliminar</strong> un plan que tenga suscripciones activas.
+</div>
+
+<h3>5.4 Features Disponibles</h3>
+<table>
+    <tr><th>Feature</th><th>Tipo</th><th>Starter</th><th>Professional</th><th>Enterprise</th></tr>
+    <tr><td>max_agents</td><td>Limite</td><td>3</td><td>10</td><td>Ilimitado</td></tr>
+    <tr><td>max_channels</td><td>Limite</td><td>1</td><td>5</td><td>Ilimitado</td></tr>
+    <tr><td>max_conversations_monthly</td><td>Limite</td><td>100</td><td>1,000</td><td>Ilimitado</td></tr>
+    <tr><td>max_messages_monthly</td><td>Limite</td><td>500</td><td>10,000</td><td>Ilimitado</td></tr>
+    <tr><td>max_contacts</td><td>Limite</td><td>100</td><td>5,000</td><td>Ilimitado</td></tr>
+    <tr><td>max_brands</td><td>Limite</td><td>1</td><td>5</td><td>Ilimitado</td></tr>
+    <tr><td>kb_articles_limit</td><td>Limite</td><td>20</td><td>200</td><td>Ilimitado</td></tr>
+    <tr><td>ai_queries_monthly</td><td>Limite</td><td>50</td><td>1,000</td><td>Ilimitado</td></tr>
+    <tr><td>max_campaigns_monthly</td><td>Limite</td><td>0</td><td>20</td><td>Ilimitado</td></tr>
+    <tr><td>webchat_enabled</td><td>Booleano</td><td>Si</td><td>Si</td><td>Si</td></tr>
+    <tr><td>whatsapp_enabled</td><td>Booleano</td><td>Si</td><td>Si</td><td>Si</td></tr>
+    <tr><td>campaigns_enabled</td><td>Booleano</td><td>No</td><td>Si</td><td>Si</td></tr>
+    <tr><td>drip_sequences_enabled</td><td>Booleano</td><td>No</td><td>Si</td><td>Si</td></tr>
+    <tr><td>automations_enabled</td><td>Booleano</td><td>No</td><td>Si</td><td>Si</td></tr>
+    <tr><td>reports_enabled</td><td>Booleano</td><td>No</td><td>Si</td><td>Si</td></tr>
+    <tr><td>ai_suggestions_enabled</td><td>Booleano</td><td>No</td><td>Si</td><td>Si</td></tr>
+    <tr><td>sla_tracking</td><td>Booleano</td><td>No</td><td>Si</td><td>Si</td></tr>
+    <tr><td>api_access</td><td>Booleano</td><td>No</td><td>Si</td><td>Si</td></tr>
+    <tr><td>custom_branding</td><td>Booleano</td><td>No</td><td>Si</td><td>Si</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- 6. SUSCRIPCIONES -->
+<h2 id="suscripciones">6. Suscripciones</h2>
+
+<h3>6.1 Estados de Suscripcion</h3>
+<table>
+    <tr><th>Estado</th><th>Descripcion</th><th>Acceso</th></tr>
+    <tr><td><span class="badge badge-green">active</span></td><td>Suscripcion vigente</td><td>Completo</td></tr>
+    <tr><td><span class="badge badge-blue">trialing</span></td><td>En periodo de prueba</td><td>Completo</td></tr>
+    <tr><td><span class="badge badge-yellow">canceled</span></td><td>Cancelada con periodo de gracia (7 dias)</td><td>Solo lectura despues del periodo</td></tr>
+    <tr><td><span class="badge badge-red">past_due</span></td><td>Pago vencido</td><td>Solo lectura</td></tr>
+</table>
+
+<h3>6.2 Crear Suscripcion Manual</h3>
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Selecciona la organizacion (solo organizaciones activas)</div>
+</div>
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Selecciona el plan (muestra precios)</div>
+</div>
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Elige estado: "active" o "trialing"</div>
+</div>
+<div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Elige ciclo: mensual o anual</div>
+</div>
+
+<p>El sistema calcula automaticamente:</p>
+<ul>
+    <li><strong>Fecha de inicio:</strong> Ahora</li>
+    <li><strong>Fecha de fin:</strong> +1 mes (mensual) o +1 ano (anual)</li>
+    <li><strong>Fin de trial:</strong> +14 dias (si estado es trialing)</li>
+</ul>
+
+<h3>6.3 Gestionar Suscripcion</h3>
+<p>Desde el detalle puedes cambiar plan, estado y ciclo de facturacion. Si hay integracion con Stripe, se muestra el ID de suscripcion de Stripe.</p>
+
+<div class="page-break"></div>
+
+<!-- 7. USO -->
+<h2 id="uso">7. Monitoreo de Uso</h2>
+
+<p>Muestra el consumo de features por organizacion y periodo mensual.</p>
+
+<h3>Informacion mostrada</h3>
+<table>
+    <tr><th>Columna</th><th>Descripcion</th></tr>
+    <tr><td>Organizacion</td><td>Nombre de la organizacion</td></tr>
+    <tr><td>Feature</td><td>Codigo del feature (ej: max_messages_monthly)</td></tr>
+    <tr><td>Uso</td><td>Cantidad consumida en el periodo</td></tr>
+    <tr><td>Periodo</td><td>Mes en formato YYYY-MM</td></tr>
+</table>
+
+<p>Puedes seleccionar el periodo del dropdown para ver el consumo historico.</p>
+
+<div class="tip">
+    <strong>Uso practico:</strong> Usa esta seccion para identificar organizaciones que estan cerca de sus limites y podrianbeneficiarse de un upgrade de plan.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 8. ALERTAS -->
+<h2 id="alertas">8. Alertas del Sistema</h2>
+
+<h3>8.1 Tipos de Alerta</h3>
+<table>
+    <tr><th>Tipo</th><th>Color</th><th>Uso</th></tr>
+    <tr><td><span class="badge badge-blue">info</span></td><td>Azul</td><td>Informacion general</td></tr>
+    <tr><td><span class="badge badge-yellow">warning</span></td><td>Amarillo</td><td>Advertencias que requieren atencion</td></tr>
+    <tr><td><span class="badge badge-red">critical</span></td><td>Rojo</td><td>Problemas criticos que requieren accion inmediata</td></tr>
+    <tr><td><span class="badge badge-gray">maintenance</span></td><td>Gris</td><td>Mantenimiento programado</td></tr>
+</table>
+
+<h3>8.2 Crear Alerta</h3>
+<table>
+    <tr><th>Campo</th><th>Descripcion</th></tr>
+    <tr><td>Tipo</td><td>info, warning, critical, o maintenance</td></tr>
+    <tr><td>Alcance</td><td>Global (todas las organizaciones) o especifica</td></tr>
+    <tr><td>Titulo</td><td>Titulo corto de la alerta</td></tr>
+    <tr><td>Mensaje</td><td>Descripcion detallada</td></tr>
+    <tr><td>Inicio</td><td>Fecha/hora de inicio (opcional)</td></tr>
+    <tr><td>Fin</td><td>Fecha/hora de fin (opcional)</td></tr>
+</table>
+
+<h3>8.3 Alertas Automaticas</h3>
+<p>El sistema genera alertas automaticamente cuando:</p>
+<ul>
+    <li>Una organizacion supera el 90% de uso de un feature</li>
+    <li>Hay jobs fallidos en la cola</li>
+    <li>Un deal lleva demasiado tiempo en una etapa (SLA)</li>
+</ul>
+
+<h3>8.4 Resolver Alerta</h3>
+<p>Al resolver una alerta, se registra quien la resolvio y cuando. La alerta se desactiva automaticamente.</p>
+
+<div class="page-break"></div>
+
+<!-- 9. FORMULARIOS -->
+<h2 id="formularios">9. Formularios de Canal (Webchat)</h2>
+
+<p>Los formularios se asignan a canales de tipo Webchat para recopilar informacion del visitante antes de iniciar una conversacion.</p>
+
+<h3>9.1 Templates Disponibles</h3>
+<ul>
+    <li><strong>contacto_basico:</strong> Nombre, email, telefono</li>
+    <li><strong>muebleria:</strong> Datos de contacto + tipo de mueble</li>
+    <li><strong>agencia_viajes:</strong> Datos + destino, fechas, presupuesto</li>
+</ul>
+
+<h3>9.2 Asignar Formulario</h3>
+<p>Solo se puede asignar un formulario a canales Webchat que no tengan uno ya asignado. Selecciona el canal y el template, y el sistema creara el formulario con el esquema JSON correspondiente.</p>
+
+<h3>9.3 Vista de Formulario</h3>
+<p>Muestra el esquema JSON completo, el conteo de campos, el estado y la organizacion/canal asociados.</p>
+
+<div class="page-break"></div>
+
+<!-- 10. MANTENIMIENTO -->
+<h2 id="mantenimiento">10. Modo Mantenimiento</h2>
+
+<p>Permite poner organizaciones individuales en modo mantenimiento sin afectar a las demas.</p>
+
+<h3>Como funciona</h3>
+<ul>
+    <li>Al activar el modo mantenimiento, los usuarios de esa organizacion veran un mensaje de mantenimiento al intentar acceder</li>
+    <li>Los datos no se modifican</li>
+    <li>Las APIs y webhooks siguen funcionando normalmente</li>
+    <li>Se registra la fecha/hora del cambio</li>
+</ul>
+
+<h3>Activar / Desactivar</h3>
+<p>Desde la tabla de mantenimiento, haz clic en el boton "Activar" o "Desactivar" junto a la organizacion deseada.</p>
+
+<div class="page-break"></div>
+
+<!-- 11. HORIZON -->
+<h2 id="horizon">11. Monitoreo de Colas (Horizon)</h2>
+
+<p>Laravel Horizon proporciona un dashboard para monitorear las colas de Redis.</p>
+
+<h3>Colas Configuradas</h3>
+<table>
+    <tr><th>Cola</th><th>Prioridad</th><th>Jobs</th></tr>
+    <tr><td>critical</td><td>Alta</td><td>SendWhatsAppMessage</td></tr>
+    <tr><td>default</td><td>Normal</td><td>SendCampaignMessage, ProcessDripStep, GenerateArticleEmbedding</td></tr>
+    <tr><td>low</td><td>Baja</td><td>CheckStaleConversations</td></tr>
+</table>
+
+<p>Accede a Horizon desde el enlace en la barra lateral del panel admin.</p>
+
+<div class="page-break"></div>
+
+<!-- 12. ROLES -->
+<h2 id="roles">12. Roles y Permisos</h2>
+
+<h3>12.1 Roles del Sistema</h3>
+<table>
+    <tr><th>Rol</th><th>Nivel</th><th>Descripcion</th></tr>
+    <tr><td><strong>saas_admin</strong></td><td>Plataforma</td><td>Acceso total al backoffice. Sin organizacion.</td></tr>
+    <tr><td><strong>super_admin</strong></td><td>Plataforma</td><td>Bypass de todas las verificaciones (Gate::before)</td></tr>
+    <tr><td><strong>org_admin</strong></td><td>Organizacion</td><td>Acceso completo dentro de su organizacion (67 permisos)</td></tr>
+    <tr><td><strong>supervisor</strong></td><td>Organizacion</td><td>Gestiona agentes y conversaciones. Sin permisos de eliminacion.</td></tr>
+    <tr><td><strong>agent</strong></td><td>Organizacion</td><td>Maneja conversaciones asignadas. Permisos minimos.</td></tr>
+</table>
+
+<h3>12.2 Permisos por Modulo</h3>
+
+<table>
+    <tr><th>Modulo</th><th>org_admin</th><th>supervisor</th><th>agent</th></tr>
+    <tr><td>Organizacion</td><td>Ver, Editar, Billing</td><td>Ver</td><td>Ver</td></tr>
+    <tr><td>Usuarios</td><td>CRUD completo</td><td>Ver</td><td>&mdash;</td></tr>
+    <tr><td>Conversaciones</td><td>Ver todo, Asignar, Transferir, Cerrar</td><td>Ver todo, Asignar, Transferir, Cerrar</td><td>Ver propias, Cerrar</td></tr>
+    <tr><td>Deals/CRM</td><td>CRUD, Asignar, Comisiones</td><td>Ver todo, Crear, Editar, Asignar</td><td>Ver propios, Crear, Editar</td></tr>
+    <tr><td>Pipelines</td><td>CRUD completo</td><td>Ver</td><td>Ver</td></tr>
+    <tr><td>Contactos</td><td>CRUD, Importar</td><td>Ver, Crear, Editar</td><td>Ver, Crear</td></tr>
+    <tr><td>Campanas</td><td>CRUD, Enviar</td><td>Ver</td><td>&mdash;</td></tr>
+    <tr><td>KB</td><td>CRUD, Publicar</td><td>Ver, Crear, Editar</td><td>Ver</td></tr>
+    <tr><td>Marcas</td><td>CRUD completo</td><td>Ver</td><td>Ver</td></tr>
+    <tr><td>Reportes</td><td>Ver, Exportar</td><td>Ver</td><td>&mdash;</td></tr>
+    <tr><td>Configuracion</td><td>Ver, Editar</td><td>&mdash;</td><td>&mdash;</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- 13. PLANES DETALLE -->
+<h2 id="planes-detalle">13. Detalle de Planes por Defecto</h2>
+
+<h3>Starter - $499/mes</h3>
+<p>Ideal para negocios pequenos que inician con atencion digital.</p>
+<ul>
+    <li>3 agentes, 1 canal, 100 conversaciones/mes, 500 mensajes/mes</li>
+    <li>100 contactos, 1 marca, 20 articulos KB</li>
+    <li>WhatsApp y Webchat habilitados</li>
+    <li>Sin campanas, drip, automaciones, reportes ni IA</li>
+    <li>14 dias de prueba gratis</li>
+</ul>
+
+<h3>Professional - $999/mes</h3>
+<p>Para empresas en crecimiento que necesitan automatizacion y reportes.</p>
+<ul>
+    <li>10 agentes, 5 canales, 1,000 conversaciones/mes, 10,000 mensajes/mes</li>
+    <li>5,000 contactos, 5 marcas, 200 articulos KB</li>
+    <li>Todas las funciones habilitadas (campanas, drip, automaciones, reportes, IA)</li>
+    <li>SLA tracking, API access, custom branding</li>
+    <li>14 dias de prueba gratis</li>
+</ul>
+
+<h3>Enterprise - $2,499/mes</h3>
+<p>Para grandes operaciones con necesidades ilimitadas.</p>
+<ul>
+    <li>Todo ilimitado</li>
+    <li>Todas las funciones habilitadas</li>
+    <li>Sin periodo de prueba (acceso inmediato)</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- 14. TROUBLESHOOTING -->
+<h2 id="troubleshooting">14. Resolucion de Problemas</h2>
+
+<h3>Problema: Usuario no puede acceder</h3>
+<table>
+    <tr><th>Causa</th><th>Solucion</th></tr>
+    <tr><td>Organizacion suspendida</td><td>Activar la organizacion desde el panel admin</td></tr>
+    <tr><td>Usuario inactivo</td><td>Activar el usuario desde Usuarios > Editar</td></tr>
+    <tr><td>Modo mantenimiento activo</td><td>Desactivar desde Mantenimiento</td></tr>
+    <tr><td>Sin suscripcion</td><td>Crear suscripcion manual</td></tr>
+    <tr><td>Suscripcion expirada</td><td>Renovar o cambiar plan</td></tr>
+</table>
+
+<h3>Problema: Feature no disponible para el cliente</h3>
+<ul>
+    <li>Verificar que el plan del cliente incluya el feature (Planes > Ver plan)</li>
+    <li>Verificar que la suscripcion este activa (no canceled ni past_due)</li>
+    <li>Si es un limite, verificar el uso en Monitoreo de Uso</li>
+</ul>
+
+<h3>Problema: Mensajes de WhatsApp no llegan</h3>
+<ul>
+    <li>Verificar que el canal este activo en la configuracion del cliente</li>
+    <li>Revisar Horizon para jobs fallidos en la cola "critical"</li>
+    <li>Verificar credenciales del canal (token de Meta API)</li>
+</ul>
+
+<h3>Problema: WebSocket no funciona</h3>
+<ul>
+    <li>Verificar que Laravel Reverb este corriendo en el servidor</li>
+    <li>Verificar la configuracion de REVERB_* en .env</li>
+    <li>Revisar los allowed_origins en la configuracion de Reverb</li>
+</ul>
+
+<h3>Comandos utiles de servidor</h3>
+<table>
+    <tr><th>Comando</th><th>Descripcion</th></tr>
+    <tr><td><code>php artisan config:cache</code></td><td>Cachear configuracion</td></tr>
+    <tr><td><code>php artisan route:cache</code></td><td>Cachear rutas</td></tr>
+    <tr><td><code>php artisan view:cache</code></td><td>Cachear vistas</td></tr>
+    <tr><td><code>php artisan horizon:terminate</code></td><td>Reiniciar workers de Horizon</td></tr>
+    <tr><td><code>php artisan queue:retry all</code></td><td>Reintentar todos los jobs fallidos</td></tr>
+    <tr><td><code>php artisan migrate --force</code></td><td>Ejecutar migraciones en produccion</td></tr>
+</table>
+
+<div style="margin-top:60px; text-align:center; color:#9ca3af; font-size:12px;">
+    <p>&mdash; Fin del Manual del Administrador SaaS &mdash;</p>
+    <p>ChatMe v1.0 &bull; Marzo 2026</p>
+</div>
+
+</body>
+</html>
