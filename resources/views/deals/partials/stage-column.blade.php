@@ -4,14 +4,19 @@
             <span class="inline-block w-2 h-2 rounded-full mr-2" style="background: {{ $stage->color ?? '#6B7280' }}"></span>
             <span class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ $stage->name }}</span>
         </div>
-        <span class="text-xs text-gray-400">{{ $stage->deals->count() }}</span>
+        <span class="text-xs text-gray-400 stage-count" data-stage-id="{{ $stage->id }}">{{ $stage->deals->count() }}</span>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-2 space-y-2">
+    <div class="flex-1 overflow-y-auto p-2 space-y-2 drop-zone min-h-[60px]"
+         data-stage-id="{{ $stage->id }}"
+         ondragover="handleDragOver(event)"
+         ondragenter="handleDragEnter(event)"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event)">
         @forelse($stage->deals as $deal)
             @include('deals.partials.deal-card', ['deal' => $deal, 'allStages' => $allStages])
         @empty
-            <p class="text-xs text-gray-400 dark:text-gray-500 text-center py-4">Sin negocios</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 text-center py-4 empty-msg">Sin negocios</p>
         @endforelse
     </div>
 </div>

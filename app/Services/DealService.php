@@ -58,6 +58,7 @@ class DealService
             $data['pipeline_stage_id'] = $pipeline->firstStage->id;
         }
 
+        $data['value'] = $data['value'] ?? 0;
         $data['stage_entered_at'] = $data['stage_entered_at'] ?? now();
         $data['status'] = $data['status'] ?? 'open';
         $data['currency'] = $data['currency'] ?? 'MXN';
