@@ -30,6 +30,35 @@ class TeamController extends Controller
         return view('settings.team', compact('users'));
     }
 
+    public function store(Request $request)
+    {
+        if (! $request->user()->can('users.create')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role' => 'required|in:org_admin,supervisor,agent',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+            'organization_id' => app('tenant')->id,
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+
+        $user->assignRole($validated['role']);
+
+        $this->auditService->logModelChange('user.created', $user, [], $request);
+
+        return back()->with('success', "{$user->name} ha sido agregado como {$validated['role']}.");
+    }
+
     public function updateRole(Request $request, User $user)
     {
         if (! $request->user()->can('users.update')) {

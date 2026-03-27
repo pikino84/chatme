@@ -93,13 +93,13 @@
         {{-- Conversation trend --}}
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Tendencia de Conversaciones</h3>
-            <canvas id="conversationTrendChart" height="200"></canvas>
+            <div class="relative" style="height: 250px;"><canvas id="conversationTrendChart"></canvas></div>
         </div>
 
         {{-- Messages daily --}}
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Volumen de Mensajes</h3>
-            <canvas id="messageDailyChart" height="200"></canvas>
+            <div class="relative" style="height: 250px;"><canvas id="messageDailyChart"></canvas></div>
         </div>
     </div>
 
@@ -107,13 +107,13 @@
         {{-- By channel --}}
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Conversaciones por Canal</h3>
-            <canvas id="channelChart" height="200"></canvas>
+            <div class="relative" style="height: 250px;"><canvas id="channelChart"></canvas></div>
         </div>
 
         {{-- Deal status --}}
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Negocios por Estado</h3>
-            <canvas id="dealStatusChart" height="200"></canvas>
+            <div class="relative" style="height: 250px;"><canvas id="dealStatusChart"></canvas></div>
         </div>
     </div>
 

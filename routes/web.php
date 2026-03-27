@@ -129,6 +129,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::get('/settings', [SettingsController::class, 'show'])->name('settings.show');
             Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
             Route::get('/settings/team', [TeamController::class, 'index'])->name('settings.team');
+            Route::post('/settings/team', [TeamController::class, 'store'])->name('settings.team.store');
             Route::post('/settings/team/{user}/role', [TeamController::class, 'updateRole'])->name('settings.team.role');
             Route::post('/settings/team/{user}/toggle', [TeamController::class, 'toggleActive'])->name('settings.team.toggle');
 
