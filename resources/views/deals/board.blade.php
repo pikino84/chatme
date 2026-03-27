@@ -222,7 +222,7 @@
         // Header
         html += '<div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">';
         html += '<h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">' + esc(d.contact_name) + '</h3>';
-        html += '<button onclick="closeDealDrawer()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl">&times;</button>';
+        html += '<button onclick="closeDealDrawer()" class="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600 transition shadow leading-none"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>';
         html += '</div>';
 
         html += '<div class="p-4 space-y-6">';

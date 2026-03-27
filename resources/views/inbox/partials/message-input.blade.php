@@ -1,22 +1,22 @@
-<div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
-    <form id="message-form" method="POST" action="{{ route('inbox.conversations.messages.store', $conversation) }}" class="flex gap-2">
+<div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 sm:p-3">
+    <form id="message-form" method="POST" action="{{ route('inbox.conversations.messages.store', $conversation) }}" class="flex gap-2 items-end">
         @csrf
         <input type="hidden" name="type" id="message-type" value="text">
 
-        <div class="flex-1 relative">
-            <textarea name="body" id="message-body" rows="1" required
+        <div class="flex-1">
+            <textarea name="body" id="message-body" rows="2" required
                       placeholder="Escribe un mensaje..."
-                      class="w-full text-sm rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:ring-indigo-500 focus:border-indigo-500 resize-none pr-10"></textarea>
+                      class="w-full text-base sm:text-sm rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:ring-indigo-500 focus:border-indigo-500 resize-none py-3 px-4"></textarea>
         </div>
 
-        <div class="flex flex-col gap-1">
+        <div class="flex flex-col gap-1.5 shrink-0">
             <button type="submit" data-type="text"
-                    class="px-3 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">
+                    class="px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl active:scale-95 transition-transform">
                 Enviar
             </button>
             @can('sendInternalNote', [App\Models\Message::class, $conversation])
             <button type="submit" data-type="internal_note"
-                    class="px-3 py-2 text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:text-yellow-300 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 rounded-lg">
+                    class="px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:text-yellow-300 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 rounded-xl active:scale-95 transition-transform">
                 Nota
             </button>
             @endcan
@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!form) return;
 
-    // Set type based on which button was clicked
     form.querySelectorAll('button[data-type]').forEach(function(btn) {
         btn.addEventListener('click', function() {
             typeInput.value = this.getAttribute('data-type');
@@ -51,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var type = typeInput.value;
         sending = true;
 
-        // Optimistically append the message to the thread
         var msgDiv = document.createElement('div');
         msgDiv.setAttribute('data-optimistic', 'true');
         if (type === 'internal_note') {
@@ -68,11 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
         thread.appendChild(msgDiv);
         thread.scrollTop = thread.scrollHeight;
 
-        // Clear input
         bodyInput.value = '';
         typeInput.value = 'text';
 
-        // Send via AJAX
         var formData = new FormData(form);
         formData.set('body', body);
         formData.set('type', type);
@@ -91,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return r.json();
         })
         .then(function(data) {
-            // Mark the optimistic message with the real ID so polling skips it
             if (data.message && data.message.id) {
                 msgDiv.setAttribute('data-msg-id', data.message.id);
                 msgDiv.removeAttribute('data-optimistic');
@@ -109,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form.addEventListener('submit', sendMessage);
 
-    // Enter to send (Shift+Enter for new line)
     bodyInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();

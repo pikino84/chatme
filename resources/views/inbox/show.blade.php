@@ -1,25 +1,42 @@
 <x-app-layout>
-    <div class="flex h-[calc(100vh-64px)]" id="conversation-container">
-        {{-- Left: Back + Conversation Info --}}
-        <div class="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800 shrink-0 overflow-y-auto">
-            <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex h-[calc(100vh-64px)] relative" id="conversation-container">
+        {{-- Left: Back + Conversation Info (hidden on mobile by default) --}}
+        <div id="metadata-panel"
+             class="fixed inset-0 z-40 lg:relative lg:z-auto
+                    w-full lg:w-80
+                    border-r border-gray-200 dark:border-gray-700
+                    flex flex-col bg-white dark:bg-gray-800
+                    shrink-0 overflow-y-auto
+                    transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+            {{-- Mobile close button --}}
+            <div class="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
                 <a href="{{ route('inbox', request()->only(['status', 'channel_id', 'assigned_user_id', 'search'])) }}"
                    class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                     &larr; Volver a Bandeja
                 </a>
+                <button onclick="toggleMetadataPanel()" class="lg:hidden flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
             @include('inbox.partials.metadata-drawer')
         </div>
 
+        {{-- Mobile overlay --}}
+        <div id="metadata-overlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden" onclick="toggleMetadataPanel()"></div>
+
         {{-- Center: Messages --}}
-        <div class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
+        <div class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 min-w-0">
             {{-- Header --}}
-            <div class="px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <div class="px-3 sm:px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+                {{-- Mobile: info toggle button --}}
+                <button onclick="toggleMetadataPanel()" class="lg:hidden flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </button>
+                <div class="min-w-0 flex-1">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {{ $conversation->contact_name ?: $conversation->contact_identifier }}
                     </h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {{ ucfirst($conversation->channel->type) }} &middot; {{ ucfirst($conversation->status) }}
                         @if($conversation->subject)
                             &middot; {{ $conversation->subject }}
@@ -50,17 +67,27 @@
 
     @push('scripts')
     <script>
+    function toggleMetadataPanel() {
+        var panel = document.getElementById('metadata-panel');
+        var overlay = document.getElementById('metadata-overlay');
+        var isOpen = !panel.classList.contains('-translate-x-full');
+        if (isOpen) {
+            panel.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        } else {
+            panel.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+    }
+
     (function() {
         var orgId = {{ $conversation->organization_id }};
         var convId = {{ $conversation->id }};
         var pollUrl = '{{ route('inbox.conversations.messages.poll', $conversation) }}';
 
-        // Track the last known message ID to only fetch new ones
         var lastMsgId = 0;
-        // IDs of messages we sent optimistically (already in DOM)
         var sentIds = {};
         window.__chatmeSentIds = sentIds;
-        // Whether Echo/WebSocket is connected
         var echoConnected = false;
 
         function initLastId() {
@@ -79,9 +106,7 @@
         }
 
         function appendMessage(msg) {
-            // Skip if already in DOM
             if (document.querySelector('[data-msg-id="' + msg.id + '"]')) return;
-            // Skip if sent optimistically
             if (sentIds[msg.id]) {
                 delete sentIds[msg.id];
                 return;
@@ -157,8 +182,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             initLastId();
             var wsOk = initEcho();
-
-            // Polling fallback: 30s if WebSocket connected (safety net), 5s if no WebSocket
             var interval = wsOk ? 30000 : 5000;
             setInterval(pollMessages, interval);
         });
