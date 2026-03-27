@@ -96,9 +96,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             sending = false;
         })
-        .catch(function() {
+        .catch(function(err) {
             sending = false;
-            window.location.reload();
+            console.warn('[ChatMe] Send failed:', err);
+            msgDiv.querySelector('div').style.opacity = '0.5';
         });
     }
 

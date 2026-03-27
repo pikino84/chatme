@@ -131,4 +131,12 @@
         </dl>
     </div>
     @endif
+
+    {{-- Mobile: back to chat --}}
+    <div class="lg:hidden pt-2">
+        <button onclick="toggleMetadataPanel()" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 active:scale-95 transition-transform">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            Volver al Chat
+        </button>
+    </div>
 </div>
