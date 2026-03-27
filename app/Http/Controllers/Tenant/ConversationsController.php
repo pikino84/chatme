@@ -31,7 +31,52 @@ class ConversationsController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('inbox.show', compact('conversation', 'messages', 'agents'));
+        // JSON response for AJAX chat panel
+        if ($request->wantsJson()) {
+            return response()->json([
+                'conversation' => [
+                    'id' => $conversation->id,
+                    'organization_id' => $conversation->organization_id,
+                    'contact_name' => $conversation->contact_name,
+                    'contact_identifier' => $conversation->contact_identifier,
+                    'channel_type' => $conversation->channel->type,
+                    'channel_name' => $conversation->channel->name,
+                    'status' => $conversation->status,
+                    'priority' => $conversation->priority,
+                    'subject' => $conversation->subject,
+                    'assigned_user' => $conversation->assignedUser?->name ?? 'Sin asignar',
+                    'is_open' => $conversation->isOpen(),
+                    'created_at' => $conversation->created_at->format('M d, Y H:i'),
+                    'close_url' => route('inbox.conversations.close', $conversation),
+                    'reopen_url' => route('inbox.conversations.reopen', $conversation),
+                    'assign_url' => route('inbox.conversations.assign', $conversation),
+                    'send_url' => route('inbox.conversations.messages.store', $conversation),
+                    'poll_url' => route('inbox.conversations.messages.poll', $conversation),
+                ],
+                'messages' => $messages->map(fn ($m) => [
+                    'id' => $m->id,
+                    'body' => $m->body,
+                    'direction' => $m->direction,
+                    'type' => $m->type,
+                    'user_name' => $m->user?->name ?? 'Agent',
+                    'time' => $m->created_at->format('H:i'),
+                ]),
+                'agents' => $agents,
+            ]);
+        }
+
+        // Load conversation list for desktop sidebar
+        $user = $request->user();
+        $listQuery = Conversation::with(['channel', 'assignedUser', 'messages' => fn ($q) => $q->latest()->limit(1)])
+            ->latest('last_message_at');
+
+        if (! $user->hasPermissionTo('conversations.view-all')) {
+            $listQuery->where('assigned_user_id', $user->id);
+        }
+
+        $conversations = $listQuery->paginate(25)->withQueryString();
+
+        return view('inbox.show', compact('conversation', 'messages', 'agents', 'conversations'));
     }
 
     public function markAsRead(Conversation $conversation)

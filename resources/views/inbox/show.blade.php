@@ -1,15 +1,30 @@
 <x-app-layout>
-    <div class="flex relative overflow-hidden -m-4 sm:-m-6" style="height: calc(100vh - 64px);" id="conversation-container">
-        {{-- Left: Back + Conversation Info (hidden on mobile by default) --}}
+    <div class="flex relative overflow-hidden sm:-m-6" style="height: calc(100vh - 64px);" id="conversation-container">
+
+        {{-- Left: Conversation List (desktop only) --}}
+        <div class="hidden lg:flex lg:w-80 border-r border-gray-200 dark:border-gray-700 flex-col bg-white dark:bg-gray-800 shrink-0">
+            <div class="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Conversaciones</h2>
+                <a href="{{ route('inbox') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
+                    Bandeja completa &rarr;
+                </a>
+            </div>
+            <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                @foreach($conversations as $conv)
+                    @include('inbox.partials.conversation-list', ['conv' => $conv])
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Metadata Panel (hidden by default, opens on info click) --}}
         <div id="metadata-panel"
-             class="fixed top-16 inset-x-0 bottom-0 z-40 lg:relative lg:top-auto lg:z-auto
-                    w-full lg:w-80
-                    border-r border-gray-200 dark:border-gray-700
+             class="fixed top-0 right-0 bottom-0 z-50
+                    w-full lg:w-96
+                    border-l border-gray-200 dark:border-gray-700
                     flex flex-col bg-white dark:bg-gray-800
                     shrink-0 overflow-y-auto
-                    transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
-            {{-- Desktop only: back to inbox link --}}
-            <div class="hidden lg:block p-3 border-b border-gray-200 dark:border-gray-700">
+                    transform translate-x-full transition-transform duration-300">
+            <div class="p-3 border-b border-gray-200 dark:border-gray-700">
                 <a href="{{ route('inbox', request()->only(['status', 'channel_id', 'assigned_user_id', 'search'])) }}"
                    class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                     &larr; Volver a Bandeja
@@ -18,17 +33,16 @@
             @include('inbox.partials.metadata-drawer')
         </div>
 
-
         {{-- Center: Messages --}}
         <div class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 min-w-0">
             {{-- Header --}}
             <div class="px-3 sm:px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
-                {{-- Back to inbox --}}
+                {{-- Back to inbox (mobile only) --}}
                 <a href="{{ route('inbox', request()->only(['status', 'channel_id', 'assigned_user_id', 'search'])) }}"
-                   class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 shrink-0 transition-colors active:scale-95">
+                   class="lg:hidden flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 shrink-0 transition-colors active:scale-95">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                 </a>
-                {{-- Contact info (clickeable to open metadata) --}}
+                {{-- Contact name --}}
                 <div class="min-w-0 flex-1">
                     <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {{ $conversation->contact_name ?: $conversation->contact_identifier }}
@@ -70,11 +84,11 @@
     <script>
     function toggleMetadataPanel() {
         var panel = document.getElementById('metadata-panel');
-        var isOpen = !panel.classList.contains('-translate-x-full');
+        var isOpen = !panel.classList.contains('translate-x-full');
         if (isOpen) {
-            panel.classList.add('-translate-x-full');
+            panel.classList.add('translate-x-full');
         } else {
-            panel.classList.remove('-translate-x-full');
+            panel.classList.remove('translate-x-full');
         }
     }
 

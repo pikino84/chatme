@@ -156,7 +156,7 @@
                 </header>
 
                 {{-- Page content --}}
-                <main class="flex-1 p-4 sm:p-6">
+                <main class="flex-1 p-0 sm:p-6">
                     {{ $slot }}
                 </main>
             </div>

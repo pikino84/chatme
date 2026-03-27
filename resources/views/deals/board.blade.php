@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div x-data="{ showCreateModal: false }" class="flex flex-col -m-4 sm:-m-6" style="height: calc(100vh - 64px);">
+    <div x-data="{ showCreateModal: false }" class="flex flex-col sm:-m-6" style="height: calc(100vh - 64px);">
         {{-- Header --}}
         <div class="px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">

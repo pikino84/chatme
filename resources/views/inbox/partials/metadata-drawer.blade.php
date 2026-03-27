@@ -1,4 +1,4 @@
-<div class="space-y-4 p-4 text-sm">
+<div class="space-y-4 p-4 text-sm flex-1 overflow-y-auto">
     {{-- Contact Info --}}
     <div>
         <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Contacto</h4>
@@ -132,11 +132,11 @@
     </div>
     @endif
 
-    {{-- Mobile: back to chat --}}
-    <div class="lg:hidden pt-2">
+    {{-- Back to chat --}}
+    <div class="pt-2">
         <button onclick="toggleMetadataPanel()" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 active:scale-95 transition-transform">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-            Volver al Chat
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            Cerrar
         </button>
     </div>
 </div>
