@@ -10,7 +10,7 @@ return [
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization', 'Accept', 'X-Webchat-Token', 'X-Hub-Signature-256', 'Stripe-Signature'],
+    'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization', 'Accept', 'X-Webchat-Token', 'X-Hub-Signature-256', 'Stripe-Signature', 'X-API-Token'],
 
     'exposed_headers' => [],
 

@@ -41,13 +41,13 @@
                    x-transition:leave="transition ease-in-out duration-200 transform"
                    x-transition:leave-start="translate-x-0"
                    x-transition:leave-end="-translate-x-full"
-                   class="fixed inset-y-0 left-0 z-30 w-64 bg-gray-900 flex flex-col lg:static lg:translate-x-0 lg:z-auto"
+                   class="fixed inset-y-0 left-0 z-30 w-64 bg-crea-primary flex flex-col lg:static lg:translate-x-0 lg:z-auto"
                    x-cloak>
 
                 {{-- Brand --}}
-                <div class="flex items-center justify-between h-16 px-5 border-b border-gray-800">
+                <div class="flex items-center justify-between h-16 px-5 border-b border-crea-primary-dark">
                     <a href="{{ route('dashboard') }}" class="text-white text-lg font-bold tracking-wide">ChatMe</a>
-                    <button x-on:click="sidebarOpen = false" class="text-gray-400 hover:text-white lg:hidden">
+                    <button x-on:click="sidebarOpen = false" class="text-crea-secondary-light hover:text-white lg:hidden">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -68,48 +68,48 @@
 
                     @foreach($links as $link)
                         <a href="{{ route($link['route']) }}"
-                           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs($link['match']) ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs($link['match']) ? 'bg-crea-secondary text-white' : 'text-gray-300 hover:bg-crea-primary-light hover:text-white' }}">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $link['icon'] !!}</svg>
                             {{ $link['label'] }}
                         </a>
                     @endforeach
 
                     @can('settings.update')
-                        <div class="pt-4 mt-4 border-t border-gray-800">
+                        <div class="pt-4 mt-4 border-t border-crea-primary-dark">
                             <p class="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin</p>
 
                             <a href="{{ route('settings.channels') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('settings.channels*') ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('settings.channels*') ? 'bg-crea-secondary text-white' : 'text-gray-300 hover:bg-crea-primary-light hover:text-white' }}">
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0"/></svg>
                                 Canales
                             </a>
 
                             <a href="{{ route('billing.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('billing.*') ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('billing.*') ? 'bg-crea-secondary text-white' : 'text-gray-300 hover:bg-crea-primary-light hover:text-white' }}">
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                                 Facturaci&oacute;n
                             </a>
 
                             <a href="{{ route('settings.show') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('settings.*') ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('settings.*') ? 'bg-crea-secondary text-white' : 'text-gray-300 hover:bg-crea-primary-light hover:text-white' }}">
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 Configuraci&oacute;n
                             </a>
 
                             <a href="{{ route('settings.team') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('settings.team*') ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('settings.team*') ? 'bg-crea-secondary text-white' : 'text-gray-300 hover:bg-crea-primary-light hover:text-white' }}">
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                 Equipo
                             </a>
 
                             <a href="{{ route('pipelines.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('pipelines.*') ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('pipelines.*') ? 'bg-crea-secondary text-white' : 'text-gray-300 hover:bg-crea-primary-light hover:text-white' }}">
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                                 Pipelines
                             </a>
 
                             <a href="{{ route('tags.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('tags.*') ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('tags.*') ? 'bg-crea-secondary text-white' : 'text-gray-300 hover:bg-crea-primary-light hover:text-white' }}">
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
                                 Etiquetas
                             </a>
@@ -118,7 +118,7 @@
                 </nav>
 
                 {{-- User footer --}}
-                <div class="border-t border-gray-800 p-4" x-data="{ open: false }">
+                <div class="border-t border-crea-primary-dark p-4" x-data="{ open: false }">
                     <button x-on:click="open = !open" class="flex items-center gap-3 w-full text-left">
                         <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
@@ -130,10 +130,10 @@
                         <svg class="w-4 h-4 text-gray-400 shrink-0" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
                     </button>
                     <div x-show="open" x-on:click.outside="open = false" x-transition class="mt-2 space-y-1" x-cloak>
-                        <a href="{{ route('profile.show') }}" class="block px-3 py-2 text-sm text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors">Perfil</a>
+                        <a href="{{ route('profile.show') }}" class="block px-3 py-2 text-sm text-gray-300 rounded-lg hover:bg-crea-primary-light hover:text-white transition-colors">Perfil</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors">Cerrar Sesi&oacute;n</button>
+                            <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-gray-300 rounded-lg hover:bg-crea-primary-light hover:text-white transition-colors">Cerrar Sesi&oacute;n</button>
                         </form>
                     </div>
                 </div>

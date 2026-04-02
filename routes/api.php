@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\LeadApiController;
 use App\Http\Controllers\Webchat\WebchatController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
@@ -9,6 +10,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+// Public lead intake API (validated by X-API-Token header)
+Route::post('/leads', [LeadApiController::class, 'store'])
+    ->middleware('throttle:10,1');
 
 // WhatsApp Cloud API webhooks (no auth middleware - validated by HMAC signature)
 Route::prefix('webhooks/whatsapp/{channelUuid}')->group(function () {

@@ -48,4 +48,8 @@ return [
         'currency' => env('STRIPE_CURRENCY', 'mxn'),
     ],
 
+    'lead_api' => [
+        'token' => env('LEAD_API_TOKEN'),
+    ],
+
 ];
