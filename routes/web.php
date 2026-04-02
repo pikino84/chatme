@@ -70,6 +70,14 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
         Route::get('/queue', [HealthCheckController::class, 'queue']);
     });
 
+    // Access request (registration disabled)
+    Route::get('/register', function () {
+        return view('auth.register');
+    })->middleware('guest')->name('register');
+    Route::post('/access-request', [\App\Http\Controllers\AccessRequestController::class, 'store'])
+        ->middleware(['guest', 'throttle:3,10'])
+        ->name('access.request');
+
     Route::middleware(['auth'])->group(function () {
         Broadcast::routes();
 
