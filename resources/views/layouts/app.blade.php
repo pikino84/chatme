@@ -71,6 +71,9 @@
                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs($link['match']) ? 'bg-crea-secondary text-white' : 'text-gray-300 hover:bg-crea-primary-light hover:text-white' }}">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $link['icon'] !!}</svg>
                             {{ $link['label'] }}
+                            @if($link['route'] === 'inbox')
+                                <span id="inbox-badge" class="hidden ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1"></span>
+                            @endif
                         </a>
                     @endforeach
 
@@ -164,7 +167,168 @@
 
         @stack('modals')
 
+        {{-- Toast notification container --}}
+        <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm" style="pointer-events: none;"></div>
+
         @livewireScripts
         @stack('scripts')
+
+        {{-- Global notification system --}}
+        <script>
+        (function() {
+            var originalTitle = document.title;
+            var notifPollUrl = '{{ route("notifications.poll") }}';
+            var lastPollTime = new Date().toISOString();
+            var prevUnread = 0;
+            var soundEnabled = localStorage.getItem('chatme_sound') !== 'off';
+            var notifAudio = null;
+
+            // Notification sound (short beep via Web Audio API)
+            function playNotifSound() {
+                if (!soundEnabled) return;
+                try {
+                    if (!notifAudio) {
+                        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        notifAudio = ctx;
+                    }
+                    var ctx = notifAudio;
+                    var osc = ctx.createOscillator();
+                    var gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = 880;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.3);
+                } catch (e) {}
+            }
+
+            // Toast notification
+            function showToast(title, body, url) {
+                var container = document.getElementById('toast-container');
+                if (!container) return;
+
+                var toast = document.createElement('div');
+                toast.style.pointerEvents = 'auto';
+                toast.className = 'bg-white shadow-lg rounded-xl p-3 border border-gray-200 flex items-start gap-3 animate-slide-in cursor-pointer transform transition-all duration-300';
+                toast.innerHTML = '<div class="w-8 h-8 rounded-full bg-crea-secondary/10 flex items-center justify-center shrink-0"><svg class="w-4 h-4 text-crea-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div>' +
+                    '<div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">' + escToast(title) + '</p><p class="text-xs text-gray-500 truncate">' + escToast(body) + '</p></div>' +
+                    '<button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>';
+
+                if (url) {
+                    toast.addEventListener('click', function(e) {
+                        if (e.target.closest('button')) return;
+                        window.location.href = url;
+                    });
+                }
+
+                container.appendChild(toast);
+
+                // Auto-remove after 5s
+                setTimeout(function() {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(function() { toast.remove(); }, 300);
+                }, 5000);
+            }
+
+            function escToast(str) {
+                if (!str) return '';
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+
+            // Update badge
+            function updateBadge(count) {
+                var badge = document.getElementById('inbox-badge');
+                if (!badge) return;
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.classList.remove('hidden');
+                    document.title = '(' + count + ') ' + originalTitle;
+                } else {
+                    badge.classList.add('hidden');
+                    document.title = originalTitle;
+                }
+            }
+
+            // Request browser notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                // Request on first user interaction
+                document.addEventListener('click', function requestNotif() {
+                    Notification.requestPermission();
+                    document.removeEventListener('click', requestNotif);
+                }, { once: true });
+            }
+
+            // Browser push notification
+            function sendBrowserNotif(title, body, url) {
+                if (!('Notification' in window) || Notification.permission !== 'granted') return;
+                try {
+                    var notif = new Notification(title, {
+                        body: body,
+                        icon: '/favicon.ico',
+                        tag: 'chatme-msg',
+                        renotify: true,
+                    });
+                    if (url) {
+                        notif.onclick = function() { window.focus(); window.location.href = url; };
+                    }
+                } catch (e) {}
+            }
+
+            // Poll notifications
+            function pollNotifications() {
+                fetch(notifPollUrl + '?since=' + encodeURIComponent(lastPollTime), {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var unread = data.unread_conversations || 0;
+                    updateBadge(unread);
+
+                    // New messages since last poll
+                    if (data.recent_unread && data.recent_unread.length > 0 && unread > prevUnread) {
+                        playNotifSound();
+
+                        data.recent_unread.forEach(function(conv) {
+                            var msg = conv.unread_count + ' mensaje' + (conv.unread_count > 1 ? 's' : '') + ' nuevo' + (conv.unread_count > 1 ? 's' : '');
+                            showToast(conv.contact_name, msg, '/inbox/conversations/' + conv.id);
+
+                            // Browser notification if page is hidden
+                            if (document.hidden) {
+                                sendBrowserNotif('ChatMe - ' + conv.contact_name, msg, '/inbox/conversations/' + conv.id);
+                            }
+                        });
+                    }
+
+                    prevUnread = unread;
+                    if (data.server_time) lastPollTime = data.server_time;
+                })
+                .catch(function() {});
+            }
+
+            // Initial poll + interval
+            pollNotifications();
+            setInterval(pollNotifications, 10000);
+
+            // Mark conversation as read when viewing it
+            var currentConvMatch = window.location.pathname.match(/\/inbox\/conversations\/(\d+)/);
+            if (currentConvMatch) {
+                fetch('/inbox/conversations/' + currentConvMatch[1] + '/read', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+                }).catch(function() {});
+            }
+        })();
+        </script>
+
+        <style>
+            @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            .animate-slide-in { animation: slideIn 0.3s ease-out; }
+        </style>
     </body>
 </html>

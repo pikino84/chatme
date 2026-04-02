@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Events\ConversationCreated;
 use App\Events\MessageReceivedEvent;
+use App\Jobs\DownloadWhatsAppMediaJob;
 use App\Models\Channel;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\MessageAttachment;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppWebhookService
@@ -88,7 +90,13 @@ class WhatsAppWebhookService
             ],
         ]);
 
-        $conversation->update(['last_message_at' => now()]);
+        $conversation->update([
+            'last_message_at' => now(),
+            'unread_count' => $conversation->unread_count + 1,
+        ]);
+
+        // Process media attachments
+        $this->processMediaAttachment($channel, $message, $messageData);
 
         MessageReceivedEvent::dispatch($message);
     }
@@ -158,8 +166,99 @@ class WhatsAppWebhookService
             'text' => 'text',
             'image' => 'image',
             'audio' => 'audio',
-            'video', 'document' => 'file',
+            'video' => 'video',
+            'document' => 'file',
             default => 'text',
+        };
+    }
+
+    private function processMediaAttachment(Channel $channel, Message $message, array $messageData): void
+    {
+        $waType = $messageData['type'] ?? 'text';
+        $mediaInfo = $this->extractMediaInfo($waType, $messageData);
+
+        if (!$mediaInfo) {
+            return;
+        }
+
+        $attachment = MessageAttachment::create([
+            'organization_id' => $message->organization_id,
+            'message_id' => $message->id,
+            'file_name' => $mediaInfo['file_name'],
+            'file_path' => '',
+            'file_size' => 0,
+            'mime_type' => $mediaInfo['mime_type'],
+            'media_type' => $mediaInfo['media_type'],
+            'external_media_id' => $mediaInfo['media_id'],
+            'status' => 'pending',
+        ]);
+
+        // Store media metadata in message for reference
+        $message->update([
+            'metadata' => array_merge($message->metadata ?? [], [
+                'media_id' => $mediaInfo['media_id'],
+                'media_type' => $mediaInfo['media_type'],
+                'mime_type' => $mediaInfo['mime_type'],
+                'attachment_id' => $attachment->id,
+            ]),
+        ]);
+
+        DownloadWhatsAppMediaJob::dispatch(
+            $message->id,
+            $attachment->id,
+            $channel->id,
+        );
+    }
+
+    private function extractMediaInfo(string $waType, array $messageData): ?array
+    {
+        $mediaData = $messageData[$waType] ?? null;
+
+        if (!$mediaData || !isset($mediaData['id'])) {
+            return null;
+        }
+
+        $mediaType = match ($waType) {
+            'image' => 'image',
+            'video' => 'video',
+            'audio' => 'audio',
+            'document' => 'document',
+            default => null,
+        };
+
+        if (!$mediaType) {
+            return null;
+        }
+
+        $fileName = match ($waType) {
+            'document' => $mediaData['filename'] ?? 'document',
+            'image' => 'image.' . $this->mimeToExtension($mediaData['mime_type'] ?? 'image/jpeg'),
+            'video' => 'video.' . $this->mimeToExtension($mediaData['mime_type'] ?? 'video/mp4'),
+            'audio' => 'audio.' . $this->mimeToExtension($mediaData['mime_type'] ?? 'audio/ogg'),
+            default => 'file',
+        };
+
+        return [
+            'media_id' => $mediaData['id'],
+            'mime_type' => $mediaData['mime_type'] ?? 'application/octet-stream',
+            'media_type' => $mediaType,
+            'file_name' => $fileName,
+        ];
+    }
+
+    private function mimeToExtension(string $mimeType): string
+    {
+        return match ($mimeType) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            'video/mp4' => 'mp4',
+            'video/3gpp' => '3gp',
+            'audio/aac' => 'aac',
+            'audio/ogg' => 'ogg',
+            'audio/mpeg' => 'mp3',
+            'audio/opus' => 'opus',
+            default => 'bin',
         };
     }
 }

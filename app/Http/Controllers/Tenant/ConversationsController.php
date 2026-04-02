@@ -22,7 +22,7 @@ class ConversationsController extends Controller
 
         $conversation->load(['channel', 'assignedUser', 'branch']);
         $messages = $conversation->messages()
-            ->with('user')
+            ->with(['user', 'attachments'])
             ->oldest()
             ->paginate(50);
 
@@ -60,6 +60,17 @@ class ConversationsController extends Controller
                     'type' => $m->type,
                     'user_name' => $m->user?->name ?? 'Agent',
                     'time' => $m->created_at->format('H:i'),
+                    'attachments' => $m->attachments->map(fn ($a) => [
+                        'id' => $a->id,
+                        'file_name' => $a->file_name,
+                        'media_type' => $a->media_type,
+                        'mime_type' => $a->mime_type,
+                        'file_size' => $a->sizeForHumans(),
+                        'duration' => $a->durationForHumans(),
+                        'status' => $a->status,
+                        'url' => $a->url(),
+                        'thumbnail_url' => $a->thumbnailUrl(),
+                    ]),
                 ]),
                 'agents' => $agents,
             ]);
@@ -79,11 +90,15 @@ class ConversationsController extends Controller
         return view('inbox.show', compact('conversation', 'messages', 'agents', 'conversations'));
     }
 
-    public function markAsRead(Conversation $conversation)
+    public function markAsRead(Request $request, Conversation $conversation)
     {
         $this->authorize('view', $conversation);
 
-        $conversation->update(['last_message_at' => now()]);
+        $conversation->update(['unread_count' => 0]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['ok' => true]);
+        }
 
         return back();
     }

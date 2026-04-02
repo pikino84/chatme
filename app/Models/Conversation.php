@@ -28,6 +28,7 @@ class Conversation extends Model
         'metadata',
         'closed_at',
         'last_message_at',
+        'unread_count',
     ];
 
     protected function casts(): array

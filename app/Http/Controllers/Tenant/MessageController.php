@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Events\MessageSentEvent;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendWhatsAppMediaJob;
 use App\Jobs\SendWhatsAppMessage;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\MessageAttachment;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MessageController extends Controller
 {
@@ -20,7 +23,7 @@ class MessageController extends Controller
         $afterId = (int) $request->query('after_id', 0);
 
         $messages = $conversation->messages()
-            ->with('user')
+            ->with(['user', 'attachments'])
             ->when($afterId, fn ($q) => $q->where('id', '>', $afterId))
             ->oldest()
             ->limit(50)
@@ -32,6 +35,17 @@ class MessageController extends Controller
                 'direction' => $msg->direction,
                 'user_name' => $msg->user?->name ?? ($msg->isInbound() ? null : 'Agent'),
                 'time' => $msg->created_at->format('H:i'),
+                'attachments' => $msg->attachments->map(fn ($a) => [
+                    'id' => $a->id,
+                    'file_name' => $a->file_name,
+                    'media_type' => $a->media_type,
+                    'mime_type' => $a->mime_type,
+                    'file_size' => $a->sizeForHumans(),
+                    'duration' => $a->durationForHumans(),
+                    'status' => $a->status,
+                    'url' => $a->url(),
+                    'thumbnail_url' => $a->thumbnailUrl(),
+                ]),
             ]);
 
         return response()->json(['messages' => $messages]);
@@ -40,6 +54,7 @@ class MessageController extends Controller
     public function store(Request $request, Conversation $conversation)
     {
         $type = $request->input('type', 'text');
+        $hasFile = $request->hasFile('file');
 
         if ($type === 'internal_note') {
             $this->authorize('sendInternalNote', [Message::class, $conversation]);
@@ -47,36 +62,91 @@ class MessageController extends Controller
             $this->authorize('send', [Message::class, $conversation]);
         }
 
-        $request->validate([
-            'body' => 'required|string|max:5000',
-            'type' => 'nullable|in:text,internal_note',
-        ]);
+        $rules = [
+            'type' => 'nullable|in:text,internal_note,image,video,audio,file',
+        ];
 
-        $body = strip_tags($request->input('body'));
+        if ($hasFile) {
+            $rules['file'] = 'required|file|max:16384'; // 16MB max
+            $rules['body'] = 'nullable|string|max:5000';
+        } else {
+            $rules['body'] = 'required|string|max:5000';
+        }
+
+        $request->validate($rules);
+
+        $body = strip_tags($request->input('body', ''));
+
+        // Determine message type from file if present
+        if ($hasFile) {
+            $file = $request->file('file');
+            $mime = $file->getMimeType();
+            $type = $this->detectMediaType($mime);
+        }
 
         $message = Message::create([
             'organization_id' => $conversation->organization_id,
             'conversation_id' => $conversation->id,
             'user_id' => $request->user()->id,
-            'body' => $body,
+            'body' => $body ?: ($hasFile ? null : $body),
             'type' => $type,
             'direction' => 'outbound',
         ]);
 
         $conversation->update(['last_message_at' => now()]);
 
-        // Broadcast to other agents viewing this conversation
-        MessageSentEvent::dispatch($message);
+        // Handle file attachment
+        if ($hasFile) {
+            $file = $request->file('file');
+            $extension = $file->getClientOriginalExtension() ?: 'bin';
+            $channelType = $conversation->channel?->type ?? 'unknown';
 
-        // Send to WhatsApp if the channel is WhatsApp and not an internal note
-        if ($type !== 'internal_note' && $conversation->channel?->isWhatsApp()) {
-            SendWhatsAppMessage::dispatch($message);
+            $storagePath = MessageAttachment::storagePath(
+                $conversation->organization_id,
+                $channelType,
+                $message->id,
+                $extension,
+            );
+
+            $disk = MessageAttachment::mediaDisk();
+            Storage::disk($disk)->put($storagePath, file_get_contents($file), 'private');
+
+            $attachment = MessageAttachment::create([
+                'organization_id' => $conversation->organization_id,
+                'message_id' => $message->id,
+                'file_name' => $file->getClientOriginalName(),
+                'file_path' => $storagePath,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'media_type' => str_replace(['video', 'file'], ['video', 'document'], $type === 'file' ? 'document' : $type),
+                'status' => 'ready',
+            ]);
+
+            // Send media via WhatsApp
+            if ($type !== 'internal_note' && $conversation->channel?->isWhatsApp()) {
+                SendWhatsAppMediaJob::dispatch($message->id, $attachment->id);
+            }
+        } else {
+            // Broadcast and send text via WhatsApp
+            MessageSentEvent::dispatch($message);
+
+            if ($type !== 'internal_note' && $conversation->channel?->isWhatsApp()) {
+                SendWhatsAppMessage::dispatch($message);
+            }
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['message' => $message], 201);
+            return response()->json(['message' => $message->load('attachments')], 201);
         }
 
         return back();
+    }
+
+    private function detectMediaType(string $mimeType): string
+    {
+        if (str_starts_with($mimeType, 'image/')) return 'image';
+        if (str_starts_with($mimeType, 'video/')) return 'video';
+        if (str_starts_with($mimeType, 'audio/')) return 'audio';
+        return 'file';
     }
 }

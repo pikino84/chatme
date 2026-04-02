@@ -6,6 +6,7 @@ use App\Models\Traits\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Message extends Model
 {
@@ -38,6 +39,21 @@ class Message extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MessageAttachment::class);
+    }
+
+    public function hasAttachments(): bool
+    {
+        return $this->attachments()->exists();
+    }
+
+    public function isMediaMessage(): bool
+    {
+        return in_array($this->type, ['image', 'file', 'audio']);
     }
 
     public function isInternalNote(): bool

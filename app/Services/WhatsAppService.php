@@ -61,6 +61,126 @@ class WhatsAppService
         ]);
     }
 
+    /**
+     * Get media URL from WhatsApp media ID.
+     * Step 1: GET /{media_id} → returns url field
+     */
+    public function getMediaUrl(string $accessToken, string $mediaId): ?string
+    {
+        $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $mediaId;
+
+        $response = Http::withToken($accessToken)
+            ->timeout(15)
+            ->get($url);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp getMediaUrl failed', [
+                'media_id' => $mediaId,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return null;
+        }
+
+        return $response->json('url');
+    }
+
+    /**
+     * Download media binary from WhatsApp CDN URL.
+     * Step 2: GET {media_url} → returns binary content
+     */
+    public function downloadMedia(string $accessToken, string $mediaUrl): ?string
+    {
+        $response = Http::withToken($accessToken)
+            ->timeout(60)
+            ->get($mediaUrl);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp downloadMedia failed', [
+                'url' => $mediaUrl,
+                'status' => $response->status(),
+            ]);
+            return null;
+        }
+
+        return $response->body();
+    }
+
+    /**
+     * Upload media to WhatsApp CDN and return the media ID.
+     */
+    public function uploadMedia(Channel $channel, string $filePath, string $mimeType): ?string
+    {
+        $phoneNumberId = $channel->getWhatsAppConfig('phone_number_id');
+        $accessToken = $channel->getWhatsAppConfig('access_token');
+
+        if (!$phoneNumberId || !$accessToken) {
+            return null;
+        }
+
+        $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $phoneNumberId . '/media';
+
+        $response = Http::withToken($accessToken)
+            ->timeout(60)
+            ->attach('file', file_get_contents($filePath), basename($filePath), ['Content-Type' => $mimeType])
+            ->post($url, [
+                'messaging_product' => 'whatsapp',
+                'type' => $mimeType,
+            ]);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp uploadMedia failed', [
+                'channel_id' => $channel->id,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return null;
+        }
+
+        return $response->json('id');
+    }
+
+    /**
+     * Send a media message (image, video, audio, document) via WhatsApp.
+     */
+    public function sendMediaMessage(Channel $channel, string $to, string $mediaType, string $mediaId, ?string $caption = null): ?array
+    {
+        $phoneNumberId = $channel->getWhatsAppConfig('phone_number_id');
+        $accessToken = $channel->getWhatsAppConfig('access_token');
+
+        if (!$phoneNumberId || !$accessToken) {
+            return null;
+        }
+
+        $mediaPayload = ['id' => $mediaId];
+        if ($caption && in_array($mediaType, ['image', 'video', 'document'])) {
+            $mediaPayload['caption'] = $caption;
+        }
+        if ($mediaType === 'document') {
+            $mediaPayload['filename'] = $caption ?? 'document';
+        }
+
+        $response = $this->post($phoneNumberId, $accessToken, [
+            'messaging_product' => 'whatsapp',
+            'recipient_type' => 'individual',
+            'to' => $to,
+            'type' => $mediaType,
+            $mediaType => $mediaPayload,
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp sendMediaMessage failed', [
+                'channel_id' => $channel->id,
+                'media_type' => $mediaType,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return null;
+        }
+
+        return $response->json();
+    }
+
     private function post(string $phoneNumberId, string $accessToken, array $data): Response
     {
         $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $phoneNumberId . '/messages';

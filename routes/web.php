@@ -15,6 +15,7 @@ use App\Http\Controllers\Tenant\DripController;
 use App\Http\Controllers\Tenant\KbArticleController;
 use App\Http\Controllers\Tenant\KbCategoryController;
 use App\Http\Controllers\Tenant\MessageController;
+use App\Http\Controllers\Tenant\NotificationController;
 use App\Http\Controllers\Tenant\BrandController;
 use App\Http\Controllers\Tenant\ChannelController;
 use App\Http\Controllers\Tenant\PipelineController;
@@ -77,6 +78,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
         })->name('dashboard');
 
         Route::middleware([\App\Http\Middleware\ResolveUserTenant::class, 'throttle:tenant-api'])->group(function () {
+            Route::get('/notifications/poll', [NotificationController::class, 'poll'])->name('notifications.poll');
             Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
             Route::get('/inbox/conversations/{conversation}', [ConversationsController::class, 'show'])->name('inbox.conversations.show');
             Route::post('/inbox/conversations/{conversation}/read', [ConversationsController::class, 'markAsRead'])->name('inbox.conversations.read');
