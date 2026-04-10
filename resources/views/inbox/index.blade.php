@@ -382,7 +382,7 @@
         window.location.href = '/inbox/conversations/' + convId;
     }
 
-    function openMediaModal(type, url, filename) {
+    window.openMediaModal = function(type, url, filename) {
         var modal = document.getElementById('media-modal');
         var body = document.getElementById('media-modal-body');
         var dl = document.getElementById('media-modal-download');
@@ -404,7 +404,7 @@
         modal.querySelector('.media-modal-content').classList.add('scale-100', 'opacity-100');
     }
 
-    function closeMediaModal() {
+    window.closeMediaModal = function() {
         var modal = document.getElementById('media-modal');
         var backdrop = modal.querySelector('.media-modal-backdrop');
         var content = modal.querySelector('.media-modal-content');
