@@ -28,6 +28,8 @@ class MessageReceivedEvent implements ShouldBroadcastNow
 
     public function broadcastWith(): array
     {
+        $this->message->load('attachments');
+
         return [
             'id' => $this->message->id,
             'conversation_id' => $this->message->conversation_id,
@@ -37,6 +39,17 @@ class MessageReceivedEvent implements ShouldBroadcastNow
             'user_name' => $this->message->user?->name,
             'time' => $this->message->created_at->format('H:i'),
             'created_at' => $this->message->created_at->toISOString(),
+            'attachments' => $this->message->attachments->map(fn ($a) => [
+                'id' => $a->id,
+                'file_name' => $a->file_name,
+                'media_type' => $a->media_type,
+                'mime_type' => $a->mime_type,
+                'file_size' => $a->sizeForHumans(),
+                'duration' => $a->durationForHumans(),
+                'status' => $a->status,
+                'url' => $a->url(),
+                'thumbnail_url' => $a->thumbnailUrl(),
+            ])->toArray(),
         ];
     }
 }

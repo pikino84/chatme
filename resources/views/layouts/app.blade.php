@@ -184,7 +184,7 @@
             var notifAudio = null;
 
             // Notification sound (short beep via Web Audio API)
-            function playNotifSound() {
+            window.playNotifSound = function() {
                 if (!soundEnabled) return;
                 try {
                     if (!notifAudio) {

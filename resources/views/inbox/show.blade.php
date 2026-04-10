@@ -218,6 +218,48 @@
             return html;
         }
 
+        var pendingAttachmentMsgs = {};
+
+        function hasPendingAttachments(msg) {
+            if (!msg.attachments || !msg.attachments.length) return false;
+            return msg.attachments.some(function(a) { return a.status === 'pending' || a.status === 'processing'; });
+        }
+
+        function pollPendingAttachments() {
+            var ids = Object.keys(pendingAttachmentMsgs);
+            if (!ids.length) return;
+
+            fetch(pollUrl + '?after_id=0', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.messages) return;
+                data.messages.forEach(function(msg) {
+                    if (!pendingAttachmentMsgs[msg.id]) return;
+                    if (!hasPendingAttachments(msg)) {
+                        delete pendingAttachmentMsgs[msg.id];
+                        var el = document.querySelector('[data-msg-id="' + msg.id + '"]');
+                        if (el) {
+                            var bubble = el.querySelector('div');
+                            if (bubble) {
+                                var mediaHtml = renderAttachments(msg.attachments);
+                                if (msg.body && !isMediaPlaceholder(msg.body)) {
+                                    mediaHtml += '<p class="mt-1 text-xs opacity-70">' + escapeHtml(msg.body) + '</p>';
+                                }
+                                var timeEl = bubble.querySelector('.text-\\[10px\\]');
+                                var timeHtml = timeEl ? timeEl.outerHTML : '';
+                                bubble.innerHTML = mediaHtml + timeHtml;
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(function() {});
+        }
+
+        setInterval(pollPendingAttachments, 3000);
+
         function appendMessage(msg) {
             if (document.querySelector('[data-msg-id="' + msg.id + '"]')) return;
             if (sentIds[msg.id]) {
@@ -227,6 +269,11 @@
 
             var thread = document.getElementById('message-thread');
             if (!thread) return;
+
+            // Play sound for inbound messages
+            if (msg.direction === 'inbound' && typeof playNotifSound === 'function') {
+                playNotifSound();
+            }
 
             var div = document.createElement('div');
             div.setAttribute('data-msg-id', msg.id);
@@ -238,6 +285,9 @@
                 bodyHtml = renderAttachments(msg.attachments);
                 if (msg.body && !isMediaPlaceholder(msg.body)) {
                     bodyHtml += '<p class="mt-1 text-xs opacity-70">' + escapeHtml(msg.body) + '</p>';
+                }
+                if (hasPendingAttachments(msg)) {
+                    pendingAttachmentMsgs[msg.id] = true;
                 }
             } else {
                 bodyHtml = escapeHtml(msg.body);
