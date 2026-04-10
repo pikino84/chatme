@@ -181,7 +181,7 @@
         }
 
         function isMediaPlaceholder(body) {
-            return ['[Image]', '[Audio]', '[Video]', '[Document]'].indexOf(body) !== -1;
+            return ['[Image]', '[Audio]', '[Video]', '[Document]', '[Sticker]'].indexOf(body) !== -1;
         }
 
         function renderAttachment(att) {
@@ -190,6 +190,9 @@
             }
             if (att.status === 'failed') {
                 return '<div class="flex items-center gap-2 py-2 text-xs text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Error al descargar</div>';
+            }
+            if (att.media_type === 'sticker' && att.url) {
+                return '<img src="' + escapeHtml(att.url) + '" alt="Sticker" class="w-28 h-28 object-contain cursor-pointer hover:scale-105 transition mb-1" loading="lazy" onclick="openMediaModal(\'image\', \'' + escapeHtml(att.url) + '\', \'sticker.webp\')">';
             }
             if (att.media_type === 'image' && att.url) {
                 return '<img src="' + escapeHtml(att.thumbnail_url || att.url) + '" alt="' + escapeHtml(att.file_name) + '" class="max-w-[250px] max-h-[250px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition mb-1" loading="lazy" onclick="openMediaModal(\'image\', \'' + escapeHtml(att.url) + '\', \'' + escapeHtml(att.file_name) + '\')">';

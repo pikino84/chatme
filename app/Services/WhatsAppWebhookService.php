@@ -151,6 +151,7 @@ class WhatsAppWebhookService
             'audio' => '[Audio]',
             'video' => $messageData['video']['caption'] ?? '[Video]',
             'document' => $messageData['document']['filename'] ?? '[Document]',
+            'sticker' => '[Sticker]',
             'location' => sprintf(
                 '[Location: %s, %s]',
                 $messageData['location']['latitude'] ?? '0',
@@ -168,6 +169,7 @@ class WhatsAppWebhookService
             'audio' => 'audio',
             'video' => 'video',
             'document' => 'file',
+            'sticker' => 'image',
             default => 'text',
         };
     }
@@ -223,6 +225,7 @@ class WhatsAppWebhookService
             'video' => 'video',
             'audio' => 'audio',
             'document' => 'document',
+            'sticker' => 'sticker',
             default => null,
         };
 
@@ -235,6 +238,7 @@ class WhatsAppWebhookService
             'image' => 'image.' . $this->mimeToExtension($mediaData['mime_type'] ?? 'image/jpeg'),
             'video' => 'video.' . $this->mimeToExtension($mediaData['mime_type'] ?? 'video/mp4'),
             'audio' => 'audio.' . $this->mimeToExtension($mediaData['mime_type'] ?? 'audio/ogg'),
+            'sticker' => 'sticker.webp',
             default => 'file',
         };
 

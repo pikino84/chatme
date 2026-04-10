@@ -147,6 +147,11 @@ class MessageAttachment extends Model
         return $this->media_type === 'document';
     }
 
+    public function isSticker(): bool
+    {
+        return $this->media_type === 'sticker';
+    }
+
     public function isReady(): bool
     {
         return $this->status === 'ready';

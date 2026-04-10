@@ -14,7 +14,7 @@
                     @include('inbox.partials.message-attachments', ['attachments' => $msg->attachments])
                     @if($msg->body && !$msg->isMediaMessage())
                         {{ $msg->body }}
-                    @elseif($msg->body && $msg->isMediaMessage() && !in_array($msg->body, ['[Image]', '[Audio]', '[Video]', '[Document]']))
+                    @elseif($msg->body && $msg->isMediaMessage() && !in_array($msg->body, ['[Image]', '[Audio]', '[Video]', '[Document]', '[Sticker]']))
                         <p class="mt-1 text-xs text-gray-500">{{ $msg->body }}</p>
                     @endif
                     <div class="text-[10px] text-gray-400 mt-1 text-right">
@@ -28,7 +28,7 @@
                     @include('inbox.partials.message-attachments', ['attachments' => $msg->attachments])
                     @if($msg->body && !$msg->isMediaMessage())
                         {{ $msg->body }}
-                    @elseif($msg->body && $msg->isMediaMessage() && !in_array($msg->body, ['[Image]', '[Audio]', '[Video]', '[Document]']))
+                    @elseif($msg->body && $msg->isMediaMessage() && !in_array($msg->body, ['[Image]', '[Audio]', '[Video]', '[Document]', '[Sticker]']))
                         <p class="mt-1 text-xs text-white/70">{{ $msg->body }}</p>
                     @endif
                     <div class="text-[10px] text-crea-secondary-light mt-1 text-right">

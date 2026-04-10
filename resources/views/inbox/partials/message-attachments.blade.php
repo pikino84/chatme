@@ -11,6 +11,8 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     Error al descargar archivo
                 </div>
+            @elseif($att->isSticker())
+                <img src="{{ $att->url() }}" alt="Sticker" class="w-28 h-28 object-contain cursor-pointer hover:scale-105 transition" loading="lazy" onclick="openMediaModal('image', '{{ $att->url() }}', 'sticker.webp')">
             @elseif($att->isImage())
                 <img src="{{ $att->thumbnailUrl() ?? $att->url() }}" alt="{{ $att->file_name }}" class="max-w-[250px] max-h-[250px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition" loading="lazy" onclick="openMediaModal('image', '{{ $att->url() }}', '{{ addslashes($att->file_name) }}')">
             @elseif($att->isVideo())
