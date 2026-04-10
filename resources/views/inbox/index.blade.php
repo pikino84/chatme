@@ -202,6 +202,31 @@
         }
     }
 
+    function docIconHtml(fileName) {
+        var ext = (fileName || '').split('.').pop().toLowerCase();
+        var iconColor, iconSvg;
+        if (ext === 'pdf') {
+            iconColor = 'text-red-500 bg-red-50';
+            iconSvg = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>';
+        } else if (ext === 'doc' || ext === 'docx') {
+            iconColor = 'text-blue-600 bg-blue-50';
+            iconSvg = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm2-5h8v1.5H8V15zm0-3h8v1.5H8V12zm0-3h5v1.5H8V9z"/></svg>';
+        } else if (ext === 'xls' || ext === 'xlsx' || ext === 'csv') {
+            iconColor = 'text-green-600 bg-green-50';
+            iconSvg = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm2-5h3v1.5H8V15zm5 0h3v1.5h-3V15zM8 12h3v1.5H8V12zm5 0h3v1.5h-3V12zM8 9h3v1.5H8V9zm5 0h3v1.5h-3V9z"/></svg>';
+        } else if (ext === 'ppt' || ext === 'pptx') {
+            iconColor = 'text-orange-500 bg-orange-50';
+            iconSvg = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm3-7h2.5c1.1 0 2-.9 2-2s-.9-2-2-2H8v7h1.5v-3zm0-2.5h2c.28 0 .5.22.5.5s-.22.5-.5.5H9v-1z"/></svg>';
+        } else if (ext === 'zip' || ext === 'rar' || ext === '7z' || ext === 'tar' || ext === 'gz') {
+            iconColor = 'text-yellow-600 bg-yellow-50';
+            iconSvg = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 6h-2v2h2v2h-2v2h-2v-2h2v-2h-2v-2h2v-2h-2V8h2v2h2v2z"/></svg>';
+        } else {
+            iconColor = 'text-gray-500 bg-gray-100';
+            iconSvg = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
+        }
+        return { color: iconColor, svg: iconSvg };
+    }
+
     function renderAttachment(att) {
         if (att.status === 'pending' || att.status === 'processing') {
             return '<div class="flex items-center gap-2 py-2 text-xs opacity-60"><svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Descargando ' + esc(att.media_type) + '...</div>';
@@ -220,7 +245,8 @@
             return '<div class="flex items-center gap-2 mb-1 min-w-[200px]"><audio controls preload="metadata" class="h-10 w-full max-w-[250px]"><source src="' + esc(att.url) + '" type="' + esc(att.mime_type) + '"></audio>' + dur + '</div>';
         }
         if (att.media_type === 'document' && att.url) {
-            return '<a href="' + esc(att.url) + '" target="_blank" class="flex items-center gap-3 p-2 rounded-lg bg-black/5 hover:bg-black/10 transition min-w-[180px] mb-1"><div class="w-10 h-10 rounded-lg bg-crea-secondary/10 flex items-center justify-center shrink-0"><svg class="w-5 h-5 text-crea-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div><div class="min-w-0 flex-1"><p class="text-xs font-medium truncate">' + esc(att.file_name) + '</p><p class="text-[10px] opacity-60">' + esc(att.file_size) + '</p></div></a>';
+            var di = docIconHtml(att.file_name);
+            return '<a href="' + esc(att.url) + '" target="_blank" class="flex items-center gap-3 p-2 rounded-lg bg-black/5 hover:bg-black/10 transition min-w-[180px] mb-1"><div class="w-10 h-10 rounded-lg ' + di.color + ' flex items-center justify-center shrink-0">' + di.svg + '</div><div class="min-w-0 flex-1"><p class="text-xs font-medium truncate">' + esc(att.file_name) + '</p><p class="text-[10px] opacity-60">' + esc(att.file_size) + '</p></div></a>';
         }
         return '';
     }
