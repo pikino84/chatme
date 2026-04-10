@@ -89,6 +89,7 @@
     var currentConvId = null;
     var csrfToken = '{{ csrf_token() }}';
     var pollInterval = null;
+    var msgSoundReady = false;
     var lastMsgId = 0;
 
     function esc(str) {
@@ -131,6 +132,8 @@
         .then(function(data) {
             currentConvId = convId;
             renderChat(data);
+            msgSoundReady = false;
+            setTimeout(function() { msgSoundReady = true; }, 5000);
             setupPolling(data.conversation.poll_url);
             // Mark as read
             fetch('/inbox/conversations/' + convId + '/read', {
@@ -463,7 +466,7 @@
                     var thread = document.getElementById('message-thread');
                     data.messages.forEach(function(msg) {
                         if (document.querySelector('[data-msg-id="' + msg.id + '"]')) return;
-                        if (msg.direction === 'inbound' && typeof playNotifSound === 'function') {
+                        if (msg.direction === 'inbound' && msgSoundReady && typeof playNotifSound === 'function') {
                             playNotifSound();
                         }
                         thread.insertAdjacentHTML('beforeend', renderMessage(msg));

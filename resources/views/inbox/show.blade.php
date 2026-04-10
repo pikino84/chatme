@@ -219,6 +219,8 @@
         }
 
         var pendingMediaMsgs = {};
+        var soundReady = false;
+        setTimeout(function() { soundReady = true; }, 5000);
 
         function needsMediaUpdate(msg) {
             // Has pending attachments
@@ -292,8 +294,8 @@
                 optimistics.forEach(function(el) { el.remove(); });
             }
 
-            // Play sound for inbound messages
-            if (msg.direction === 'inbound' && typeof playNotifSound === 'function') {
+            // Play sound for inbound messages (skip first 5s after page load)
+            if (msg.direction === 'inbound' && soundReady && typeof playNotifSound === 'function') {
                 playNotifSound();
             }
 
