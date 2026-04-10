@@ -286,6 +286,12 @@
             var thread = document.getElementById('message-thread');
             if (!thread) return;
 
+            // Remove optimistic duplicate for outbound messages
+            if (msg.direction === 'outbound') {
+                var optimistics = thread.querySelectorAll('[data-optimistic]');
+                optimistics.forEach(function(el) { el.remove(); });
+            }
+
             // Play sound for inbound messages
             if (msg.direction === 'inbound' && typeof playNotifSound === 'function') {
                 playNotifSound();
