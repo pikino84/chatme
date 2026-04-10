@@ -384,9 +384,8 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             initLastId();
-            var wsOk = initEcho();
-            var interval = wsOk ? 30000 : 5000;
-            setInterval(pollMessages, interval);
+            initEcho();
+            setInterval(pollMessages, 5000);
         });
     })();
     </script>
