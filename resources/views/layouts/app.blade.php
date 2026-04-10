@@ -192,6 +192,7 @@
                         notifAudio = ctx;
                     }
                     var ctx = notifAudio;
+                    if (ctx.state === 'suspended') ctx.resume();
                     var t = ctx.currentTime;
 
                     // First pop - lower tone
@@ -318,6 +319,14 @@
                             // Browser notification if page is hidden
                             if (document.hidden) {
                                 sendBrowserNotif('ChatMe - ' + conv.contact_name, msg, '/inbox/conversations/' + conv.id);
+                            }
+
+                            // Highlight conversation in inbox list
+                            var convEl = document.querySelector('[data-conv-id="' + conv.id + '"]');
+                            if (convEl) {
+                                convEl.classList.add('bg-crea-secondary/5', 'border-l-2', 'border-crea-secondary');
+                                var nameEl = convEl.querySelector('.text-sm');
+                                if (nameEl) nameEl.classList.add('font-bold');
                             }
                         });
                     }
