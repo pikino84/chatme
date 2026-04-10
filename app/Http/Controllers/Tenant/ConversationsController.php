@@ -24,7 +24,7 @@ class ConversationsController extends Controller
         $messages = $conversation->messages()
             ->with(['user', 'attachments'])
             ->oldest()
-            ->paginate(50);
+            ->get();
 
         $agents = User::where('organization_id', $request->user()->organization_id)
             ->select('id', 'name')
