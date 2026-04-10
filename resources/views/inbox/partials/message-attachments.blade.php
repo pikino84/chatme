@@ -12,13 +12,16 @@
                     Error al descargar archivo
                 </div>
             @elseif($att->isImage())
-                <a href="{{ $att->url() }}" target="_blank" class="block">
-                    <img src="{{ $att->thumbnailUrl() ?? $att->url() }}" alt="{{ $att->file_name }}" class="max-w-[250px] max-h-[250px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition" loading="lazy">
-                </a>
+                <img src="{{ $att->thumbnailUrl() ?? $att->url() }}" alt="{{ $att->file_name }}" class="max-w-[250px] max-h-[250px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition" loading="lazy" onclick="openMediaModal('image', '{{ $att->url() }}', '{{ addslashes($att->file_name) }}')">
             @elseif($att->isVideo())
-                <video controls preload="metadata" class="max-w-[280px] max-h-[250px] rounded-lg">
-                    <source src="{{ $att->url() }}" type="{{ $att->mime_type }}">
-                </video>
+                <div class="relative cursor-pointer group" onclick="openMediaModal('video', '{{ $att->url() }}', '{{ addslashes($att->file_name) }}')">
+                    <video preload="metadata" class="max-w-[280px] max-h-[250px] rounded-lg pointer-events-none">
+                        <source src="{{ $att->url() }}" type="{{ $att->mime_type }}">
+                    </video>
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg group-hover:bg-black/30 transition">
+                        <svg class="w-12 h-12 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                </div>
             @elseif($att->isAudio())
                 <div class="flex items-center gap-2 min-w-[200px]">
                     <audio controls preload="metadata" class="h-10 w-full max-w-[250px]">

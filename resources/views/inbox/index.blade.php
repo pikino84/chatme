@@ -210,10 +210,10 @@
             return '<div class="flex items-center gap-2 py-2 text-xs text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Error al descargar</div>';
         }
         if (att.media_type === 'image' && att.url) {
-            return '<a href="' + esc(att.url) + '" target="_blank" class="block mb-1"><img src="' + esc(att.thumbnail_url || att.url) + '" alt="' + esc(att.file_name) + '" class="max-w-[250px] max-h-[250px] rounded-lg object-cover hover:opacity-90 transition" loading="lazy"></a>';
+            return '<img src="' + esc(att.thumbnail_url || att.url) + '" alt="' + esc(att.file_name) + '" class="max-w-[250px] max-h-[250px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition mb-1" loading="lazy" onclick="openMediaModal(\'image\', \'' + esc(att.url) + '\', \'' + esc(att.file_name) + '\')">';
         }
         if (att.media_type === 'video' && att.url) {
-            return '<div class="mb-1"><video controls preload="metadata" class="max-w-[280px] max-h-[250px] rounded-lg"><source src="' + esc(att.url) + '" type="' + esc(att.mime_type) + '"></video></div>';
+            return '<div class="relative cursor-pointer group mb-1" onclick="openMediaModal(\'video\', \'' + esc(att.url) + '\', \'' + esc(att.file_name) + '\')"><video preload="metadata" class="max-w-[280px] max-h-[250px] rounded-lg pointer-events-none"><source src="' + esc(att.url) + '" type="' + esc(att.mime_type) + '"></video><div class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg group-hover:bg-black/30 transition"><svg class="w-12 h-12 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>';
         }
         if (att.media_type === 'audio' && att.url) {
             var dur = att.duration ? ' <span class="text-[10px] opacity-60">' + esc(att.duration) + '</span>' : '';
@@ -382,6 +382,43 @@
         window.location.href = '/inbox/conversations/' + convId;
     }
 
+    function openMediaModal(type, url, filename) {
+        var modal = document.getElementById('media-modal');
+        var body = document.getElementById('media-modal-body');
+        var dl = document.getElementById('media-modal-download');
+        var fname = document.getElementById('media-modal-filename');
+
+        dl.href = url;
+        dl.setAttribute('download', filename || '');
+        fname.textContent = filename || '';
+
+        if (type === 'image') {
+            body.innerHTML = '<img src="' + url + '" class="max-w-full max-h-[80vh] rounded-lg object-contain" alt="' + (filename || '') + '">';
+        } else if (type === 'video') {
+            body.innerHTML = '<video controls autoplay class="max-w-full max-h-[80vh] rounded-lg"><source src="' + url + '">Tu navegador no soporta video.</video>';
+        }
+
+        modal.classList.remove('hidden');
+        modal.offsetHeight; // force reflow
+        modal.querySelector('.media-modal-backdrop').classList.add('opacity-100');
+        modal.querySelector('.media-modal-content').classList.add('scale-100', 'opacity-100');
+    }
+
+    function closeMediaModal() {
+        var modal = document.getElementById('media-modal');
+        var backdrop = modal.querySelector('.media-modal-backdrop');
+        var content = modal.querySelector('.media-modal-content');
+
+        backdrop.classList.remove('opacity-100');
+        content.classList.remove('scale-100', 'opacity-100');
+
+        // Stop any playing video
+        var video = modal.querySelector('video');
+        if (video) video.pause();
+
+        setTimeout(function() { modal.classList.add('hidden'); }, 200);
+    }
+
     function inboxApp() {
         return {
             orgId: {{ auth()->user()->organization_id ?? 'null' }},
@@ -396,4 +433,29 @@
     }
     </script>
     @endpush
+
+    {{-- Media Modal --}}
+    <div id="media-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center" onclick="if(event.target===this||event.target.classList.contains('media-modal-backdrop'))closeMediaModal()">
+        <div class="media-modal-backdrop absolute inset-0 bg-black/80 opacity-0 transition-opacity duration-200"></div>
+        <div class="media-modal-content relative z-10 max-w-[90vw] max-h-[90vh] flex flex-col items-center scale-95 opacity-0 transition-all duration-200">
+            {{-- Top bar --}}
+            <div class="flex items-center justify-between w-full mb-3 px-1">
+                <span id="media-modal-filename" class="text-white text-sm truncate max-w-[60vw]"></span>
+                <div class="flex items-center gap-3">
+                    <a id="media-modal-download" href="#" download class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3"/></svg>
+                        Descargar
+                    </a>
+                    <button onclick="closeMediaModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            {{-- Media content --}}
+            <div id="media-modal-body" class="flex items-center justify-center"></div>
+        </div>
+    </div>
+
+    {{-- Close modal on Escape key --}}
+    <script>document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMediaModal(); });</script>
 </x-app-layout>
