@@ -218,47 +218,60 @@
             return html;
         }
 
-        var pendingAttachmentMsgs = {};
+        var pendingMediaMsgs = {};
 
-        function hasPendingAttachments(msg) {
-            if (!msg.attachments || !msg.attachments.length) return false;
-            return msg.attachments.some(function(a) { return a.status === 'pending' || a.status === 'processing'; });
+        function needsMediaUpdate(msg) {
+            // Has pending attachments
+            if (msg.attachments && msg.attachments.length > 0) {
+                return msg.attachments.some(function(a) { return a.status === 'pending' || a.status === 'processing'; });
+            }
+            // Body is a media placeholder but no attachments yet (broadcast arrived before attachment was loaded)
+            if (isMediaPlaceholder(msg.body)) return true;
+            return false;
         }
 
-        function pollPendingAttachments() {
-            var ids = Object.keys(pendingAttachmentMsgs);
+        function updateMessageMedia(msgId, msg) {
+            var el = document.querySelector('[data-msg-id="' + msgId + '"]');
+            if (!el) return;
+            var hasReady = msg.attachments && msg.attachments.length > 0 &&
+                msg.attachments.some(function(a) { return a.status === 'ready'; });
+            if (!hasReady) return;
+
+            delete pendingMediaMsgs[msgId];
+            // Find the bubble div (first child div)
+            var wrapper = el.querySelector('div');
+            if (!wrapper) return;
+            var mediaHtml = renderAttachments(msg.attachments);
+            if (msg.body && !isMediaPlaceholder(msg.body)) {
+                mediaHtml += '<p class="mt-1 text-xs opacity-70">' + escapeHtml(msg.body) + '</p>';
+            }
+            var timeEl = wrapper.querySelector('div[class*="text-"]');
+            var timeHtml = timeEl ? timeEl.outerHTML : '';
+            wrapper.innerHTML = mediaHtml + timeHtml;
+        }
+
+        function pollPendingMedia() {
+            var ids = Object.keys(pendingMediaMsgs);
             if (!ids.length) return;
 
-            fetch(pollUrl + '?after_id=0', {
+            // Use the smallest pending msg id as after_id to get relevant messages
+            var minId = Math.min.apply(null, ids.map(Number)) - 1;
+            fetch(pollUrl + '?after_id=' + minId, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (!data.messages) return;
                 data.messages.forEach(function(msg) {
-                    if (!pendingAttachmentMsgs[msg.id]) return;
-                    if (!hasPendingAttachments(msg)) {
-                        delete pendingAttachmentMsgs[msg.id];
-                        var el = document.querySelector('[data-msg-id="' + msg.id + '"]');
-                        if (el) {
-                            var bubble = el.querySelector('div');
-                            if (bubble) {
-                                var mediaHtml = renderAttachments(msg.attachments);
-                                if (msg.body && !isMediaPlaceholder(msg.body)) {
-                                    mediaHtml += '<p class="mt-1 text-xs opacity-70">' + escapeHtml(msg.body) + '</p>';
-                                }
-                                var timeEl = bubble.querySelector('.text-\\[10px\\]');
-                                var timeHtml = timeEl ? timeEl.outerHTML : '';
-                                bubble.innerHTML = mediaHtml + timeHtml;
-                            }
-                        }
+                    if (pendingMediaMsgs[msg.id]) {
+                        updateMessageMedia(msg.id, msg);
                     }
                 });
             })
             .catch(function() {});
         }
 
-        setInterval(pollPendingAttachments, 3000);
+        setInterval(pollPendingMedia, 3000);
 
         function appendMessage(msg) {
             if (document.querySelector('[data-msg-id="' + msg.id + '"]')) return;
@@ -286,11 +299,17 @@
                 if (msg.body && !isMediaPlaceholder(msg.body)) {
                     bodyHtml += '<p class="mt-1 text-xs opacity-70">' + escapeHtml(msg.body) + '</p>';
                 }
-                if (hasPendingAttachments(msg)) {
-                    pendingAttachmentMsgs[msg.id] = true;
-                }
+            } else if (isMediaPlaceholder(msg.body)) {
+                // Media placeholder without attachments - show loading spinner
+                var mediaType = msg.body.replace('[', '').replace(']', '').toLowerCase();
+                bodyHtml = '<div class="flex items-center gap-2 py-2 text-xs opacity-60"><svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Descargando ' + mediaType + '...</div>';
             } else {
                 bodyHtml = escapeHtml(msg.body);
+            }
+
+            // Track messages that need media updates
+            if (needsMediaUpdate(msg)) {
+                pendingMediaMsgs[msg.id] = true;
             }
 
             if (msg.type === 'internal_note') {
