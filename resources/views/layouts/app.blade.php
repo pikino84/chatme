@@ -183,7 +183,7 @@
             var soundEnabled = localStorage.getItem('chatme_sound') !== 'off';
             var notifAudio = null;
 
-            // Notification sound (short beep via Web Audio API)
+            // Notification sound (WhatsApp-style double pop via Web Audio API)
             window.playNotifSound = function() {
                 if (!soundEnabled) return;
                 try {
@@ -192,16 +192,33 @@
                         notifAudio = ctx;
                     }
                     var ctx = notifAudio;
-                    var osc = ctx.createOscillator();
-                    var gain = ctx.createGain();
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.frequency.value = 880;
-                    osc.type = 'sine';
-                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-                    osc.start(ctx.currentTime);
-                    osc.stop(ctx.currentTime + 0.3);
+                    var t = ctx.currentTime;
+
+                    // First pop - lower tone
+                    var osc1 = ctx.createOscillator();
+                    var gain1 = ctx.createGain();
+                    osc1.connect(gain1);
+                    gain1.connect(ctx.destination);
+                    osc1.frequency.setValueAtTime(600, t);
+                    osc1.frequency.exponentialRampToValueAtTime(900, t + 0.06);
+                    osc1.type = 'sine';
+                    gain1.gain.setValueAtTime(0.25, t);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+                    osc1.start(t);
+                    osc1.stop(t + 0.1);
+
+                    // Second pop - higher tone (after short pause)
+                    var osc2 = ctx.createOscillator();
+                    var gain2 = ctx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.frequency.setValueAtTime(800, t + 0.12);
+                    osc2.frequency.exponentialRampToValueAtTime(1200, t + 0.18);
+                    osc2.type = 'sine';
+                    gain2.gain.setValueAtTime(0.25, t + 0.12);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                    osc2.start(t + 0.12);
+                    osc2.stop(t + 0.22);
                 } catch (e) {}
             }
 
