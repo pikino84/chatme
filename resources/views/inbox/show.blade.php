@@ -155,6 +155,40 @@
             return d.innerHTML;
         }
 
+        function isMediaPlaceholder(body) {
+            return ['[Image]', '[Audio]', '[Video]', '[Document]'].indexOf(body) !== -1;
+        }
+
+        function renderAttachment(att) {
+            if (att.status === 'pending' || att.status === 'processing') {
+                return '<div class="flex items-center gap-2 py-2 text-xs opacity-60"><svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Descargando ' + escapeHtml(att.media_type) + '...</div>';
+            }
+            if (att.status === 'failed') {
+                return '<div class="flex items-center gap-2 py-2 text-xs text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Error al descargar</div>';
+            }
+            if (att.media_type === 'image' && att.url) {
+                return '<img src="' + escapeHtml(att.thumbnail_url || att.url) + '" alt="' + escapeHtml(att.file_name) + '" class="max-w-[250px] max-h-[250px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition mb-1" loading="lazy" onclick="openMediaModal(\'image\', \'' + escapeHtml(att.url) + '\', \'' + escapeHtml(att.file_name) + '\')">';
+            }
+            if (att.media_type === 'video' && att.url) {
+                return '<div class="relative cursor-pointer group mb-1" onclick="openMediaModal(\'video\', \'' + escapeHtml(att.url) + '\', \'' + escapeHtml(att.file_name) + '\')"><video preload="metadata" class="max-w-[280px] max-h-[250px] rounded-lg pointer-events-none"><source src="' + escapeHtml(att.url) + '" type="' + escapeHtml(att.mime_type) + '"></video><div class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg group-hover:bg-black/30 transition"><svg class="w-12 h-12 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>';
+            }
+            if (att.media_type === 'audio' && att.url) {
+                var dur = att.duration ? ' <span class="text-[10px] opacity-60">' + escapeHtml(att.duration) + '</span>' : '';
+                return '<div class="flex items-center gap-2 mb-1 min-w-[200px]"><audio controls preload="metadata" class="h-10 w-full max-w-[250px]"><source src="' + escapeHtml(att.url) + '" type="' + escapeHtml(att.mime_type) + '"></audio>' + dur + '</div>';
+            }
+            if (att.media_type === 'document' && att.url) {
+                return '<a href="' + escapeHtml(att.url) + '" target="_blank" class="flex items-center gap-3 p-2 rounded-lg bg-black/5 hover:bg-black/10 transition min-w-[180px] mb-1"><div class="w-10 h-10 rounded-lg bg-crea-secondary/10 flex items-center justify-center shrink-0"><svg class="w-5 h-5 text-crea-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div><div class="min-w-0 flex-1"><p class="text-xs font-medium truncate">' + escapeHtml(att.file_name) + '</p><p class="text-[10px] opacity-60">' + escapeHtml(att.file_size) + '</p></div></a>';
+            }
+            return '';
+        }
+
+        function renderAttachments(attachments) {
+            if (!attachments || !attachments.length) return '';
+            var html = '';
+            attachments.forEach(function(att) { html += renderAttachment(att); });
+            return html;
+        }
+
         function appendMessage(msg) {
             if (document.querySelector('[data-msg-id="' + msg.id + '"]')) return;
             if (sentIds[msg.id]) {
@@ -167,22 +201,32 @@
 
             var div = document.createElement('div');
             div.setAttribute('data-msg-id', msg.id);
-            var safeBody = escapeHtml(msg.body);
             var time = msg.time || '';
+
+            var hasMedia = msg.attachments && msg.attachments.length > 0;
+            var bodyHtml = '';
+            if (hasMedia) {
+                bodyHtml = renderAttachments(msg.attachments);
+                if (msg.body && !isMediaPlaceholder(msg.body)) {
+                    bodyHtml += '<p class="mt-1 text-xs opacity-70">' + escapeHtml(msg.body) + '</p>';
+                }
+            } else {
+                bodyHtml = escapeHtml(msg.body);
+            }
 
             if (msg.type === 'internal_note') {
                 div.className = 'flex justify-center';
                 div.innerHTML = '<div class="max-w-md px-3 py-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-xs text-yellow-700 dark:text-yellow-300">' +
                     '<span class="font-medium">' + escapeHtml(msg.user_name || 'System') + ':</span> ' +
-                    safeBody + ' <span class="text-yellow-400 ml-2">' + time + '</span></div>';
+                    escapeHtml(msg.body) + ' <span class="text-yellow-400 ml-2">' + time + '</span></div>';
             } else if (msg.direction === 'inbound') {
                 div.className = 'flex justify-start';
-                div.innerHTML = '<div class="max-w-md px-4 py-2 rounded-2xl rounded-bl-sm bg-white dark:bg-gray-700 shadow-sm text-sm text-gray-800 dark:text-gray-200">' +
-                    safeBody + '<div class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 text-right">' + time + '</div></div>';
+                div.innerHTML = '<div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-bl-sm bg-white dark:bg-gray-700 shadow-sm text-sm text-gray-800 dark:text-gray-200">' +
+                    bodyHtml + '<div class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 text-right">' + time + '</div></div>';
             } else {
                 div.className = 'flex justify-end';
-                div.innerHTML = '<div class="max-w-md px-4 py-2 rounded-2xl rounded-br-sm bg-indigo-600 text-white text-sm shadow-sm">' +
-                    safeBody + '<div class="text-[10px] text-indigo-200 mt-1 text-right">' + escapeHtml(msg.user_name || 'Agent') + ' &middot; ' + time + '</div></div>';
+                div.innerHTML = '<div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-br-sm bg-crea-primary text-white text-sm shadow-sm">' +
+                    bodyHtml + '<div class="text-[10px] text-crea-secondary-light mt-1 text-right">' + escapeHtml(msg.user_name || 'Agent') + ' &middot; ' + time + '</div></div>';
             }
 
             thread.appendChild(div);
