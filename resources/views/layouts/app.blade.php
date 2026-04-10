@@ -336,13 +336,27 @@
                             if (convEl) {
                                 convEl.classList.add('bg-crea-secondary/5', 'border-l-2', 'border-crea-secondary');
                                 var nameEl = convEl.querySelector('.text-sm');
-                                if (nameEl) nameEl.classList.add('font-bold');
+                                if (nameEl) { nameEl.classList.remove('font-medium'); nameEl.classList.add('font-bold'); }
                                 if (conv.last_body) {
                                     var previewEl = convEl.querySelector('.text-xs.text-gray-500');
                                     if (previewEl) previewEl.textContent = conv.last_body.substring(0, 50);
                                 }
                                 var timeEl = convEl.querySelector('.text-xs.text-gray-400');
                                 if (timeEl) timeEl.textContent = 'ahora';
+                                // Add or update unread badge
+                                var badge = convEl.querySelector('.bg-crea-secondary.rounded-full');
+                                if (badge) {
+                                    badge.textContent = conv.unread_count > 99 ? '99+' : conv.unread_count;
+                                } else {
+                                    var badgeContainer = convEl.querySelectorAll('.flex.items-center.justify-between.mt-1');
+                                    var lastRow = badgeContainer[badgeContainer.length - 1];
+                                    if (lastRow) {
+                                        var newBadge = document.createElement('span');
+                                        newBadge.className = 'bg-crea-secondary text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shrink-0';
+                                        newBadge.textContent = conv.unread_count > 99 ? '99+' : conv.unread_count;
+                                        lastRow.appendChild(newBadge);
+                                    }
+                                }
                                 // Move to top of list
                                 var list = convEl.parentElement;
                                 if (list && list.firstElementChild !== convEl) {
