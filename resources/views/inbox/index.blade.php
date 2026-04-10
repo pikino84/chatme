@@ -412,9 +412,13 @@
         if (msg.body && !isMediaPlaceholder(msg.body)) {
             mediaHtml += '<p class="mt-1 text-xs opacity-70">' + esc(msg.body) + '</p>';
         }
-        var timeEl = wrapper.querySelector('div[class*="text-"]');
-        var timeHtml = timeEl ? timeEl.outerHTML : '';
-        wrapper.innerHTML = mediaHtml + timeHtml;
+        var time = msg.time || '';
+        if (msg.direction === 'inbound') {
+            mediaHtml += '<div class="text-[10px] text-gray-400 mt-1 text-right">' + time + '</div>';
+        } else {
+            mediaHtml += '<div class="text-[10px] text-crea-secondary-light mt-1 text-right">' + esc(msg.user_name || 'Agent') + ' &middot; ' + time + '</div>';
+        }
+        wrapper.innerHTML = mediaHtml;
     }
 
     function pollPendingMedia() {

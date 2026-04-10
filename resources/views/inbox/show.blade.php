@@ -238,16 +238,19 @@
             if (!hasReady) return;
 
             delete pendingMediaMsgs[msgId];
-            // Find the bubble div (first child div)
             var wrapper = el.querySelector('div');
             if (!wrapper) return;
             var mediaHtml = renderAttachments(msg.attachments);
             if (msg.body && !isMediaPlaceholder(msg.body)) {
                 mediaHtml += '<p class="mt-1 text-xs opacity-70">' + escapeHtml(msg.body) + '</p>';
             }
-            var timeEl = wrapper.querySelector('div[class*="text-"]');
-            var timeHtml = timeEl ? timeEl.outerHTML : '';
-            wrapper.innerHTML = mediaHtml + timeHtml;
+            var time = msg.time || '';
+            if (msg.direction === 'inbound') {
+                mediaHtml += '<div class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 text-right">' + time + '</div>';
+            } else {
+                mediaHtml += '<div class="text-[10px] text-crea-secondary-light mt-1 text-right">' + escapeHtml(msg.user_name || 'Agent') + ' &middot; ' + time + '</div>';
+            }
+            wrapper.innerHTML = mediaHtml;
         }
 
         function pollPendingMedia() {
