@@ -331,19 +331,23 @@
                                 sendBrowserNotif('ChatMe - ' + conv.contact_name, msg, '/inbox/conversations/' + conv.id);
                             }
 
-                            // Highlight conversation in inbox list
+                            // Highlight conversation in inbox list and move to top
                             var convEl = document.querySelector('[data-conv-id="' + conv.id + '"]');
                             if (convEl) {
                                 convEl.classList.add('bg-crea-secondary/5', 'border-l-2', 'border-crea-secondary');
                                 var nameEl = convEl.querySelector('.text-sm');
                                 if (nameEl) nameEl.classList.add('font-bold');
-                                // Update preview text and time
                                 if (conv.last_body) {
                                     var previewEl = convEl.querySelector('.text-xs.text-gray-500');
                                     if (previewEl) previewEl.textContent = conv.last_body.substring(0, 50);
                                 }
                                 var timeEl = convEl.querySelector('.text-xs.text-gray-400');
                                 if (timeEl) timeEl.textContent = 'ahora';
+                                // Move to top of list
+                                var list = convEl.parentElement;
+                                if (list && list.firstElementChild !== convEl) {
+                                    list.insertBefore(convEl, list.firstElementChild);
+                                }
                             }
                         });
                     }

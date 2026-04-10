@@ -476,10 +476,36 @@
                         }
                     });
                     if (thread) thread.scrollTop = thread.scrollHeight;
+
+                    // Update conversation list: preview, time, and move to top
+                    var lastMsg = data.messages[data.messages.length - 1];
+                    if (lastMsg && currentConvId) {
+                        updateConvListItem(currentConvId, lastMsg.body, 'ahora');
+                    }
                 }
             })
             .catch(function() {});
         }, 5000);
+    }
+
+    function updateConvListItem(convId, preview, time) {
+        var convEl = document.querySelector('[data-conv-id="' + convId + '"]');
+        if (!convEl) return;
+        // Update preview text
+        if (preview) {
+            var previewEl = convEl.querySelector('.text-xs.text-gray-500');
+            if (previewEl) previewEl.textContent = preview.length > 50 ? preview.substring(0, 50) + '...' : preview;
+        }
+        // Update time
+        if (time) {
+            var timeEl = convEl.querySelector('.text-xs.text-gray-400');
+            if (timeEl) timeEl.textContent = time;
+        }
+        // Move to top of conversation list
+        var list = document.getElementById('conversation-list');
+        if (list && list.firstElementChild !== convEl) {
+            list.insertBefore(convEl, list.firstElementChild);
+        }
     }
 
     function openInfoPanel(convId) {
