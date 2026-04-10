@@ -46,6 +46,7 @@ class NotificationController extends Controller
 
             $recentUnread = $recentQuery
                 ->select('id', 'contact_name', 'contact_identifier', 'unread_count', 'last_message_at')
+                ->with(['messages' => fn ($q) => $q->latest()->limit(1)])
                 ->orderByDesc('last_message_at')
                 ->limit(5)
                 ->get()
@@ -53,6 +54,7 @@ class NotificationController extends Controller
                     'id' => $c->id,
                     'contact_name' => $c->contact_name ?: $c->contact_identifier,
                     'unread_count' => $c->unread_count,
+                    'last_body' => $c->messages->first()?->body,
                 ]);
         }
 

@@ -309,14 +309,24 @@
                     updateBadge(unread);
 
                     // New messages since last poll
-                    if (data.recent_unread && data.recent_unread.length > 0 && unread > prevUnread) {
-                        playNotifSound();
+                    if (data.recent_unread && data.recent_unread.length > 0) {
+                        // Get current conversation ID from URL
+                        var viewingMatch = window.location.pathname.match(/\/inbox\/conversations\/(\d+)/);
+                        var viewingConvId = viewingMatch ? parseInt(viewingMatch[1]) : null;
 
-                        data.recent_unread.forEach(function(conv) {
+                        // Filter out the conversation currently being viewed
+                        var alertConvs = data.recent_unread.filter(function(conv) {
+                            return conv.id !== viewingConvId;
+                        });
+
+                        if (alertConvs.length > 0) {
+                            playNotifSound();
+                        }
+
+                        alertConvs.forEach(function(conv) {
                             var msg = conv.unread_count + ' mensaje' + (conv.unread_count > 1 ? 's' : '') + ' nuevo' + (conv.unread_count > 1 ? 's' : '');
                             showToast(conv.contact_name, msg, '/inbox/conversations/' + conv.id);
 
-                            // Browser notification if page is hidden
                             if (document.hidden) {
                                 sendBrowserNotif('ChatMe - ' + conv.contact_name, msg, '/inbox/conversations/' + conv.id);
                             }
@@ -327,6 +337,13 @@
                                 convEl.classList.add('bg-crea-secondary/5', 'border-l-2', 'border-crea-secondary');
                                 var nameEl = convEl.querySelector('.text-sm');
                                 if (nameEl) nameEl.classList.add('font-bold');
+                                // Update preview text and time
+                                if (conv.last_body) {
+                                    var previewEl = convEl.querySelector('.text-xs.text-gray-500');
+                                    if (previewEl) previewEl.textContent = conv.last_body.substring(0, 50);
+                                }
+                                var timeEl = convEl.querySelector('.text-xs.text-gray-400');
+                                if (timeEl) timeEl.textContent = 'ahora';
                             }
                         });
                     }
