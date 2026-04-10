@@ -103,12 +103,19 @@
         if (window.innerWidth < 1024) return true;
         event.preventDefault();
 
-        // Highlight active conversation
+        // Highlight active conversation and clear unread indicators
         document.querySelectorAll('.conv-item').forEach(function(el) {
             el.classList.remove('bg-crea-secondary/10', 'border-l-2', 'border-crea-secondary');
         });
         var clicked = document.querySelector('[data-conv-id="' + convId + '"]');
-        if (clicked) clicked.classList.add('bg-crea-secondary/10', 'border-l-2', 'border-crea-secondary');
+        if (clicked) {
+            clicked.classList.add('bg-crea-secondary/10', 'border-l-2', 'border-crea-secondary');
+            clicked.classList.remove('bg-crea-secondary/5');
+            var nameEl = clicked.querySelector('.text-sm');
+            if (nameEl) { nameEl.classList.remove('font-bold'); nameEl.classList.add('font-medium'); }
+            var badge = clicked.querySelector('.bg-crea-secondary.rounded-full');
+            if (badge) badge.remove();
+        }
 
         // Show loading
         document.getElementById('chat-empty').classList.add('hidden');
