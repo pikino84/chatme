@@ -29,12 +29,14 @@ class Conversation extends Model
         'closed_at',
         'last_message_at',
         'unread_count',
+        'auto_responses_sent',
     ];
 
     protected function casts(): array
     {
         return [
             'metadata' => 'array',
+            'auto_responses_sent' => 'array',
             'closed_at' => 'datetime',
             'last_message_at' => 'datetime',
         ];

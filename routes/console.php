@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('monitor:performance')->everyFiveMinutes();
 Schedule::job(new \App\Jobs\CheckStaleConversations)->everyFiveMinutes();
 Schedule::job(new \App\Jobs\ProcessDripStep)->everyFiveMinutes();
+Schedule::job(new \App\Jobs\CheckAgentTimeouts)->everyFiveMinutes();

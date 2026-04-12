@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Events\ConversationCreated;
+use App\Events\MessageReceivedEvent;
 use App\Listeners\AuditLoginListener;
 use App\Listeners\AutomationListener;
+use App\Listeners\BusinessHoursAutoResponseListener;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -43,6 +45,8 @@ class AppServiceProvider extends ServiceProvider
     private function registerAutomationListeners(): void
     {
         Event::listen(ConversationCreated::class, AutomationListener::class);
+        Event::listen(ConversationCreated::class, [BusinessHoursAutoResponseListener::class, 'handleConversationCreated']);
+        Event::listen(MessageReceivedEvent::class, [BusinessHoursAutoResponseListener::class, 'handleMessageReceived']);
     }
 
     private function configureRateLimiting(): void
