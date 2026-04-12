@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
+use App\Models\Message;
 use App\Services\ContactService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
@@ -142,6 +144,29 @@ class ContactController extends Controller
         }
 
         $contacts = $query->orderBy('name')->limit(20)->get(['id', 'name', 'phone', 'company']);
+
+        // Check 24h window if channel_id provided
+        $channelId = $request->input('channel_id');
+        if ($channelId) {
+            $cutoff = Carbon::now()->subHours(24);
+            $phonesWithWindow = Message::withoutGlobalScopes()
+                ->whereHas('conversation', function ($q) use ($channelId, $contacts) {
+                    $q->where('channel_id', $channelId)
+                      ->whereIn('contact_identifier', $contacts->pluck('phone'));
+                })
+                ->where('organization_id', $tenant->id)
+                ->where('direction', 'inbound')
+                ->where('created_at', '>=', $cutoff)
+                ->join('conversations', 'messages.conversation_id', '=', 'conversations.id')
+                ->pluck('conversations.contact_identifier')
+                ->unique()
+                ->toArray();
+
+            $contacts = $contacts->map(function ($contact) use ($phonesWithWindow) {
+                $contact->has_active_window = in_array($contact->phone, $phonesWithWindow);
+                return $contact;
+            });
+        }
 
         return response()->json($contacts);
     }

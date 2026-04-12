@@ -13,6 +13,7 @@ use App\Models\MessageAttachment;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class MessageController extends Controller
 {
@@ -174,19 +175,41 @@ class MessageController extends Controller
 
         $messageIds = $messages->pluck('id')->toArray();
 
+        // Check 24h window for each recipient
+        $sent = [];
+        $skipped = [];
+        $cutoff = Carbon::now()->subHours(24);
+
         foreach ($request->input('recipients') as $phone) {
-            ForwardWhatsAppMessages::dispatch(
-                $channel->id,
-                $messageIds,
-                $phone,
-                $request->user()->id,
-                $conversation->organization_id,
-            );
+            $hasWindow = Message::withoutGlobalScopes()
+                ->whereHas('conversation', function ($q) use ($channel, $phone) {
+                    $q->where('channel_id', $channel->id)
+                      ->where('contact_identifier', $phone);
+                })
+                ->where('organization_id', $conversation->organization_id)
+                ->where('direction', 'inbound')
+                ->where('created_at', '>=', $cutoff)
+                ->exists();
+
+            if ($hasWindow) {
+                ForwardWhatsAppMessages::dispatch(
+                    $channel->id,
+                    $messageIds,
+                    $phone,
+                    $request->user()->id,
+                    $conversation->organization_id,
+                );
+                $sent[] = $phone;
+            } else {
+                $skipped[] = $phone;
+            }
         }
 
         return response()->json([
             'success' => true,
-            'forwarded_count' => count($messageIds) * count($request->input('recipients')),
+            'forwarded_count' => count($messageIds) * count($sent),
+            'sent' => $sent,
+            'skipped' => $skipped,
         ]);
     }
 

@@ -39,6 +39,7 @@ class ConversationsController extends Controller
                     'organization_id' => $conversation->organization_id,
                     'contact_name' => $conversation->contact_name,
                     'contact_identifier' => $conversation->contact_identifier,
+                    'channel_id' => $conversation->channel_id,
                     'channel_type' => $conversation->channel->type,
                     'channel_name' => $conversation->channel->name,
                     'status' => $conversation->status,

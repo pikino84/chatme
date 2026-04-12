@@ -150,6 +150,7 @@
     var selectMode = false;
     var forwardRecipients = [];
     var showConvId = {{ $conversation->id }};
+    var showChannelId = {{ $conversation->channel_id }};
     var showCsrfToken = '{{ csrf_token() }}';
 
     function toggleSelectMode() {
@@ -216,7 +217,9 @@
     }
 
     function searchContacts(q) {
-        fetch('/contacts/search?q=' + encodeURIComponent(q), {
+        var url = '/contacts/search?q=' + encodeURIComponent(q);
+        if (showChannelId) url += '&channel_id=' + showChannelId;
+        fetch(url, {
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(function(r) { return r.json(); })
@@ -229,10 +232,16 @@
             var html = '';
             contacts.forEach(function(c) {
                 var isSelected = forwardRecipients.some(function(r) { return r.phone === c.phone; });
-                html += '<div class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition" onclick="toggleRecipient(\'' + escShow(c.phone) + '\', \'' + escShow(c.name) + '\')">';
-                html += '<div class="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold shrink-0">' + escShow(c.name.charAt(0).toUpperCase()) + '</div>';
+                var hasWindow = c.has_active_window;
+                var windowClass = hasWindow ? '' : ' opacity-60';
+                html += '<div class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition' + windowClass + '" onclick="toggleRecipient(\'' + escShow(c.phone) + '\', \'' + escShow(c.name) + '\')">';
+                var avatarColor = hasWindow ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500';
+                html += '<div class="w-8 h-8 rounded-full ' + avatarColor + ' flex items-center justify-center text-xs font-bold shrink-0">' + escShow(c.name.charAt(0).toUpperCase()) + '</div>';
                 html += '<div class="flex-1 min-w-0"><div class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">' + escShow(c.name) + '</div>';
-                html += '<div class="text-xs text-gray-500 dark:text-gray-400">' + escShow(c.phone) + '</div></div>';
+                html += '<div class="text-xs text-gray-500 dark:text-gray-400">' + escShow(c.phone);
+                if (hasWindow === false) html += ' <span class="text-red-400">· Sin ventana 24h</span>';
+                else if (hasWindow === true) html += ' <span class="text-green-500">· Activo</span>';
+                html += '</div></div>';
                 if (isSelected) {
                     html += '<svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>';
                 }
@@ -336,7 +345,13 @@
             if (data.success) {
                 closeForwardModal();
                 toggleSelectMode();
-                showForwardToast('Mensajes reenviados correctamente');
+                if (data.skipped && data.skipped.length > 0 && data.sent && data.sent.length > 0) {
+                    showForwardToast('Enviados a ' + data.sent.length + '. ' + data.skipped.length + ' sin ventana 24h.');
+                } else if (data.skipped && data.skipped.length > 0 && (!data.sent || data.sent.length === 0)) {
+                    showForwardToast('No se pudo reenviar: los destinatarios no tienen ventana activa de 24h.', true);
+                } else {
+                    showForwardToast('Mensajes reenviados correctamente');
+                }
             } else {
                 btn.disabled = false;
                 btn.textContent = 'Reenviar';
