@@ -152,6 +152,10 @@ class WhatsAppWebhookService
             'video' => $messageData['video']['caption'] ?? '[Video]',
             'document' => $messageData['document']['filename'] ?? '[Document]',
             'sticker' => '[Sticker]',
+            'button' => $messageData['button']['text'] ?? '[Button Reply]',
+            'interactive' => $messageData['interactive']['button_reply']['title']
+                ?? $messageData['interactive']['list_reply']['title']
+                ?? '[Interactive Reply]',
             'location' => sprintf(
                 '[Location: %s, %s]',
                 $messageData['location']['latitude'] ?? '0',
@@ -170,6 +174,8 @@ class WhatsAppWebhookService
             'video' => 'video',
             'document' => 'file',
             'sticker' => 'image',
+            'button' => 'text',
+            'interactive' => 'text',
             default => 'text',
         };
     }

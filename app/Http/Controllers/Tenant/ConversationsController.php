@@ -57,6 +57,11 @@ class ConversationsController extends Controller
                     'send_url' => route('inbox.conversations.messages.store', $conversation),
                     'poll_url' => route('inbox.conversations.messages.poll', $conversation),
                     'can_delete' => $request->user()->can('delete', $conversation),
+                    'whatsapp_24h_expired' => $conversation->channel->isWhatsApp()
+                        && !$conversation->messages()
+                            ->where('direction', 'inbound')
+                            ->where('created_at', '>=', now()->subHours(24))
+                            ->exists(),
                 ],
                 'messages' => $messages->map(fn ($m) => [
                     'id' => $m->id,

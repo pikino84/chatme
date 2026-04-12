@@ -192,6 +192,14 @@
         html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>';
         html += 'Reenviar</button></div>';
 
+        // Template banner when 24h expired
+        if (c.whatsapp_24h_expired && c.channel_type === 'whatsapp') {
+            html += '<div class="border-t border-gray-200 bg-yellow-50 px-4 py-2 flex items-center justify-between">';
+            html += '<span class="text-xs text-yellow-700">Ventana de 24h expirada. Usa una plantilla para contactar al cliente.</span>';
+            html += '<button onclick="openTemplateSendModal(' + c.id + ', ' + (c.channel_id || 'null') + ')" class="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-medium transition">Enviar Plantilla</button>';
+            html += '</div>';
+        }
+
         // Input
         if (c.is_open) {
             html += '<div class="border-t border-gray-200 bg-white p-3">';
@@ -327,6 +335,13 @@
             html += cbHtml;
             html += '<div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-bl-sm bg-white shadow-sm text-sm text-gray-800">';
             html += forwardedHtml + bodyHtml + '<div class="text-[10px] text-gray-400 mt-1 text-right">' + esc(msg.time) + '</div></div></div>';
+        } else if (msg.type === 'template') {
+            html += '<div data-msg-id="' + msg.id + '" class="flex justify-end items-start gap-1">';
+            html += '<div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-br-sm bg-crea-primary text-white text-sm shadow-sm border border-green-400/30">';
+            html += '<div class="text-[10px] italic text-white/60 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Plantilla</div>';
+            html += esc(msg.body);
+            html += '<div class="text-[10px] text-crea-secondary-light mt-1 text-right">' + esc(msg.user_name || 'Agent') + ' · ' + esc(msg.time) + '</div></div>';
+            html += cbHtml + '</div>';
         } else {
             html += '<div data-msg-id="' + msg.id + '" class="flex justify-end items-start gap-1">';
             html += '<div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-br-sm bg-crea-primary text-white text-sm shadow-sm">';
@@ -803,6 +818,151 @@
         setTimeout(function() { toast.remove(); }, 3000);
     }
 
+    // ========== TEMPLATE SEND FEATURE ==========
+    var tplSendConvId = null;
+    var tplSendChannelId = null;
+    var tplSelected = null;
+
+    function openTemplateSendModal(convId, channelId) {
+        tplSendConvId = convId;
+        tplSendChannelId = channelId;
+        tplSelected = null;
+        var modal = document.getElementById('template-send-modal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        document.getElementById('tpl-send-step1').classList.remove('hidden');
+        document.getElementById('tpl-send-step2').classList.add('hidden');
+        document.getElementById('tpl-send-list').innerHTML = '<div class="p-4 text-center text-gray-400 text-sm">Cargando plantillas...</div>';
+        // Fetch approved templates
+        fetch('/whatsapp-templates/approved?channel_id=' + channelId, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(templates) {
+            var container = document.getElementById('tpl-send-list');
+            if (!templates.length) {
+                container.innerHTML = '<div class="p-4 text-center text-gray-400 text-sm">No hay plantillas aprobadas para este canal.</div>';
+                return;
+            }
+            var html = '';
+            templates.forEach(function(t) {
+                html += '<div class="p-3 hover:bg-gray-50 cursor-pointer transition border-b border-gray-100" onclick=\'selectTemplate(' + JSON.stringify(t).replace(/'/g, "\\'") + ')\'>';
+                html += '<div class="flex items-center justify-between mb-1"><span class="text-sm font-medium text-gray-800">' + esc(t.name) + '</span>';
+                html += '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">' + esc(t.category) + '</span></div>';
+                html += '<p class="text-xs text-gray-500 line-clamp-2">' + esc(t.body_text) + '</p>';
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        })
+        .catch(function() {
+            document.getElementById('tpl-send-list').innerHTML = '<div class="p-4 text-center text-red-500 text-sm">Error al cargar plantillas</div>';
+        });
+    }
+
+    function closeTemplateSendModal() {
+        var modal = document.getElementById('template-send-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function selectTemplate(t) {
+        tplSelected = t;
+        document.getElementById('tpl-send-step1').classList.add('hidden');
+        document.getElementById('tpl-send-step2').classList.remove('hidden');
+        // Show template name
+        document.getElementById('tpl-send-name').textContent = t.name;
+        // Build variable inputs
+        var varsContainer = document.getElementById('tpl-send-vars');
+        varsContainer.innerHTML = '';
+        if (t.variable_count > 0) {
+            for (var i = 1; i <= t.variable_count; i++) {
+                var div = document.createElement('div');
+                div.className = 'flex items-center gap-2 mb-2';
+                div.innerHTML = '<span class="text-xs text-gray-500 w-12 shrink-0">{{' + i + '}}</span>' +
+                    '<input type="text" class="tpl-var-input flex-1 text-sm rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" placeholder="Valor para variable ' + i + '">';
+                varsContainer.appendChild(div);
+            }
+        } else {
+            varsContainer.innerHTML = '<p class="text-xs text-gray-400">Esta plantilla no tiene variables.</p>';
+        }
+        // Show preview
+        updateTplSendPreview();
+    }
+
+    function backToTemplateList() {
+        document.getElementById('tpl-send-step1').classList.remove('hidden');
+        document.getElementById('tpl-send-step2').classList.add('hidden');
+    }
+
+    function updateTplSendPreview() {
+        if (!tplSelected) return;
+        var body = tplSelected.body_text;
+        document.querySelectorAll('.tpl-var-input').forEach(function(inp, i) {
+            body = body.replace('{{' + (i + 1) + '}}', inp.value || '[' + (i + 1) + ']');
+        });
+        document.getElementById('tpl-send-preview').textContent = body;
+    }
+
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('tpl-var-input')) updateTplSendPreview();
+    });
+
+    function submitTemplateSend() {
+        if (!tplSelected || !tplSendConvId) return;
+        var variables = [];
+        document.querySelectorAll('.tpl-var-input').forEach(function(inp) {
+            variables.push(inp.value);
+        });
+
+        var btn = document.getElementById('tpl-send-submit');
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        fetch('/inbox/conversations/' + tplSendConvId + '/send-template', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                template_id: tplSelected.id,
+                variables: variables
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.message) {
+                closeTemplateSendModal();
+                // Append to thread
+                var thread = document.getElementById('message-thread');
+                if (thread) {
+                    thread.insertAdjacentHTML('beforeend', renderMessage({
+                        id: data.message.id,
+                        body: data.message.body,
+                        type: 'template',
+                        direction: 'outbound',
+                        user_name: '{{ auth()->user()->name }}',
+                        time: new Date().toTimeString().slice(0, 5),
+                        attachments: [],
+                        is_forwarded: false
+                    }));
+                    thread.scrollTop = thread.scrollHeight;
+                }
+                showForwardToast('Plantilla enviada correctamente');
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Enviar plantilla';
+                showForwardToast(data.error || 'Error al enviar', true);
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Enviar plantilla';
+            showForwardToast('Error de conexión', true);
+        });
+    }
+
     function deleteConversation(convId) {
         if (!confirm('¿Eliminar esta conversación y todos sus mensajes? Esta acción no se puede deshacer.')) return;
         fetch('/inbox/conversations/' + convId, {
@@ -920,6 +1080,48 @@
                 <button id="fwd-send-btn" onclick="submitForward()" disabled class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium transition opacity-50 cursor-not-allowed">
                     Selecciona destinatarios
                 </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Template Send Modal --}}
+    <div id="template-send-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/50" onclick="closeTemplateSendModal()"></div>
+        <div class="relative z-10 bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[80vh] flex flex-col">
+            {{-- Step 1: Pick template --}}
+            <div id="tpl-send-step1">
+                <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Seleccionar plantilla</h3>
+                    <button onclick="closeTemplateSendModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div id="tpl-send-list" class="flex-1 overflow-y-auto max-h-[50vh]"></div>
+            </div>
+            {{-- Step 2: Fill variables --}}
+            <div id="tpl-send-step2" class="hidden">
+                <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+                    <button onclick="backToTemplateList()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100" id="tpl-send-name"></h3>
+                </div>
+                <div class="p-4 space-y-3">
+                    <div>
+                        <label class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 block">Variables</label>
+                        <div id="tpl-send-vars"></div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 block">Vista previa</label>
+                        <div class="bg-[#dcf8c6] rounded-lg p-3 text-sm text-gray-800 whitespace-pre-wrap" id="tpl-send-preview"></div>
+                    </div>
+                </div>
+                <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-end">
+                    <button onclick="closeTemplateSendModal()" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                    <button id="tpl-send-submit" onclick="submitTemplateSend()" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium transition hover:bg-green-600">
+                        Enviar plantilla
+                    </button>
+                </div>
             </div>
         </div>
     </div>

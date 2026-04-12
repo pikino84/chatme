@@ -10,6 +10,9 @@ use App\Jobs\SendWhatsAppMessage;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\MessageAttachment;
+use App\Models\WhatsAppTemplate;
+use App\Services\WhatsAppService;
+use App\Services\WhatsAppTemplateService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -213,6 +216,89 @@ class MessageController extends Controller
             'sent' => $sent,
             'skipped' => $skipped,
         ]);
+    }
+
+    public function sendTemplate(Request $request, Conversation $conversation, WhatsAppService $whatsAppService, WhatsAppTemplateService $templateService)
+    {
+        $this->authorize('send', [Message::class, $conversation]);
+
+        $request->validate([
+            'template_id' => 'required|integer|exists:whatsapp_templates,id',
+            'variables' => 'nullable|array',
+            'variables.*' => 'string|max:1000',
+        ]);
+
+        $template = WhatsAppTemplate::findOrFail($request->input('template_id'));
+
+        if (!$template->isApproved()) {
+            return response()->json(['error' => 'La plantilla no está aprobada.'], 422);
+        }
+
+        if ($template->organization_id !== $conversation->organization_id) {
+            return response()->json(['error' => 'Plantilla no válida.'], 403);
+        }
+
+        $channel = $conversation->channel;
+        if (!$channel || !$channel->isWhatsApp()) {
+            return response()->json(['error' => 'Solo disponible para WhatsApp.'], 422);
+        }
+
+        $variables = $request->input('variables', []);
+
+        // Upload media header if template has one
+        $mediaId = null;
+        if ($template->hasMediaHeader() && $template->header_media_path) {
+            $disk = MessageAttachment::mediaDisk();
+            $tempPath = tempnam(sys_get_temp_dir(), 'chatme_tpl_');
+            file_put_contents($tempPath, Storage::disk($disk)->get($template->header_media_path));
+
+            try {
+                $mediaId = $whatsAppService->uploadMedia($channel, $tempPath, mime_content_type($tempPath));
+            } finally {
+                @unlink($tempPath);
+            }
+        }
+
+        $components = $templateService->buildSendPayload($template, $variables, $mediaId);
+
+        $response = $whatsAppService->sendTemplate(
+            $channel,
+            $conversation->contact_identifier,
+            $template->name,
+            $template->language,
+            $components,
+        );
+
+        if (!$response) {
+            return response()->json(['error' => 'Error al enviar la plantilla.'], 500);
+        }
+
+        $waMessageId = $response['messages'][0]['id'] ?? null;
+
+        $message = Message::create([
+            'organization_id' => $conversation->organization_id,
+            'conversation_id' => $conversation->id,
+            'user_id' => $request->user()->id,
+            'body' => $template->renderPreview($variables),
+            'type' => 'template',
+            'direction' => 'outbound',
+            'external_id' => $waMessageId,
+            'metadata' => [
+                'template_name' => $template->name,
+                'template_id' => $template->id,
+                'template_language' => $template->language,
+                'template_category' => $template->category,
+                'variables' => $variables,
+                'wa_message_id' => $waMessageId,
+                'wa_sent_at' => now()->toISOString(),
+            ],
+        ]);
+
+        $conversation->update(['last_message_at' => now()]);
+
+        MessageSentEvent::dispatch($message);
+
+        return response()->json(['message' => $message], 201);
     }
 
     private function detectMediaType(string $mimeType): string

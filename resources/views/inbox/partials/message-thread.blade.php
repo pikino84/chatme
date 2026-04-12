@@ -8,6 +8,25 @@
                     <span class="text-yellow-400 ml-2">{{ $msg->created_at->format('H:i') }}</span>
                 </div>
             </div>
+        @elseif($msg->type === 'template')
+            <div class="flex justify-end items-start gap-1" data-msg-id="{{ $msg->id }}">
+                <div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-br-sm bg-crea-primary text-white text-sm shadow-sm border border-green-400/30">
+                    <div class="text-[10px] italic text-white/60 mb-1 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Plantilla
+                    </div>
+                    {{ $msg->body }}
+                    @if(($msg->metadata ?? [])['template_category'] ?? false)
+                        <div class="text-[10px] text-white/40 mt-1">{{ ($msg->metadata ?? [])['template_name'] ?? '' }}</div>
+                    @endif
+                    <div class="text-[10px] text-crea-secondary-light mt-1 text-right">
+                        {{ $msg->user?->name ?? 'Agent' }} &middot; {{ $msg->created_at->format('H:i') }}
+                    </div>
+                </div>
+                <label class="msg-checkbox hidden self-center shrink-0 cursor-pointer">
+                    <input type="checkbox" class="forward-check w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500" value="{{ $msg->id }}">
+                </label>
+            </div>
         @elseif($msg->isInbound())
             <div class="flex justify-start items-start gap-1" data-msg-id="{{ $msg->id }}">
                 <label class="msg-checkbox hidden self-center shrink-0 cursor-pointer">

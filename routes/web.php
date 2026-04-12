@@ -17,6 +17,7 @@ use App\Http\Controllers\Tenant\KbCategoryController;
 use App\Http\Controllers\Tenant\MessageController;
 use App\Http\Controllers\Tenant\NotificationController;
 use App\Http\Controllers\Tenant\BrandController;
+use App\Http\Controllers\Tenant\WhatsAppTemplateController;
 use App\Http\Controllers\Tenant\ChannelController;
 use App\Http\Controllers\Tenant\PipelineController;
 use App\Http\Controllers\Tenant\TagController;
@@ -98,6 +99,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/inbox/conversations/{conversation}/messages', [MessageController::class, 'store'])->name('inbox.conversations.messages.store');
             Route::get('/inbox/conversations/{conversation}/messages/poll', [MessageController::class, 'poll'])->name('inbox.conversations.messages.poll');
             Route::post('/inbox/conversations/{conversation}/messages/forward', [MessageController::class, 'forward'])->name('inbox.conversations.messages.forward');
+            Route::post('/inbox/conversations/{conversation}/send-template', [MessageController::class, 'sendTemplate'])->name('inbox.conversations.send-template');
             Route::get('/contacts/search', [ContactController::class, 'searchJson'])->name('contacts.search');
 
             // CRM Kanban
@@ -213,6 +215,19 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
                 Route::get('/campaigns/{campaign}/recipients/select', [CampaignController::class, 'selectRecipients'])->name('campaigns.recipients.select');
                 Route::post('/campaigns/{campaign}/recipients', [CampaignController::class, 'addRecipients'])->name('campaigns.recipients.add');
                 Route::delete('/campaigns/{campaign}/recipients/{contactId}', [CampaignController::class, 'removeRecipient'])->name('campaigns.recipients.remove');
+            });
+
+            // WhatsApp Templates
+            Route::middleware(['feature:whatsapp_templates_enabled'])->group(function () {
+                Route::get('/whatsapp-templates', [WhatsAppTemplateController::class, 'index'])->name('whatsapp-templates.index');
+                Route::get('/whatsapp-templates/create', [WhatsAppTemplateController::class, 'create'])->name('whatsapp-templates.create');
+                Route::post('/whatsapp-templates', [WhatsAppTemplateController::class, 'store'])->name('whatsapp-templates.store');
+                Route::get('/whatsapp-templates/approved', [WhatsAppTemplateController::class, 'approvedForChannel'])->name('whatsapp-templates.approved');
+                Route::get('/whatsapp-templates/{template}/edit', [WhatsAppTemplateController::class, 'edit'])->name('whatsapp-templates.edit');
+                Route::put('/whatsapp-templates/{template}', [WhatsAppTemplateController::class, 'update'])->name('whatsapp-templates.update');
+                Route::delete('/whatsapp-templates/{template}', [WhatsAppTemplateController::class, 'destroy'])->name('whatsapp-templates.destroy');
+                Route::post('/whatsapp-templates/sync', [WhatsAppTemplateController::class, 'sync'])->name('whatsapp-templates.sync');
+                Route::post('/whatsapp-templates/upload-media', [WhatsAppTemplateController::class, 'uploadMedia'])->name('whatsapp-templates.upload-media');
             });
 
             // Drip Sequences

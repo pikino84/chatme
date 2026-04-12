@@ -181,6 +181,214 @@ class WhatsAppService
         return $response->json();
     }
 
+    // ========== TEMPLATE API METHODS ==========
+
+    /**
+     * Create a message template on Meta.
+     * POST /v21.0/{waba_id}/message_templates
+     */
+    public function createTemplate(Channel $channel, array $payload): ?array
+    {
+        $wabaId = $channel->getWhatsAppConfig('waba_id');
+        $accessToken = $channel->getWhatsAppConfig('access_token');
+
+        if (!$wabaId || !$accessToken) {
+            Log::error('WhatsApp createTemplate: missing waba_id or access_token', ['channel_id' => $channel->id]);
+            return null;
+        }
+
+        $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $wabaId . '/message_templates';
+
+        $response = Http::withToken($accessToken)->timeout(30)->post($url, $payload);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp createTemplate failed', [
+                'channel_id' => $channel->id,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * List all message templates from Meta.
+     * GET /v21.0/{waba_id}/message_templates
+     */
+    public function listTemplates(Channel $channel): ?array
+    {
+        $wabaId = $channel->getWhatsAppConfig('waba_id');
+        $accessToken = $channel->getWhatsAppConfig('access_token');
+
+        if (!$wabaId || !$accessToken) {
+            return null;
+        }
+
+        $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $wabaId . '/message_templates?limit=100';
+
+        $allData = [];
+        while ($url) {
+            $response = Http::withToken($accessToken)->timeout(30)->get($url);
+
+            if (!$response->successful()) {
+                Log::error('WhatsApp listTemplates failed', [
+                    'channel_id' => $channel->id,
+                    'status' => $response->status(),
+                    'body' => $response->json(),
+                ]);
+                return null;
+            }
+
+            $json = $response->json();
+            $allData = array_merge($allData, $json['data'] ?? []);
+            $url = $json['paging']['next'] ?? null;
+        }
+
+        return $allData;
+    }
+
+    /**
+     * Delete a message template from Meta.
+     * DELETE /v21.0/{waba_id}/message_templates?name={name}
+     */
+    public function deleteTemplate(Channel $channel, string $templateName): ?array
+    {
+        $wabaId = $channel->getWhatsAppConfig('waba_id');
+        $accessToken = $channel->getWhatsAppConfig('access_token');
+
+        if (!$wabaId || !$accessToken) {
+            return null;
+        }
+
+        $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $wabaId . '/message_templates?name=' . urlencode($templateName);
+
+        $response = Http::withToken($accessToken)->timeout(30)->delete($url);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp deleteTemplate failed', [
+                'channel_id' => $channel->id,
+                'name' => $templateName,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Send a template message to a recipient.
+     * POST /v21.0/{phone_number_id}/messages (type=template)
+     */
+    public function sendTemplate(Channel $channel, string $to, string $templateName, string $language, array $components = []): ?array
+    {
+        $phoneNumberId = $channel->getWhatsAppConfig('phone_number_id');
+        $accessToken = $channel->getWhatsAppConfig('access_token');
+
+        if (!$phoneNumberId || !$accessToken) {
+            return null;
+        }
+
+        $templatePayload = [
+            'name' => $templateName,
+            'language' => ['code' => $language],
+        ];
+
+        if (!empty($components)) {
+            $templatePayload['components'] = $components;
+        }
+
+        $response = $this->post($phoneNumberId, $accessToken, [
+            'messaging_product' => 'whatsapp',
+            'recipient_type' => 'individual',
+            'to' => $to,
+            'type' => 'template',
+            'template' => $templatePayload,
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp sendTemplate failed', [
+                'channel_id' => $channel->id,
+                'template' => $templateName,
+                'to' => $to,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Create a resumable upload session for media (used in template creation).
+     * POST /v21.0/{app_id}/uploads
+     */
+    public function createUploadSession(Channel $channel, int $fileSize, string $mimeType): ?string
+    {
+        $accessToken = $channel->getWhatsAppConfig('access_token');
+        $appId = $channel->getWhatsAppConfig('app_id');
+
+        if (!$accessToken || !$appId) {
+            Log::error('WhatsApp createUploadSession: missing app_id', ['channel_id' => $channel->id]);
+            return null;
+        }
+
+        $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $appId . '/uploads';
+
+        $response = Http::withToken($accessToken)->timeout(30)->post($url, [
+            'file_length' => $fileSize,
+            'file_type' => $mimeType,
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp createUploadSession failed', [
+                'channel_id' => $channel->id,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return null;
+        }
+
+        return $response->json('id');
+    }
+
+    /**
+     * Upload file content to a resumable upload session.
+     * Returns the h: handle used in template creation.
+     */
+    public function uploadSessionChunk(Channel $channel, string $sessionId, string $fileContent): ?string
+    {
+        $accessToken = $channel->getWhatsAppConfig('access_token');
+
+        if (!$accessToken) {
+            return null;
+        }
+
+        $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $sessionId;
+
+        $response = Http::withToken($accessToken)
+            ->timeout(60)
+            ->withHeaders(['file_offset' => 0])
+            ->withBody($fileContent, 'application/octet-stream')
+            ->post($url);
+
+        if (!$response->successful()) {
+            Log::error('WhatsApp uploadSessionChunk failed', [
+                'channel_id' => $channel->id,
+                'session_id' => $sessionId,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return null;
+        }
+
+        return $response->json('h');
+    }
+
     private function post(string $phoneNumberId, string $accessToken, array $data): Response
     {
         $url = self::BASE_URL . '/' . self::API_VERSION . '/' . $phoneNumberId . '/messages';

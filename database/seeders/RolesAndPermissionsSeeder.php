@@ -106,6 +106,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'brands.update',
             'brands.delete',
 
+            // WhatsApp Templates
+            'whatsapp_templates.view',
+            'whatsapp_templates.create',
+            'whatsapp_templates.delete',
+
             // Reports
             'reports.view',
             'reports.export',
@@ -141,6 +146,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'pipelines.view', 'pipelines.create', 'pipelines.update', 'pipelines.delete',
             'contacts.view', 'contacts.create', 'contacts.update', 'contacts.delete', 'contacts.import',
             'campaigns.view', 'campaigns.create', 'campaigns.send', 'campaigns.delete',
+            'whatsapp_templates.view', 'whatsapp_templates.create', 'whatsapp_templates.delete',
             'drip.view', 'drip.create', 'drip.update', 'drip.delete',
             'automations.view', 'automations.create', 'automations.update', 'automations.delete',
             'brands.view', 'brands.create', 'brands.update', 'brands.delete',
@@ -164,6 +170,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'pipelines.view',
             'contacts.view', 'contacts.create', 'contacts.update',
             'campaigns.view',
+            'whatsapp_templates.view', 'whatsapp_templates.create',
             'drip.view',
             'automations.view',
             'brands.view',
@@ -182,6 +189,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'contacts.view', 'contacts.create',
             'deals.view', 'deals.create', 'deals.update',
             'pipelines.view',
+            'whatsapp_templates.view',
             'kb.view',
         ]);
     }
