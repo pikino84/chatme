@@ -105,16 +105,14 @@
                                 <input type="checkbox" name="business_hours[schedule][{{ $key }}][enabled]" value="1"
                                        @checked(!empty($d['enabled']))
                                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                       onchange="this.closest('.flex').querySelectorAll('input[type=time]').forEach(function(i){i.disabled=!event.target.checked})">
+                                       onchange="this.closest('.flex').querySelectorAll('input[type=time]').forEach(function(i){i.classList.toggle('opacity-50',!event.target.checked)})">
                                 <span class="text-sm text-gray-700 dark:text-gray-300">{{ $label }}</span>
                             </label>
                             <input type="time" name="business_hours[schedule][{{ $key }}][start]" value="{{ $d['start'] ?? '09:00' }}"
-                                   class="text-sm rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
-                                   {{ empty($d['enabled']) ? 'disabled' : '' }}>
+                                   class="text-sm rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 {{ empty($d['enabled']) ? 'opacity-50' : '' }}">
                             <span class="text-xs text-gray-400">a</span>
                             <input type="time" name="business_hours[schedule][{{ $key }}][end]" value="{{ $d['end'] ?? '18:00' }}"
-                                   class="text-sm rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
-                                   {{ empty($d['enabled']) ? 'disabled' : '' }}>
+                                   class="text-sm rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 {{ empty($d['enabled']) ? 'opacity-50' : '' }}">
                         </div>
                     @endforeach
                 </div>

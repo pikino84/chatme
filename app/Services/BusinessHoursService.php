@@ -86,6 +86,9 @@ class BusinessHoursService
 
         if (!$messageText) return;
 
+        // Mark as sent FIRST to prevent race conditions with concurrent messages
+        $this->markAutoResponseSent($conversation, $type);
+
         $message = Message::create([
             'organization_id' => $conversation->organization_id,
             'conversation_id' => $conversation->id,
@@ -107,8 +110,6 @@ class BusinessHoursService
         $conversation->update(['last_message_at' => now()]);
 
         MessageSentEvent::dispatch($message);
-
-        $this->markAutoResponseSent($conversation, $type);
 
         Log::info('Auto-response sent', [
             'conversation_id' => $conversation->id,

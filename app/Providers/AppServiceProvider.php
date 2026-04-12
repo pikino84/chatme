@@ -6,7 +6,8 @@ use App\Events\ConversationCreated;
 use App\Events\MessageReceivedEvent;
 use App\Listeners\AuditLoginListener;
 use App\Listeners\AutomationListener;
-use App\Listeners\BusinessHoursAutoResponseListener;
+use App\Listeners\BusinessHoursConversationCreatedListener;
+use App\Listeners\BusinessHoursMessageReceivedListener;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -45,8 +46,8 @@ class AppServiceProvider extends ServiceProvider
     private function registerAutomationListeners(): void
     {
         Event::listen(ConversationCreated::class, AutomationListener::class);
-        Event::listen(ConversationCreated::class, [BusinessHoursAutoResponseListener::class, 'handleConversationCreated']);
-        Event::listen(MessageReceivedEvent::class, [BusinessHoursAutoResponseListener::class, 'handleMessageReceived']);
+        Event::listen(ConversationCreated::class, BusinessHoursConversationCreatedListener::class);
+        Event::listen(MessageReceivedEvent::class, BusinessHoursMessageReceivedListener::class);
     }
 
     private function configureRateLimiting(): void
