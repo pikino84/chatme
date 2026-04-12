@@ -243,6 +243,10 @@ class MessageController extends Controller
             return response()->json(['error' => 'Solo disponible para WhatsApp.'], 422);
         }
 
+        if ($template->channel_id !== $channel->id) {
+            return response()->json(['error' => 'La plantilla no pertenece a este canal.'], 422);
+        }
+
         $variables = $request->input('variables', []);
 
         // Upload media header if template has one

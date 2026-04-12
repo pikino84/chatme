@@ -501,6 +501,7 @@ class ChannelController extends Controller
             $config = [
                 'phone_number_id' => $request->input('phone_number_id'),
                 'waba_id' => $request->input('waba_id'),
+                'app_id' => $request->input('app_id'),
                 'verify_token' => $request->input('verify_token'),
                 'display_phone' => $request->input('display_phone'),
             ];

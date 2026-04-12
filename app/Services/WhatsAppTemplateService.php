@@ -17,7 +17,7 @@ class WhatsAppTemplateService
 
     public function create(int $orgId, int $channelId, array $data): WhatsAppTemplate
     {
-        $channel = Channel::withoutGlobalScopes()->findOrFail($channelId);
+        $channel = Channel::findOrFail($channelId);
 
         // Build Meta components payload
         $components = $this->buildMetaComponents($data);
@@ -170,11 +170,11 @@ class WhatsAppTemplateService
             WhatsAppTemplate::withoutGlobalScopes()->updateOrCreate(
                 [
                     'organization_id' => $channel->organization_id,
+                    'channel_id' => $channel->id,
                     'name' => $name,
                     'language' => $language,
                 ],
                 [
-                    'channel_id' => $channel->id,
                     'category' => strtoupper($mt['category'] ?? 'UTILITY'),
                     'status' => strtoupper($mt['status'] ?? 'PENDING'),
                     'components' => $mt['components'] ?? [],

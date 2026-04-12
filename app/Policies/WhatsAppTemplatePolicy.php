@@ -23,7 +23,7 @@ class WhatsAppTemplatePolicy extends TenantPolicy
     {
         return $this->belongsToSameOrganization($user, $template)
             && $user->hasPermissionTo('whatsapp_templates.create')
-            && $template->isRejected();
+            && ($template->isRejected() || $template->isApproved());
     }
 
     public function delete(User $user, Model $template): bool

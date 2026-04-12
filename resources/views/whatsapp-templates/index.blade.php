@@ -62,7 +62,7 @@
                             <td class="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $tpl->channel->name ?? '-' }}</td>
                             <td class="px-5 py-3 text-sm">
                                 <div class="flex items-center gap-2">
-                                    @if($tpl->isRejected())
+                                    @if($tpl->isRejected() || $tpl->isApproved())
                                         <a href="{{ route('whatsapp-templates.edit', $tpl) }}" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium">Editar</a>
                                     @endif
                                     @can('delete', $tpl)

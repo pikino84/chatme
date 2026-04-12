@@ -144,6 +144,12 @@
                         <p class="text-xs text-gray-400 mt-1">WhatsApp Business Account ID. Se encuentra en WhatsApp &gt; API Setup.</p>
                     </div>
                     <div>
+                        <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">App ID</label>
+                        <input type="text" id="field-app_id" placeholder="Ej: 123456789"
+                               class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                        <p class="text-xs text-gray-400 mt-1">ID de tu app de Meta. Necesario para plantillas con multimedia. Se encuentra en Meta Developers &gt; Tu App.</p>
+                    </div>
+                    <div>
                         <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Access Token *</label>
                         <input type="password" id="field-access_token" placeholder="EAA..."
                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
@@ -507,6 +513,7 @@
             if (selectedType === 'whatsapp') {
                 data.phone_number_id = document.getElementById('field-phone_number_id').value.trim();
                 data.waba_id = document.getElementById('field-waba_id').value.trim();
+                data.app_id = document.getElementById('field-app_id').value.trim();
                 data.access_token = document.getElementById('field-access_token').value.trim();
                 data.verify_token = document.getElementById('field-verify_token').value.trim();
                 data.app_secret = document.getElementById('field-app_secret').value.trim();

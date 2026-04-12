@@ -219,9 +219,9 @@
     function insertVariable() {
         var textarea = document.getElementById('tpl-body');
         var text = textarea.value;
-        // Find next variable number
-        var matches = text.match(/\{\{(\d+)\}\}/g) || [];
-        var next = matches.length + 1;
+        // Find next variable number (max existing + 1)
+        var nums = (text.match(/\{\{(\d+)\}\}/g) || []).map(function(m) { return parseInt(m.replace(/[{}]/g, ''), 10); });
+        var next = nums.length ? Math.max.apply(null, nums) + 1 : 1;
         var pos = textarea.selectionStart;
         textarea.value = text.slice(0, pos) + '{{' + next + '}}' + text.slice(pos);
         textarea.focus();
