@@ -79,6 +79,16 @@
                 @endcan
             @endif
 
+            @can('delete', $conversation)
+            <form method="POST" action="{{ route('inbox.conversations.destroy', $conversation) }}" onsubmit="return confirm('¿Eliminar esta conversación y todos sus mensajes? Esta acción no se puede deshacer.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="w-full text-xs px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
+                    Eliminar Conversación
+                </button>
+            </form>
+            @endcan
+
             @can('assign', $conversation)
             <form method="POST" action="{{ route('inbox.conversations.assign', $conversation) }}" class="flex gap-1">
                 @csrf

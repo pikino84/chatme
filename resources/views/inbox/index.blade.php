@@ -169,6 +169,11 @@
             html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>';
             html += '<span>Seleccionar</span></button>';
         }
+        if (c.can_delete) {
+            html += '<button onclick="deleteConversation(' + c.id + ')" class="flex items-center justify-center w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 shrink-0 transition-colors" title="Eliminar conversación">';
+            html += '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
+            html += '</button>';
+        }
         html += '<button onclick="openInfoPanel(' + c.id + ')" class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 shrink-0 transition-colors">';
         html += '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
         html += '</button></div>';
@@ -796,6 +801,36 @@
         document.body.appendChild(toast);
         setTimeout(function() { toast.classList.add('opacity-0'); }, 2500);
         setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    function deleteConversation(convId) {
+        if (!confirm('¿Eliminar esta conversación y todos sus mensajes? Esta acción no se puede deshacer.')) return;
+        fetch('/inbox/conversations/' + convId, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                // Remove from conversation list
+                var el = document.querySelector('[data-conv-id="' + convId + '"]');
+                if (el) el.remove();
+                // Clear chat panel
+                if (currentConvId === convId) {
+                    currentConvId = null;
+                    document.getElementById('chat-loaded').classList.add('hidden');
+                    document.getElementById('chat-empty').classList.remove('hidden');
+                    if (pollInterval) clearInterval(pollInterval);
+                    history.pushState(null, '', '/inbox');
+                }
+                showForwardToast('Conversación eliminada');
+            }
+        })
+        .catch(function() { showForwardToast('Error al eliminar', true); });
     }
 
     function inboxApp() {

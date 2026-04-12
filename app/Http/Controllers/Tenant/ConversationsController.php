@@ -53,6 +53,7 @@ class ConversationsController extends Controller
                     'assign_url' => route('inbox.conversations.assign', $conversation),
                     'send_url' => route('inbox.conversations.messages.store', $conversation),
                     'poll_url' => route('inbox.conversations.messages.poll', $conversation),
+                    'can_delete' => $request->user()->can('delete', $conversation),
                 ],
                 'messages' => $messages->map(fn ($m) => [
                     'id' => $m->id,
@@ -163,6 +164,19 @@ class ConversationsController extends Controller
         ConversationAssignedEvent::dispatch($conversation->fresh(), $assignee->id);
 
         return back()->with('success', "Assigned to {$assignee->name}.");
+    }
+
+    public function destroy(Request $request, Conversation $conversation)
+    {
+        $this->authorize('delete', $conversation);
+
+        $conversation->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('inbox')->with('success', 'Conversación eliminada.');
     }
 
     public function transfer(Request $request, Conversation $conversation)

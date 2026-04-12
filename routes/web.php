@@ -94,6 +94,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/inbox/conversations/{conversation}/reopen', [ConversationsController::class, 'reopen'])->name('inbox.conversations.reopen');
             Route::post('/inbox/conversations/{conversation}/assign', [ConversationsController::class, 'assign'])->name('inbox.conversations.assign');
             Route::post('/inbox/conversations/{conversation}/transfer', [ConversationsController::class, 'transfer'])->name('inbox.conversations.transfer');
+            Route::delete('/inbox/conversations/{conversation}', [ConversationsController::class, 'destroy'])->name('inbox.conversations.destroy');
             Route::post('/inbox/conversations/{conversation}/messages', [MessageController::class, 'store'])->name('inbox.conversations.messages.store');
             Route::get('/inbox/conversations/{conversation}/messages/poll', [MessageController::class, 'poll'])->name('inbox.conversations.messages.poll');
             Route::post('/inbox/conversations/{conversation}/messages/forward', [MessageController::class, 'forward'])->name('inbox.conversations.messages.forward');

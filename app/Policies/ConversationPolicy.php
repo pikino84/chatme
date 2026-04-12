@@ -73,6 +73,7 @@ class ConversationPolicy extends TenantPolicy
 
     public function delete(User $user, Model $conversation): bool
     {
-        return false;
+        return $this->belongsToSameOrganization($user, $conversation)
+            && $user->hasPermissionTo('conversations.view-all');
     }
 }
