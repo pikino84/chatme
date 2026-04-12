@@ -9,9 +9,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\ConversationAssignment;
 use App\Models\ConversationTransfer;
+use App\Models\MessageAttachment;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ConversationsController extends Controller
 {
@@ -169,6 +172,28 @@ class ConversationsController extends Controller
     public function destroy(Request $request, Conversation $conversation)
     {
         $this->authorize('delete', $conversation);
+
+        // Delete media files from storage before cascade removes the records
+        $attachments = MessageAttachment::withoutGlobalScopes()
+            ->whereIn('message_id', $conversation->messages()->select('id'))
+            ->whereNotNull('file_path')
+            ->get(['file_path', 'thumbnail_path']);
+
+        $disk = MessageAttachment::mediaDisk();
+        foreach ($attachments as $att) {
+            try {
+                if ($att->file_path) Storage::disk($disk)->delete($att->file_path);
+                if ($att->thumbnail_path) Storage::disk($disk)->delete($att->thumbnail_path);
+            } catch (\Throwable $e) {
+                Log::warning('Failed to delete attachment file', ['path' => $att->file_path, 'error' => $e->getMessage()]);
+            }
+        }
+
+        Log::info('Conversation deleted', [
+            'conversation_id' => $conversation->id,
+            'contact' => $conversation->contact_identifier,
+            'deleted_by' => $request->user()->id,
+        ]);
 
         $conversation->delete();
 

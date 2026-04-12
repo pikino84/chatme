@@ -813,13 +813,16 @@
                 'X-CSRF-TOKEN': csrfToken
             }
         })
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            if (r.status === 403) throw new Error('No tienes permiso para eliminar esta conversación.');
+            if (r.status === 404) throw new Error('La conversación ya no existe.');
+            if (!r.ok) throw new Error('Error del servidor.');
+            return r.json();
+        })
         .then(function(data) {
             if (data.success) {
-                // Remove from conversation list
                 var el = document.querySelector('[data-conv-id="' + convId + '"]');
                 if (el) el.remove();
-                // Clear chat panel
                 if (currentConvId === convId) {
                     currentConvId = null;
                     document.getElementById('chat-loaded').classList.add('hidden');
@@ -830,7 +833,7 @@
                 showForwardToast('Conversación eliminada');
             }
         })
-        .catch(function() { showForwardToast('Error al eliminar', true); });
+        .catch(function(err) { showForwardToast(err.message || 'Error al eliminar', true); });
     }
 
     function inboxApp() {
