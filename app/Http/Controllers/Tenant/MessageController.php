@@ -175,23 +175,25 @@ class MessageController extends Controller
 
         $messageIds = $messages->pluck('id')->toArray();
 
-        // Check 24h window for each recipient
+        // Check 24h window for all recipients in one query
         $sent = [];
         $skipped = [];
         $cutoff = Carbon::now()->subHours(24);
+        $recipients = $request->input('recipients');
 
-        foreach ($request->input('recipients') as $phone) {
-            $hasWindow = Message::withoutGlobalScopes()
-                ->whereHas('conversation', function ($q) use ($channel, $phone) {
-                    $q->where('channel_id', $channel->id)
-                      ->where('contact_identifier', $phone);
-                })
-                ->where('organization_id', $conversation->organization_id)
-                ->where('direction', 'inbound')
-                ->where('created_at', '>=', $cutoff)
-                ->exists();
+        $phonesWithWindow = Message::withoutGlobalScopes()
+            ->join('conversations', 'messages.conversation_id', '=', 'conversations.id')
+            ->where('conversations.channel_id', $channel->id)
+            ->whereIn('conversations.contact_identifier', $recipients)
+            ->where('messages.organization_id', $conversation->organization_id)
+            ->where('messages.direction', 'inbound')
+            ->where('messages.created_at', '>=', $cutoff)
+            ->distinct()
+            ->pluck('conversations.contact_identifier')
+            ->toArray();
 
-            if ($hasWindow) {
+        foreach ($recipients as $phone) {
+            if (in_array($phone, $phonesWithWindow)) {
                 ForwardWhatsAppMessages::dispatch(
                     $channel->id,
                     $messageIds,

@@ -150,16 +150,14 @@ class ContactController extends Controller
         if ($channelId) {
             $cutoff = Carbon::now()->subHours(24);
             $phonesWithWindow = Message::withoutGlobalScopes()
-                ->whereHas('conversation', function ($q) use ($channelId, $contacts) {
-                    $q->where('channel_id', $channelId)
-                      ->whereIn('contact_identifier', $contacts->pluck('phone'));
-                })
-                ->where('organization_id', $tenant->id)
-                ->where('direction', 'inbound')
-                ->where('created_at', '>=', $cutoff)
                 ->join('conversations', 'messages.conversation_id', '=', 'conversations.id')
+                ->where('conversations.channel_id', $channelId)
+                ->whereIn('conversations.contact_identifier', $contacts->pluck('phone'))
+                ->where('messages.organization_id', $tenant->id)
+                ->where('messages.direction', 'inbound')
+                ->where('messages.created_at', '>=', $cutoff)
+                ->distinct()
                 ->pluck('conversations.contact_identifier')
-                ->unique()
                 ->toArray();
 
             $contacts = $contacts->map(function ($contact) use ($phonesWithWindow) {

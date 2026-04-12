@@ -650,10 +650,10 @@
             var html = '';
             contacts.forEach(function(c) {
                 var isSelected = forwardRecipients.some(function(r) { return r.phone === c.phone; });
-                var hasWindow = c.has_active_window;
-                var windowClass = hasWindow ? '' : ' opacity-60';
+                var hasWindow = c.has_active_window !== undefined ? c.has_active_window : null;
+                var windowClass = hasWindow === false ? ' opacity-60' : '';
                 html += '<div class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer transition' + windowClass + '" onclick="toggleRecipient(\'' + esc(c.phone) + '\', \'' + esc(c.name) + '\')">';
-                var avatarColor = hasWindow ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500';
+                var avatarColor = hasWindow === false ? 'bg-gray-200 text-gray-500' : 'bg-green-100 text-green-700';
                 html += '<div class="w-8 h-8 rounded-full ' + avatarColor + ' flex items-center justify-center text-xs font-bold shrink-0">' + esc(c.name.charAt(0).toUpperCase()) + '</div>';
                 html += '<div class="flex-1 min-w-0"><div class="text-sm font-medium text-gray-800 truncate">' + esc(c.name) + '</div>';
                 html += '<div class="text-xs text-gray-500">' + esc(c.phone);
