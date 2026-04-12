@@ -88,7 +88,7 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cuerpo del mensaje</label>
                     <div class="flex gap-1 mb-1">
-                        <button type="button" onclick="insertVariable()" class="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 rounded hover:bg-gray-300 transition">+ Variable {{"{{N}}"}}</button>
+                        <button type="button" onclick="insertVariable()" class="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 rounded hover:bg-gray-300 transition">+ Variable @{{ N }}</button>
                     </div>
                     <textarea name="body_text" id="tpl-body" rows="4" required maxlength="1024"
                               class="w-full text-sm rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
