@@ -173,17 +173,38 @@ class ConversationsController extends Controller
     {
         $this->authorize('delete', $conversation);
 
-        // Delete media files from storage before cascade removes the records
+        // Delete media files from storage, but only if no other attachment shares the same file
         $attachments = MessageAttachment::withoutGlobalScopes()
             ->whereIn('message_id', $conversation->messages()->select('id'))
             ->whereNotNull('file_path')
-            ->get(['file_path', 'thumbnail_path']);
+            ->get(['id', 'file_path', 'thumbnail_path']);
 
         $disk = MessageAttachment::mediaDisk();
+        $messageIds = $conversation->messages()->pluck('id')->toArray();
+
         foreach ($attachments as $att) {
             try {
-                if ($att->file_path) Storage::disk($disk)->delete($att->file_path);
-                if ($att->thumbnail_path) Storage::disk($disk)->delete($att->thumbnail_path);
+                // Only delete from storage if no OTHER attachment references the same file
+                if ($att->file_path) {
+                    $otherExists = MessageAttachment::withoutGlobalScopes()
+                        ->where('file_path', $att->file_path)
+                        ->where('id', '!=', $att->id)
+                        ->whereNotIn('message_id', $messageIds)
+                        ->exists();
+                    if (!$otherExists) {
+                        Storage::disk($disk)->delete($att->file_path);
+                    }
+                }
+                if ($att->thumbnail_path) {
+                    $otherThumbExists = MessageAttachment::withoutGlobalScopes()
+                        ->where('thumbnail_path', $att->thumbnail_path)
+                        ->where('id', '!=', $att->id)
+                        ->whereNotIn('message_id', $messageIds)
+                        ->exists();
+                    if (!$otherThumbExists) {
+                        Storage::disk($disk)->delete($att->thumbnail_path);
+                    }
+                }
             } catch (\Throwable $e) {
                 Log::warning('Failed to delete attachment file', ['path' => $att->file_path, 'error' => $e->getMessage()]);
             }
