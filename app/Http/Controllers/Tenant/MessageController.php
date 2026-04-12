@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Events\MessageSentEvent;
 use App\Http\Controllers\Controller;
+use App\Jobs\ForwardWhatsAppMessages;
 use App\Jobs\SendWhatsAppMediaJob;
 use App\Jobs\SendWhatsAppMessage;
 use App\Models\Conversation;
@@ -33,6 +34,7 @@ class MessageController extends Controller
                 'body' => e($msg->body),
                 'type' => $msg->type,
                 'direction' => $msg->direction,
+                'is_forwarded' => (bool) (($msg->metadata ?? [])['forwarded'] ?? false),
                 'user_name' => $msg->user?->name ?? ($msg->isInbound() ? null : 'Agent'),
                 'time' => $msg->created_at->format('H:i'),
                 'attachments' => $msg->attachments->map(fn ($a) => [
@@ -140,6 +142,52 @@ class MessageController extends Controller
         }
 
         return back();
+    }
+
+    public function forward(Request $request, Conversation $conversation)
+    {
+        $this->authorize('view', $conversation);
+
+        $request->validate([
+            'message_ids' => 'required|array|min:1|max:25',
+            'message_ids.*' => 'integer',
+            'recipients' => 'required|array|min:1|max:10',
+            'recipients.*' => 'string|regex:/^\+?\d{10,15}$/',
+        ]);
+
+        $channel = $conversation->channel;
+
+        if (!$channel || !$channel->isWhatsApp()) {
+            return response()->json(['error' => 'Solo se pueden reenviar mensajes de conversaciones WhatsApp.'], 422);
+        }
+
+        $messages = $conversation->messages()
+            ->with('attachments')
+            ->whereIn('id', $request->input('message_ids'))
+            ->where('type', '!=', 'internal_note')
+            ->oldest()
+            ->get();
+
+        if ($messages->isEmpty()) {
+            return response()->json(['error' => 'No se encontraron mensajes válidos.'], 422);
+        }
+
+        $messageIds = $messages->pluck('id')->toArray();
+
+        foreach ($request->input('recipients') as $phone) {
+            ForwardWhatsAppMessages::dispatch(
+                $channel->id,
+                $messageIds,
+                $phone,
+                $request->user()->id,
+                $conversation->organization_id,
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'forwarded_count' => count($messageIds) * count($request->input('recipients')),
+        ]);
     }
 
     private function detectMediaType(string $mimeType): string

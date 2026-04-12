@@ -9,8 +9,17 @@
                 </div>
             </div>
         @elseif($msg->isInbound())
-            <div class="flex justify-start" data-msg-id="{{ $msg->id }}">
+            <div class="flex justify-start items-start gap-1" data-msg-id="{{ $msg->id }}">
+                <label class="msg-checkbox hidden self-center shrink-0 cursor-pointer">
+                    <input type="checkbox" class="forward-check w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500" value="{{ $msg->id }}">
+                </label>
                 <div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-bl-sm bg-white shadow-sm text-sm text-gray-800">
+                    @if(($msg->metadata ?? [])['forwarded'] ?? false)
+                        <div class="text-[10px] italic text-gray-400 mb-1 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            Reenviado
+                        </div>
+                    @endif
                     @include('inbox.partials.message-attachments', ['attachments' => $msg->attachments])
                     @if($msg->body && !$msg->isMediaMessage())
                         {{ $msg->body }}
@@ -23,8 +32,14 @@
                 </div>
             </div>
         @else
-            <div class="flex justify-end" data-msg-id="{{ $msg->id }}">
+            <div class="flex justify-end items-start gap-1" data-msg-id="{{ $msg->id }}">
                 <div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-br-sm bg-crea-primary text-white text-sm shadow-sm">
+                    @if(($msg->metadata ?? [])['forwarded'] ?? false)
+                        <div class="text-[10px] italic text-white/60 mb-1 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            Reenviado
+                        </div>
+                    @endif
                     @include('inbox.partials.message-attachments', ['attachments' => $msg->attachments])
                     @if($msg->body && !$msg->isMediaMessage())
                         {{ $msg->body }}
@@ -35,6 +50,9 @@
                         {{ $msg->user?->name ?? 'Agent' }} &middot; {{ $msg->created_at->format('H:i') }}
                     </div>
                 </div>
+                <label class="msg-checkbox hidden self-center shrink-0 cursor-pointer">
+                    <input type="checkbox" class="forward-check w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500" value="{{ $msg->id }}">
+                </label>
             </div>
         @endif
     @endforeach

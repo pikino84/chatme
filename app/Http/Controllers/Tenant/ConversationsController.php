@@ -58,6 +58,7 @@ class ConversationsController extends Controller
                     'body' => $m->body,
                     'direction' => $m->direction,
                     'type' => $m->type,
+                    'is_forwarded' => (bool) (($m->metadata ?? [])['forwarded'] ?? false),
                     'user_name' => $m->user?->name ?? 'Agent',
                     'time' => $m->created_at->format('H:i'),
                     'attachments' => $m->attachments->map(fn ($a) => [

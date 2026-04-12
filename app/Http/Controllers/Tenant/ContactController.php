@@ -122,6 +122,30 @@ class ContactController extends Controller
         return view('contacts.import');
     }
 
+    public function searchJson(Request $request)
+    {
+        if (! $request->user()->can('contacts.view')) {
+            return response()->json([], 403);
+        }
+
+        $tenant = app('tenant');
+        $query = Contact::where('organization_id', $tenant->id)
+            ->whereNotNull('phone')
+            ->where('phone', '!=', '');
+
+        if ($q = $request->input('q')) {
+            $query->where(function ($qb) use ($q) {
+                $qb->where('name', 'ilike', "%{$q}%")
+                    ->orWhere('phone', 'ilike', "%{$q}%")
+                    ->orWhere('company', 'ilike', "%{$q}%");
+            });
+        }
+
+        $contacts = $query->orderBy('name')->limit(20)->get(['id', 'name', 'phone', 'company']);
+
+        return response()->json($contacts);
+    }
+
     public function import(Request $request)
     {
         $this->authorize('import', Contact::class);

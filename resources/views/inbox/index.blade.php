@@ -96,7 +96,7 @@
         if (!str) return '';
         var d = document.createElement('div');
         d.textContent = str;
-        return d.innerHTML;
+        return d.innerHTML.replace(/'/g, '&#39;');
     }
 
     function loadConversation(convId, event) {
@@ -162,6 +162,11 @@
         html += '<p class="text-xs text-gray-500 dark:text-gray-400 truncate">' + esc(c.channel_type.charAt(0).toUpperCase() + c.channel_type.slice(1)) + ' · ' + esc(c.status.charAt(0).toUpperCase() + c.status.slice(1));
         if (c.subject) html += ' · ' + esc(c.subject);
         html += '</p></div>';
+        if (c.channel_type === 'whatsapp') {
+            html += '<button id="btn-select-mode" onclick="toggleSelectMode()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium shrink-0 transition-colors">';
+            html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>';
+            html += '<span>Seleccionar</span></button>';
+        }
         html += '<button onclick="openInfoPanel(' + c.id + ')" class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 shrink-0 transition-colors">';
         html += '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
         html += '</button></div>';
@@ -172,6 +177,13 @@
             html += renderMessage(msg);
         });
         html += '</div>';
+
+        // Forward bar (hidden by default)
+        html += '<div id="forward-bar" class="hidden border-t border-gray-200 bg-green-50 px-4 py-3 flex items-center justify-between">';
+        html += '<span class="text-sm text-gray-700"><span id="forward-count">0</span> seleccionados</span>';
+        html += '<button onclick="openForwardModal()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition flex items-center gap-1">';
+        html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>';
+        html += 'Reenviar</button></div>';
 
         // Input
         if (c.is_open) {
@@ -292,19 +304,27 @@
             bodyHtml = esc(msg.body);
         }
 
+        var forwardedHtml = '';
+        if (msg.is_forwarded) {
+            forwardedHtml = '<div class="text-[10px] italic opacity-60 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>Reenviado</div>';
+        }
+        var cbHtml = '<label class="msg-checkbox hidden self-center shrink-0 cursor-pointer"><input type="checkbox" class="forward-check w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500" value="' + msg.id + '"></label>';
+
         if (msg.type === 'internal_note') {
             html += '<div data-msg-id="' + msg.id + '" class="flex justify-center">';
             html += '<div class="max-w-md px-3 py-2 rounded-lg bg-yellow-50 border border-yellow-200 text-xs text-yellow-700">';
             html += '<span class="font-medium">' + esc(msg.user_name || 'System') + ':</span> ' + esc(msg.body);
             html += ' <span class="text-yellow-400 ml-2">' + esc(msg.time) + '</span></div></div>';
         } else if (msg.direction === 'inbound') {
-            html += '<div data-msg-id="' + msg.id + '" class="flex justify-start">';
+            html += '<div data-msg-id="' + msg.id + '" class="flex justify-start items-start gap-1">';
+            html += cbHtml;
             html += '<div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-bl-sm bg-white shadow-sm text-sm text-gray-800">';
-            html += bodyHtml + '<div class="text-[10px] text-gray-400 mt-1 text-right">' + esc(msg.time) + '</div></div></div>';
+            html += forwardedHtml + bodyHtml + '<div class="text-[10px] text-gray-400 mt-1 text-right">' + esc(msg.time) + '</div></div></div>';
         } else {
-            html += '<div data-msg-id="' + msg.id + '" class="flex justify-end">';
+            html += '<div data-msg-id="' + msg.id + '" class="flex justify-end items-start gap-1">';
             html += '<div class="max-w-[85%] sm:max-w-md px-4 py-2 rounded-2xl rounded-br-sm bg-crea-primary text-white text-sm shadow-sm">';
-            html += bodyHtml + '<div class="text-[10px] text-crea-secondary-light mt-1 text-right">' + esc(msg.user_name || 'Agent') + ' · ' + esc(msg.time) + '</div></div></div>';
+            html += forwardedHtml + bodyHtml + '<div class="text-[10px] text-crea-secondary-light mt-1 text-right">' + esc(msg.user_name || 'Agent') + ' · ' + esc(msg.time) + '</div></div>';
+            html += cbHtml + '</div>';
         }
         return html;
     }
@@ -550,6 +570,218 @@
         setTimeout(function() { modal.classList.add('hidden'); }, 200);
     }
 
+    // ========== FORWARD MESSAGES FEATURE ==========
+    var selectMode = false;
+    var forwardRecipients = []; // [{phone, name}]
+
+    function toggleSelectMode() {
+        selectMode = !selectMode;
+        var thread = document.getElementById('message-thread');
+        var btn = document.getElementById('btn-select-mode');
+        var bar = document.getElementById('forward-bar');
+        if (!thread) return;
+
+        if (selectMode) {
+            thread.classList.add('select-mode');
+            if (btn) btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg><span>Cancelar</span>';
+        } else {
+            thread.classList.remove('select-mode');
+            thread.querySelectorAll('.forward-check').forEach(function(cb) { cb.checked = false; });
+            if (btn) btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg><span>Seleccionar</span>';
+            if (bar) bar.classList.add('hidden');
+        }
+    }
+
+    function updateForwardCount() {
+        var checked = document.querySelectorAll('.forward-check:checked');
+        var countEl = document.getElementById('forward-count');
+        var bar = document.getElementById('forward-bar');
+        if (countEl) countEl.textContent = checked.length;
+        if (bar) {
+            if (checked.length > 0 && selectMode) bar.classList.remove('hidden');
+            else bar.classList.add('hidden');
+        }
+    }
+
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('forward-check')) updateForwardCount();
+    });
+
+    function openForwardModal() {
+        forwardRecipients = [];
+        var modal = document.getElementById('forward-modal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        document.getElementById('fwd-search-input').value = '';
+        document.getElementById('fwd-search-results').innerHTML = '';
+        document.getElementById('fwd-manual-phone').value = '';
+        renderRecipientChips();
+        updateFwdSendBtn();
+        // Load initial contacts
+        searchContacts('');
+    }
+
+    function closeForwardModal() {
+        var modal = document.getElementById('forward-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    var fwdSearchTimer = null;
+    function onFwdSearchInput(val) {
+        clearTimeout(fwdSearchTimer);
+        fwdSearchTimer = setTimeout(function() { searchContacts(val); }, 300);
+    }
+
+    function searchContacts(q) {
+        fetch('/contacts/search?q=' + encodeURIComponent(q), {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(contacts) {
+            var container = document.getElementById('fwd-search-results');
+            if (!contacts.length) {
+                container.innerHTML = '<div class="p-3 text-sm text-gray-400 text-center">No se encontraron contactos</div>';
+                return;
+            }
+            var html = '';
+            contacts.forEach(function(c) {
+                var isSelected = forwardRecipients.some(function(r) { return r.phone === c.phone; });
+                html += '<div class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer transition" onclick="toggleRecipient(\'' + esc(c.phone) + '\', \'' + esc(c.name) + '\')">';
+                html += '<div class="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold shrink-0">' + esc(c.name.charAt(0).toUpperCase()) + '</div>';
+                html += '<div class="flex-1 min-w-0"><div class="text-sm font-medium text-gray-800 truncate">' + esc(c.name) + '</div>';
+                html += '<div class="text-xs text-gray-500">' + esc(c.phone) + '</div></div>';
+                if (isSelected) {
+                    html += '<svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>';
+                }
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        })
+        .catch(function() {});
+    }
+
+    function toggleRecipient(phone, name) {
+        var idx = forwardRecipients.findIndex(function(r) { return r.phone === phone; });
+        if (idx >= 0) {
+            forwardRecipients.splice(idx, 1);
+        } else {
+            forwardRecipients.push({ phone: phone, name: name });
+        }
+        renderRecipientChips();
+        updateFwdSendBtn();
+        // Re-render results to update checkmarks
+        var q = document.getElementById('fwd-search-input').value;
+        searchContacts(q);
+    }
+
+    function addManualPhone() {
+        var input = document.getElementById('fwd-manual-phone');
+        var phone = input.value.trim().replace(/\s/g, '');
+        if (!phone) return;
+        if (!/^\+?\d{10,15}$/.test(phone)) {
+            input.classList.add('border-red-500');
+            setTimeout(function() { input.classList.remove('border-red-500'); }, 2000);
+            return;
+        }
+        if (!forwardRecipients.some(function(r) { return r.phone === phone; })) {
+            forwardRecipients.push({ phone: phone, name: phone });
+        }
+        input.value = '';
+        renderRecipientChips();
+        updateFwdSendBtn();
+    }
+
+    function removeRecipient(phone) {
+        forwardRecipients = forwardRecipients.filter(function(r) { return r.phone !== phone; });
+        renderRecipientChips();
+        updateFwdSendBtn();
+        var q = document.getElementById('fwd-search-input').value;
+        searchContacts(q);
+    }
+
+    function renderRecipientChips() {
+        var container = document.getElementById('fwd-chips');
+        if (!forwardRecipients.length) {
+            container.innerHTML = '<span class="text-xs text-gray-400">Ningún destinatario seleccionado</span>';
+            return;
+        }
+        var html = '';
+        forwardRecipients.forEach(function(r) {
+            html += '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">';
+            html += esc(r.name === r.phone ? r.phone : r.name);
+            html += '<button type="button" onclick="removeRecipient(\'' + esc(r.phone) + '\')" class="w-4 h-4 rounded-full hover:bg-green-200 flex items-center justify-center">';
+            html += '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+            html += '</button></span>';
+        });
+        container.innerHTML = html;
+    }
+
+    function updateFwdSendBtn() {
+        var btn = document.getElementById('fwd-send-btn');
+        if (!btn) return;
+        if (forwardRecipients.length > 0) {
+            btn.disabled = false;
+            btn.textContent = 'Reenviar a ' + forwardRecipients.length + (forwardRecipients.length === 1 ? ' contacto' : ' contactos');
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            btn.disabled = true;
+            btn.textContent = 'Selecciona destinatarios';
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    function submitForward() {
+        if (!forwardRecipients.length || !currentConvId) return;
+        var checked = document.querySelectorAll('.forward-check:checked');
+        var msgIds = [];
+        checked.forEach(function(cb) { msgIds.push(parseInt(cb.value, 10)); });
+        if (!msgIds.length) return;
+
+        var btn = document.getElementById('fwd-send-btn');
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        fetch('/inbox/conversations/' + currentConvId + '/messages/forward', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                message_ids: msgIds,
+                recipients: forwardRecipients.map(function(r) { return r.phone; })
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                closeForwardModal();
+                toggleSelectMode();
+                showForwardToast('Mensajes reenviados correctamente');
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Reenviar';
+                showForwardToast(data.error || 'Error al reenviar', true);
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Reenviar';
+            showForwardToast('Error de conexión', true);
+        });
+    }
+
+    function showForwardToast(message, isError) {
+        var toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-white text-sm shadow-lg z-[70] transition-opacity duration-300 ' + (isError ? 'bg-red-500' : 'bg-green-500');
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.classList.add('opacity-0'); }, 2500);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+
     function inboxApp() {
         return {
             orgId: {{ auth()->user()->organization_id ?? 'null' }},
@@ -588,5 +820,57 @@
     </div>
 
     {{-- Close modal on Escape key --}}
-    <script>document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMediaModal(); });</script>
+    <script>document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeMediaModal(); closeForwardModal(); } });</script>
+
+    {{-- Forward Modal --}}
+    <div id="forward-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/50" onclick="closeForwardModal()"></div>
+        <div class="relative z-10 bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[80vh] flex flex-col">
+            {{-- Header --}}
+            <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Reenviar mensajes</h3>
+                <button onclick="closeForwardModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            {{-- Search --}}
+            <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                <input type="text" id="fwd-search-input" placeholder="Buscar contacto por nombre o teléfono..."
+                       oninput="onFwdSearchInput(this.value)"
+                       class="w-full text-sm rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:ring-green-500 focus:border-green-500">
+            </div>
+            {{-- Results --}}
+            <div id="fwd-search-results" class="flex-1 overflow-y-auto min-h-0 max-h-[200px] divide-y divide-gray-100 dark:divide-gray-700"></div>
+            {{-- Manual entry --}}
+            <div class="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+                <p class="text-xs text-gray-500 mb-2">O ingresar número manualmente:</p>
+                <div class="flex gap-2">
+                    <input type="text" id="fwd-manual-phone" placeholder="+521234567890"
+                           class="flex-1 text-sm rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:ring-green-500 focus:border-green-500 transition"
+                           onkeydown="if(event.key==='Enter'){event.preventDefault();addManualPhone();}">
+                    <button onclick="addManualPhone()" class="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 font-medium transition">
+                        + Agregar
+                    </button>
+                </div>
+            </div>
+            {{-- Selected chips --}}
+            <div class="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+                <p class="text-xs text-gray-500 mb-1">Destinatarios:</p>
+                <div id="fwd-chips" class="flex flex-wrap gap-1">
+                    <span class="text-xs text-gray-400">Ningún destinatario seleccionado</span>
+                </div>
+            </div>
+            {{-- Footer --}}
+            <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-end">
+                <button onclick="closeForwardModal()" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">Cancelar</button>
+                <button id="fwd-send-btn" onclick="submitForward()" disabled class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium transition opacity-50 cursor-not-allowed">
+                    Selecciona destinatarios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .select-mode .msg-checkbox { display: flex !important; }
+    </style>
 </x-app-layout>
