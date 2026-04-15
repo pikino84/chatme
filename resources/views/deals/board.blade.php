@@ -72,12 +72,45 @@
         opacity: 0.4;
         transform: rotate(2deg);
     }
+    .stage-column.collapsed {
+        width: 44px !important;
+        min-width: 44px;
+    }
+    .stage-column.collapsed .stage-header-expanded,
+    .stage-column.collapsed .stage-body {
+        display: none !important;
+    }
+    .stage-column.collapsed .stage-header-collapsed {
+        display: flex !important;
+    }
     </style>
     <script>
     var csrfToken = '{{ csrf_token() }}';
     var draggedCard = null;
     var draggedDealId = null;
     var sourceStageId = null;
+
+    // ── Collapse/Expand Stages ──
+    function toggleStageColumn(stageId) {
+        var col = document.querySelector('[data-stage-col="' + stageId + '"]');
+        if (!col) return;
+        col.classList.toggle('collapsed');
+        // Save state to localStorage
+        var collapsed = JSON.parse(localStorage.getItem('collapsed_stages') || '{}');
+        collapsed[stageId] = col.classList.contains('collapsed');
+        localStorage.setItem('collapsed_stages', JSON.stringify(collapsed));
+    }
+
+    // Restore collapsed state on load
+    (function() {
+        var collapsed = JSON.parse(localStorage.getItem('collapsed_stages') || '{}');
+        Object.keys(collapsed).forEach(function(stageId) {
+            if (collapsed[stageId]) {
+                var col = document.querySelector('[data-stage-col="' + stageId + '"]');
+                if (col) col.classList.add('collapsed');
+            }
+        });
+    })();
 
     // ── Drag & Drop ──
     function handleDragStart(e) {
