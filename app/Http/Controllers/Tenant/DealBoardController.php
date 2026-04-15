@@ -38,8 +38,7 @@ class DealBoardController extends Controller
         $stages = $activePipeline->stages()
             ->orderBy('position')
             ->with(['deals' => function ($q) use ($user) {
-                $q->with(['assignedUser', 'tags'])
-                    ->where('status', 'open');
+                $q->with(['assignedUser', 'tags']);
 
                 if (! $user->hasPermissionTo('deals.view-all')) {
                     $q->where('assigned_user_id', $user->id);
@@ -148,8 +147,7 @@ class DealBoardController extends Controller
         $stages = $deal->pipeline->stages()
             ->orderBy('position')
             ->with(['deals' => function ($q) use ($user) {
-                $q->with(['assignedUser', 'tags'])
-                    ->where('status', 'open');
+                $q->with(['assignedUser', 'tags']);
 
                 if (! $user->hasPermissionTo('deals.view-all')) {
                     $q->where('assigned_user_id', $user->id);
