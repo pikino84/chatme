@@ -10,7 +10,10 @@ use App\Models\Conversation;
 use App\Models\ConversationAssignment;
 use App\Models\ConversationTransfer;
 use App\Models\MessageAttachment;
+use App\Models\Pipeline;
+use App\Models\PipelineStage;
 use App\Models\User;
+use App\Services\DealService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +26,7 @@ class ConversationsController extends Controller
     {
         $this->authorize('view', $conversation);
 
-        $conversation->load(['channel', 'assignedUser', 'branch']);
+        $conversation->load(['channel', 'assignedUser', 'branch', 'deals']);
         $messages = $conversation->messages()
             ->with(['user', 'attachments'])
             ->oldest()
@@ -57,6 +60,9 @@ class ConversationsController extends Controller
                     'send_url' => route('inbox.conversations.messages.store', $conversation),
                     'poll_url' => route('inbox.conversations.messages.poll', $conversation),
                     'can_delete' => $request->user()->can('delete', $conversation),
+                    'can_create_deal' => $request->user()->can('create', \App\Models\Deal::class),
+                    'has_deal' => $conversation->deals()->exists(),
+                    'convert_to_deal_url' => route('inbox.conversations.convert-to-deal', $conversation),
                     'whatsapp_24h_expired' => $conversation->channel->isWhatsApp()
                         && !$conversation->messages()
                             ->where('direction', 'inbound')
@@ -279,5 +285,64 @@ class ConversationsController extends Controller
         );
 
         return back()->with('success', "Transferred to {$toUser->name}.");
+    }
+
+    public function convertToDeal(Request $request, Conversation $conversation, DealService $dealService)
+    {
+        $this->authorize('view', $conversation);
+
+        $validated = $request->validate([
+            'contact_name' => 'required|string|max:255',
+            'expected_close_date' => 'nullable|date',
+        ]);
+
+        $user = $request->user();
+        $orgId = $user->organization_id;
+
+        // Find default pipeline
+        $pipeline = Pipeline::withoutGlobalScopes()
+            ->where('organization_id', $orgId)
+            ->where('is_default', true)
+            ->first()
+            ?? Pipeline::withoutGlobalScopes()
+                ->where('organization_id', $orgId)
+                ->first();
+
+        if (! $pipeline) {
+            $error = 'No hay pipeline configurado.';
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $error], 422);
+            }
+            return back()->with('error', $error);
+        }
+
+        // Find "Contactado" stage, fallback to second stage or first
+        $contactadoStage = $pipeline->stages()
+            ->where('name', 'Contactado')
+            ->first()
+            ?? $pipeline->stages()->orderBy('position')->skip(1)->first()
+            ?? $pipeline->stages()->orderBy('position')->first();
+
+        $deal = $dealService->createDeal([
+            'organization_id' => $orgId,
+            'pipeline_id' => $pipeline->id,
+            'pipeline_stage_id' => $contactadoStage->id,
+            'contact_name' => $validated['contact_name'],
+            'contact_phone' => $conversation->contact_identifier,
+            'value' => 0,
+            'assigned_user_id' => $user->id,
+            'expected_close_date' => $validated['expected_close_date'] ?? null,
+            'conversation_id' => $conversation->id,
+        ], $user);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Negocio creado: {$deal->contact_name}",
+                'deal_url' => route('deals.show', $deal),
+            ]);
+        }
+
+        return back()->with('success', "Negocio \"{$deal->contact_name}\" creado en etapa {$contactadoStage->name}.");
     }
 }

@@ -127,6 +127,46 @@
         </div>
     </div>
 
+    {{-- Convert to Deal --}}
+    @can('create', \App\Models\Deal::class)
+        @if($conversation->deals->isEmpty())
+        <div>
+            <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Nuevo Negocio</h4>
+            <form method="POST" action="{{ route('inbox.conversations.convert-to-deal', $conversation) }}" class="space-y-2">
+                @csrf
+                <div>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nombre del contacto</label>
+                    <input type="text" name="contact_name" required placeholder="Nombre completo"
+                           value="{{ $conversation->contact_name }}"
+                           class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Teléfono</label>
+                    <input type="text" value="{{ $conversation->contact_identifier }}" disabled
+                           class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 bg-gray-50 dark:bg-gray-800">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Fecha estimada de cierre</label>
+                    <input type="date" name="expected_close_date"
+                           class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                </div>
+                <button type="submit" class="w-full text-xs px-3 py-1.5 rounded bg-green-600 text-white hover:bg-green-700 font-medium transition">
+                    Crear Negocio
+                </button>
+            </form>
+        </div>
+        @else
+        <div>
+            <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Negocio Vinculado</h4>
+            @foreach($conversation->deals as $deal)
+                <a href="{{ route('deals.show', $deal) }}" class="block text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+                    {{ $deal->contact_name }} — ${{ number_format($deal->value, 2) }}
+                </a>
+            @endforeach
+        </div>
+        @endif
+    @endcan
+
     {{-- Metadata --}}
     @if($conversation->metadata)
     <div>
