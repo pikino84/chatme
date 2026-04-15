@@ -137,6 +137,7 @@ class DealBoardController extends Controller
                 'all_tags' => $allTags->map(fn ($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color]),
                 'can_update' => $user->can('update', $deal),
                 'can_assign' => $user->can('assign', $deal),
+                'can_delete' => $user->can('delete', $deal),
                 'can_manage_commissions' => $user->hasPermissionTo('deals.manage-commissions'),
             ]);
         }

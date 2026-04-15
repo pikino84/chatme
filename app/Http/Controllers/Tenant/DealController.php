@@ -209,4 +209,34 @@ class DealController extends Controller
 
         return back()->with('success', 'Comisión eliminada.');
     }
+
+    // ── Delete Deal ──
+
+    public function destroy(Request $request, Deal $deal)
+    {
+        $this->authorize('delete', $deal);
+
+        $pipelineId = $deal->pipeline_id;
+
+        // Delete attachments from storage
+        foreach ($deal->attachments as $attachment) {
+            $disk = config('media.disk', 'local');
+            Storage::disk($disk)->delete($attachment->file_path);
+        }
+
+        // Cascade delete related records
+        $deal->notes()->delete();
+        $deal->attachments()->delete();
+        $deal->commissions()->delete();
+        $deal->stageHistory()->delete();
+        $deal->tags()->detach();
+        $deal->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Negocio eliminado.']);
+        }
+
+        return redirect()->route('deals.board', ['pipeline_id' => $pipelineId])
+            ->with('success', 'Negocio eliminado.');
+    }
 }

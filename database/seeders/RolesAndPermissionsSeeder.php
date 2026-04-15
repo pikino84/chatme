@@ -166,7 +166,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'messages.view', 'messages.send', 'messages.internal-note',
             'channels.view',
             'sla.view',
-            'deals.view', 'deals.view-all', 'deals.create', 'deals.update', 'deals.assign',
+            'deals.view', 'deals.view-all', 'deals.create', 'deals.update', 'deals.delete', 'deals.assign',
             'pipelines.view',
             'contacts.view', 'contacts.create', 'contacts.update',
             'campaigns.view',

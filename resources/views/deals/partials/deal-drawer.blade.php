@@ -320,6 +320,19 @@
                     </a>
                 </div>
             @endif
+
+            {{-- Delete Deal --}}
+            @can('delete', $deal)
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <form method="POST" action="{{ route('deals.destroy', $deal) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este negocio? Esta acción no se puede deshacer.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition">
+                            Eliminar Negocio
+                        </button>
+                    </form>
+                </div>
+            @endcan
         </div>
     </div>
 </div>

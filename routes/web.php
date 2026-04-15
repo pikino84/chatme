@@ -115,6 +115,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/deals/{deal}/commissions/{commission}/status', [DealController::class, 'updateCommissionStatus'])->name('deals.commissions.status');
             Route::delete('/deals/{deal}/commissions/{commission}', [DealController::class, 'deleteCommission'])->name('deals.commissions.destroy');
             Route::post('/deals/{deal}/tags', [DealController::class, 'syncTags'])->name('deals.tags.sync');
+            Route::delete('/deals/{deal}', [DealController::class, 'destroy'])->name('deals.destroy');
 
             // Pipelines
             Route::get('/pipelines', [PipelineController::class, 'index'])->name('pipelines.index');

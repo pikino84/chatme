@@ -391,6 +391,15 @@
             html += '</div>';
         }
 
+        // Delete Deal
+        if (data.can_delete) {
+            html += '<div class="pt-4 border-t border-gray-200 dark:border-gray-700">';
+            html += '<button onclick="deleteDeal(' + d.id + ')" class="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition">';
+            html += 'Eliminar Negocio';
+            html += '</button>';
+            html += '</div>';
+        }
+
         html += '</div>';
         return html;
     }
@@ -399,6 +408,43 @@
     function postForm(url, formData) {
         formData.append('_token', csrfToken);
         return fetch(url, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    }
+
+    function deleteDeal(dealId) {
+        if (!confirm('¿Estás seguro de que deseas eliminar este negocio? Esta acción no se puede deshacer.')) return;
+
+        fetch('/deals/' + dealId, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('Error');
+            return r.json();
+        })
+        .then(function() {
+            closeDealDrawer();
+            var card = document.querySelector('.deal-card[data-deal-id="' + dealId + '"]');
+            if (card) {
+                var zone = card.closest('.drop-zone');
+                card.remove();
+                // Update stage counter
+                if (zone) {
+                    var counter = zone.closest('.flex.flex-col').querySelector('.stage-count');
+                    if (counter) counter.textContent = zone.querySelectorAll('.deal-card').length;
+                    // Show empty message if no cards left
+                    if (zone.querySelectorAll('.deal-card').length === 0) {
+                        zone.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4 empty-msg">Sin negocios</p>';
+                    }
+                }
+            }
+        })
+        .catch(function() {
+            alert('Error al eliminar el negocio.');
+        });
     }
 
     function refreshDealCard(dealId) {
