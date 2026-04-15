@@ -148,6 +148,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/settings/team', [TeamController::class, 'store'])->name('settings.team.store');
             Route::post('/settings/team/{user}/role', [TeamController::class, 'updateRole'])->name('settings.team.role');
             Route::post('/settings/team/{user}/toggle', [TeamController::class, 'toggleActive'])->name('settings.team.toggle');
+            Route::delete('/settings/team/{user}', [TeamController::class, 'destroy'])->name('settings.team.destroy');
 
             // Billing
             Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');

@@ -124,6 +124,16 @@
                                                     {{ $user->is_active ? 'Desactivar' : 'Activar' }}
                                                 </button>
                                             </form>
+
+                                            @can('users.delete')
+                                                <form method="POST" action="{{ route('settings.team.destroy', $user) }}" onsubmit="return confirm('¿Eliminar a {{ $user->name }}? Sus negocios y conversaciones quedarán sin asignar.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 dark:text-red-400 font-medium">
+                                                        Eliminar
+                                                    </button>
+                                                </form>
+                                            @endcan
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-400">—</span>
