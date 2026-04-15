@@ -2,7 +2,8 @@
      data-stage-col="{{ $stage->id }}">
     {{-- Expanded header --}}
     <div class="stage-header-expanded px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between cursor-pointer"
-         onclick="toggleStageColumn({{ $stage->id }})">
+         onclick="toggleStageColumn({{ $stage->id }})"
+         title="Contraer columna">
         <div class="flex items-center min-w-0">
             <span class="inline-block w-2 h-2 rounded-full mr-2 shrink-0" style="background: {{ $stage->color ?? '#6B7280' }}"></span>
             <span class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{{ $stage->name }}</span>
@@ -15,7 +16,8 @@
 
     {{-- Collapsed header (vertical bar) --}}
     <div class="stage-header-collapsed hidden cursor-pointer flex-1 flex flex-col items-center py-3 gap-2"
-         onclick="toggleStageColumn({{ $stage->id }})">
+         onclick="toggleStageColumn({{ $stage->id }})"
+         title="Expandir columna: {{ $stage->name }}">
         <span class="inline-block w-2 h-2 rounded-full shrink-0" style="background: {{ $stage->color ?? '#6B7280' }}"></span>
         <span class="text-xs font-medium text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-full px-2 py-0.5 stage-count-collapsed">{{ $stage->deals->count() }}</span>
         <span class="font-medium text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap stage-name-vertical"
