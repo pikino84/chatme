@@ -103,20 +103,20 @@ class DealBoardController extends Controller
                     'tags' => $deal->tags->map(fn ($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color]),
                     'notes' => $deal->notes->map(fn ($n) => [
                         'body' => $n->body,
-                        'user' => $n->user->name,
+                        'user' => $n->user?->name ?? 'Sistema',
                         'created_at' => $n->created_at->diffForHumans(),
                     ]),
                     'attachments' => $deal->attachments->map(fn ($a) => [
                         'id' => $a->id,
                         'file_name' => $a->file_name,
                         'size' => $a->sizeForHumans(),
-                        'user' => $a->user->name,
+                        'user' => $a->user?->name ?? 'Sistema',
                         'url' => $a->url(),
                         'created_at' => $a->created_at->diffForHumans(),
                     ]),
                     'commissions' => $deal->commissions->map(fn ($c) => [
                         'id' => $c->id,
-                        'user' => $c->user->name,
+                        'user' => $c->user?->name ?? 'Sistema',
                         'percentage' => $c->percentage,
                         'amount' => $c->amount,
                         'status' => $c->status,

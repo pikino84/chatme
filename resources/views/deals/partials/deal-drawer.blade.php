@@ -162,7 +162,7 @@
                                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                                 <div class="min-w-0">
                                     <a href="{{ $attachment->url() }}" target="_blank" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline truncate block">{{ $attachment->file_name }}</a>
-                                    <p class="text-xs text-gray-400">{{ $attachment->sizeForHumans() }} &middot; {{ $attachment->user->name }} &middot; {{ $attachment->created_at->diffForHumans() }}</p>
+                                    <p class="text-xs text-gray-400">{{ $attachment->sizeForHumans() }} &middot; {{ $attachment->user?->name ?? 'Sistema' }} &middot; {{ $attachment->created_at->diffForHumans() }}</p>
                                 </div>
                             </div>
                             @can('update', $deal)
@@ -198,7 +198,7 @@
                     @forelse($deal->notes as $note)
                         <div class="bg-gray-50 dark:bg-gray-700 rounded p-2">
                             <div class="flex justify-between text-xs text-gray-400 mb-1">
-                                <span>{{ $note->user->name }}</span>
+                                <span>{{ $note->user?->name ?? 'Sistema' }}</span>
                                 <span>{{ $note->created_at->diffForHumans() }}</span>
                             </div>
                             <p class="text-sm text-gray-800 dark:text-gray-200">{{ $note->body }}</p>
@@ -241,7 +241,7 @@
                     @forelse($deal->commissions as $commission)
                         <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded p-2">
                             <div>
-                                <p class="text-sm text-gray-900 dark:text-gray-100">{{ $commission->user->name }}</p>
+                                <p class="text-sm text-gray-900 dark:text-gray-100">{{ $commission->user?->name ?? 'Sistema' }}</p>
                                 <p class="text-xs text-gray-400">{{ $commission->percentage }}% &middot; ${{ number_format($commission->amount, 2) }}</p>
                             </div>
                             <div class="flex items-center gap-2">
