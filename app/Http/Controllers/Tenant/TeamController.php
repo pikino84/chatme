@@ -147,7 +147,7 @@ class TeamController extends Controller
             ->where('assigned_user_id', $user->id)
             ->update(['assigned_user_id' => null]);
 
-        // Nullify user references in deal notes, attachments, commissions
+        // Nullify user references in deal-related tables
         \App\Models\DealNote::withoutGlobalScopes()
             ->where('user_id', $user->id)
             ->update(['user_id' => null]);
@@ -160,12 +160,42 @@ class TeamController extends Controller
             ->where('user_id', $user->id)
             ->update(['user_id' => null]);
 
+        // Nullify campaigns created by this user
+        \Illuminate\Support\Facades\DB::table('campaigns')
+            ->where('created_by', $user->id)
+            ->update(['created_by' => null]);
+
+        // Delete conversation assignments and transfers (cascadeOnDelete would handle, but explicit is safer)
+        \Illuminate\Support\Facades\DB::table('conversation_assignments')
+            ->where('user_id', $user->id)
+            ->delete();
+
+        \Illuminate\Support\Facades\DB::table('conversation_transfers')
+            ->where('from_user_id', $user->id)
+            ->orWhere('to_user_id', $user->id)
+            ->delete();
+
+        // Nullify KB article/version references
+        \Illuminate\Support\Facades\DB::table('kb_articles')
+            ->where('created_by', $user->id)
+            ->update(['created_by' => null]);
+
+        \Illuminate\Support\Facades\DB::table('kb_versions')
+            ->where('changed_by', $user->id)
+            ->update(['changed_by' => null]);
+
+        // Nullify messages user_id
+        \Illuminate\Support\Facades\DB::table('messages')
+            ->where('user_id', $user->id)
+            ->update(['user_id' => null]);
+
         $this->auditService->logModelChange('user.deleted', $user, [
             'deals_unassigned' => $dealsCount,
             'conversations_unassigned' => $convsCount,
         ], $request);
 
         $user->syncRoles([]);
+        $user->tokens()->delete();
         $user->delete();
 
         $message = "{$userName} ha sido eliminado.";
