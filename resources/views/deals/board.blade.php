@@ -227,20 +227,34 @@
 
         html += '<div class="p-4 space-y-6">';
 
-        // Contact Info
-        html += '<div>';
-        html += '<h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Contacto</h4>';
-        html += '<dl class="text-sm space-y-1">';
-        html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Nombre</dt><dd class="text-gray-900 dark:text-gray-100">' + esc(d.contact_name) + '</dd></div>';
-        if (d.contact_email) {
-            html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Email</dt><dd class="text-gray-900 dark:text-gray-100">' + esc(d.contact_email) + '</dd></div>';
+        // Editable Contact & Deal Info
+        if (data.can_update) {
+            html += '<form onsubmit="submitDealUpdate(event, ' + d.id + ')">';
+            html += '<div class="space-y-3">';
+            html += '<h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Contacto</h4>';
+            html += '<div><label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nombre</label>';
+            html += '<input type="text" name="contact_name" required value="' + esc(d.contact_name || '') + '" class="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"></div>';
+            html += '<div><label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Teléfono</label>';
+            html += '<input type="text" name="contact_phone" value="' + esc(d.contact_phone || '') + '" class="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"></div>';
+            html += '<div><label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Fecha estimada de cierre</label>';
+            html += '<input type="date" name="expected_close_date" value="' + esc(d.expected_close_date || '') + '" class="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"></div>';
+            html += '<button type="submit" class="w-full px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium">Guardar Cambios</button>';
+            html += '</div></form>';
+        } else {
+            html += '<div>';
+            html += '<h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Contacto</h4>';
+            html += '<dl class="text-sm space-y-1">';
+            html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Nombre</dt><dd class="text-gray-900 dark:text-gray-100">' + esc(d.contact_name) + '</dd></div>';
+            if (d.contact_phone) {
+                html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Teléfono</dt><dd class="text-gray-900 dark:text-gray-100">' + esc(d.contact_phone) + '</dd></div>';
+            }
+            if (d.expected_close_date) {
+                html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Cierre Esperado</dt><dd class="text-gray-900 dark:text-gray-100">' + esc(d.expected_close_date) + '</dd></div>';
+            }
+            html += '</dl></div>';
         }
-        if (d.contact_phone) {
-            html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Teléfono</dt><dd class="text-gray-900 dark:text-gray-100">' + esc(d.contact_phone) + '</dd></div>';
-        }
-        html += '</dl></div>';
 
-        // Deal Info
+        // Deal Info (read-only)
         html += '<div>';
         html += '<h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Negocio</h4>';
         html += '<dl class="text-sm space-y-1">';
@@ -248,9 +262,7 @@
         html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Etapa</dt><dd><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:' + esc(d.stage.color) + '"></span><span class="text-gray-900 dark:text-gray-100">' + esc(d.stage.name) + '</span></dd></div>';
         html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Valor</dt><dd class="text-gray-900 dark:text-gray-100">$' + Number(d.value).toLocaleString('en', {minimumFractionDigits:2}) + ' ' + esc(d.currency) + '</dd></div>';
         html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Estado</dt><dd class="text-gray-900 dark:text-gray-100 capitalize">' + esc(d.status) + '</dd></div>';
-        if (d.expected_close_date) {
-            html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Cierre Esperado</dt><dd class="text-gray-900 dark:text-gray-100">' + esc(d.expected_close_date) + '</dd></div>';
-        }
+        html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Creado</dt><dd class="text-gray-900 dark:text-gray-100">' + esc(d.created_at) + '</dd></div>';
         html += '<div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Asignado a</dt><dd class="text-gray-900 dark:text-gray-100">' + (d.assigned_user ? esc(d.assigned_user.name) : 'Sin asignar') + '</dd></div>';
         html += '</dl></div>';
 
@@ -500,6 +512,31 @@
         if (sourceZone && sourceZone.querySelectorAll('.deal-card').length === 0) {
             sourceZone.innerHTML = '<p class="text-xs text-gray-400 dark:text-gray-500 text-center py-4 empty-msg">Sin negocios</p>';
         }
+    }
+
+    function submitDealUpdate(event, dealId) {
+        event.preventDefault();
+        var form = event.target;
+        var fd = new FormData(form);
+        var body = new URLSearchParams(fd);
+        body.append('_token', csrfToken);
+        body.append('_method', 'PUT');
+        fetch('/deals/' + dealId, {
+            method: 'POST',
+            body: body,
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('Error');
+            return r.json();
+        })
+        .then(function() {
+            refreshDealCard(dealId);
+            openDealDrawer(dealId);
+        })
+        .catch(function() {
+            alert('Error al actualizar el negocio.');
+        });
     }
 
     function submitMoveStage(event, dealId) {

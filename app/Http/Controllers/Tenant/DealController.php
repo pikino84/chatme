@@ -52,6 +52,25 @@ class DealController extends Controller
         return redirect()->route('deals.show', $deal)->with('success', 'Deal created.');
     }
 
+    public function update(Request $request, Deal $deal)
+    {
+        $this->authorize('update', $deal);
+
+        $validated = $request->validate([
+            'contact_name' => 'required|string|max:255',
+            'contact_phone' => 'nullable|string|max:50',
+            'expected_close_date' => 'nullable|date',
+        ]);
+
+        $deal->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Negocio actualizado.']);
+        }
+
+        return back()->with('success', 'Negocio actualizado.');
+    }
+
     public function move(Request $request, Deal $deal)
     {
         $this->authorize('update', $deal);

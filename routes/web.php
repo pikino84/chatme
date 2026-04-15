@@ -107,6 +107,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::get('/deals', [DealBoardController::class, 'index'])->name('deals.board');
             Route::get('/deals/{deal}', [DealBoardController::class, 'show'])->name('deals.show');
             Route::post('/deals', [DealController::class, 'store'])->name('deals.store');
+            Route::put('/deals/{deal}', [DealController::class, 'update'])->name('deals.update');
             Route::post('/deals/{deal}/move', [DealController::class, 'move'])->name('deals.move');
             Route::post('/deals/{deal}/assign', [DealController::class, 'assign'])->name('deals.assign');
             Route::post('/deals/{deal}/notes', [DealController::class, 'addNote'])->name('deals.notes.store');

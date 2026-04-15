@@ -9,7 +9,34 @@
         </div>
 
         <div class="p-4 space-y-6">
-            {{-- Contact Info --}}
+            {{-- Editable Contact Info --}}
+            @can('update', $deal)
+            <div>
+                <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Contacto</h4>
+                <form method="POST" action="{{ route('deals.update', $deal) }}" class="space-y-2">
+                    @csrf
+                    @method('PUT')
+                    <div>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nombre</label>
+                        <input type="text" name="contact_name" required value="{{ $deal->contact_name }}"
+                               class="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Teléfono</label>
+                        <input type="text" name="contact_phone" value="{{ $deal->contact_phone }}"
+                               class="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Fecha estimada de cierre</label>
+                        <input type="date" name="expected_close_date" value="{{ $deal->expected_close_date?->format('Y-m-d') }}"
+                               class="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                    </div>
+                    <button type="submit" class="w-full px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium">
+                        Guardar Cambios
+                    </button>
+                </form>
+            </div>
+            @else
             <div>
                 <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Contacto</h4>
                 <dl class="text-sm space-y-1">
@@ -17,20 +44,15 @@
                         <dt class="text-gray-500 dark:text-gray-400">Nombre</dt>
                         <dd class="text-gray-900 dark:text-gray-100">{{ $deal->contact_name }}</dd>
                     </div>
-                    @if($deal->contact_email)
-                        <div class="flex justify-between">
-                            <dt class="text-gray-500 dark:text-gray-400">Email</dt>
-                            <dd class="text-gray-900 dark:text-gray-100">{{ $deal->contact_email }}</dd>
-                        </div>
-                    @endif
                     @if($deal->contact_phone)
                         <div class="flex justify-between">
-                            <dt class="text-gray-500 dark:text-gray-400">Telefono</dt>
+                            <dt class="text-gray-500 dark:text-gray-400">Teléfono</dt>
                             <dd class="text-gray-900 dark:text-gray-100">{{ $deal->contact_phone }}</dd>
                         </div>
                     @endif
                 </dl>
             </div>
+            @endcan
 
             {{-- Deal Info --}}
             <div>
@@ -54,6 +76,10 @@
                     <div class="flex justify-between">
                         <dt class="text-gray-500 dark:text-gray-400">Estado</dt>
                         <dd class="text-gray-900 dark:text-gray-100 capitalize">{{ $deal->status }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500 dark:text-gray-400">Creado</dt>
+                        <dd class="text-gray-900 dark:text-gray-100">{{ $deal->created_at->format('M d, Y') }}</dd>
                     </div>
                     @if($deal->expected_close_date)
                         <div class="flex justify-between">
