@@ -21,3 +21,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# chatme-wa-bridge (Phase 22 — WhatsApp Directo)
+/chatme-wa-bridge/node_modules
+/chatme-wa-bridge/sessions
+/chatme-wa-bridge/.env
+/chatme-wa-bridge/npm-debug.log

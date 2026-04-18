@@ -168,6 +168,21 @@ return [
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
 
+        // Conexión dedicada para el bridge chatme-wa-bridge (Baileys).
+        // Sin prefijo (el bridge usa nombres literales) y sin timeout (subscribe largo).
+        'wa_bridge' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_DB', '0'),
+            'options' => [
+                'prefix' => '',
+                'read_write_timeout' => 0,
+            ],
+        ],
+
     ],
 
 ];

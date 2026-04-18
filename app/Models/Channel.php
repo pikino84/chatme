@@ -62,8 +62,18 @@ class Channel extends Model
         return $this->type === 'whatsapp';
     }
 
+    public function isWhatsAppWeb(): bool
+    {
+        return $this->type === 'whatsapp_web';
+    }
+
     public function getWhatsAppConfig(string $key, mixed $default = null): mixed
     {
         return $this->configuration[$key] ?? $default;
+    }
+
+    public function whatsappWebSession(): HasOne
+    {
+        return $this->hasOne(WhatsAppWebSession::class);
     }
 }
