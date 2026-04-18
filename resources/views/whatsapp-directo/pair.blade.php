@@ -61,7 +61,7 @@
     </div>
 
     @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="{{ asset('vendor/qrious.min.js') }}"></script>
     <script>
         (function() {
             const CHANNEL_ID = {{ $channel->id }};
@@ -100,9 +100,17 @@
                 lastQr = data;
                 loading.classList.add('hidden');
                 canvas.classList.remove('hidden');
-                QRCode.toCanvas(canvas, data, { width: 256, margin: 1 }, (err) => {
-                    if (err) console.error('QR render error', err);
-                });
+                try {
+                    new QRious({
+                        element: canvas,
+                        value: data,
+                        size: 256,
+                        padding: 8,
+                        level: 'L',
+                    });
+                } catch (err) {
+                    console.error('QR render error', err);
+                }
             }
 
             function setStatus(color, text) {
