@@ -59,6 +59,18 @@ class MessageController extends Controller
 
     public function store(Request $request, Conversation $conversation)
     {
+        // Guard: conversaciones de whatsapp_web NO deben enviarse desde este endpoint.
+        // Tienen su propio flujo en /whatsapp-directo que usa el bridge Baileys.
+        // Este endpoint dispararía SendWhatsAppMessage (Cloud API) que no aplica.
+        if ($conversation->channel?->type === 'whatsapp_web') {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'error' => 'Esta conversación es de un canal WhatsApp Directo. Úsala desde /whatsapp-directo.',
+                ], 409);
+            }
+            return redirect()->route('whatsapp-directo.show', $conversation->channel_id);
+        }
+
         $type = $request->input('type', 'text');
         $hasFile = $request->hasFile('file');
 

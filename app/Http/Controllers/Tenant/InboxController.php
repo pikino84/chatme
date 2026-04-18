@@ -16,7 +16,11 @@ class InboxController extends Controller
         $user = $request->user();
 
         $query = Conversation::with(['channel', 'assignedUser', 'brand', 'messages' => fn ($q) => $q->latest()->limit(1)])
-            ->latest('last_message_at');
+            ->latest('last_message_at')
+            // Los canales whatsapp_web tienen su propia sección en /whatsapp-directo.
+            // Filtrarlos aquí evita envíos rotos desde este inbox (usaría SendWhatsAppMessage
+            // job que golpea Meta Cloud API, para la cual estos canales no tienen credenciales).
+            ->whereHas('channel', fn ($q) => $q->where('type', '!=', 'whatsapp_web'));
 
         if (! $user->hasPermissionTo('conversations.view-all')) {
             $query->where('assigned_user_id', $user->id);
@@ -47,7 +51,9 @@ class InboxController extends Controller
         }
 
         $conversations = $query->paginate(25)->withQueryString();
-        $channels = Channel::select('id', 'name', 'type')->get();
+        $channels = Channel::select('id', 'name', 'type')
+            ->where('type', '!=', 'whatsapp_web')
+            ->get();
         $agents = User::where('organization_id', $user->organization_id)
             ->select('id', 'name')
             ->orderBy('name')

@@ -27,6 +27,18 @@ class ConversationsController extends Controller
         $this->authorize('view', $conversation);
 
         $conversation->load(['channel', 'assignedUser', 'branch', 'deals']);
+
+        // Redirige si la conversación pertenece a un canal WhatsApp Directo —
+        // tiene su propia UI/endpoint en /whatsapp-directo.
+        if ($conversation->channel?->type === 'whatsapp_web') {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'redirect' => route('whatsapp-directo.show', $conversation->channel_id),
+                ], 409);
+            }
+            return redirect()->route('whatsapp-directo.show', $conversation->channel_id);
+        }
+
         $messages = $conversation->messages()
             ->with(['user', 'attachments'])
             ->oldest()
