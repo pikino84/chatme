@@ -18,6 +18,9 @@
                     <x-nav-link href="{{ route('inbox') }}" :active="request()->routeIs('inbox*')">
                         Inbox
                     </x-nav-link>
+                    <x-nav-link href="{{ route('whatsapp-directo.index') }}" :active="request()->routeIs('whatsapp-directo.*')">
+                        WhatsApp Directo
+                    </x-nav-link>
                     <x-nav-link href="{{ route('deals.board') }}" :active="request()->routeIs('deals.*')">
                         Deals
                     </x-nav-link>
@@ -163,6 +166,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ route('inbox') }}" :active="request()->routeIs('inbox*')">
                 Inbox
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="{{ route('whatsapp-directo.index') }}" :active="request()->routeIs('whatsapp-directo.*')">
+                WhatsApp Directo
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ route('deals.board') }}" :active="request()->routeIs('deals.*')">
                 Deals

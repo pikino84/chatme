@@ -15,9 +15,13 @@ function sessionFolder(channelId) {
     return path.join(SESSIONS_ROOT, String(channelId));
 }
 
-function jidFor(phone) {
-    const clean = String(phone).replace(/\D/g, '');
-    return `${clean}@s.whatsapp.net`;
+function jidFor(to) {
+    // Si ya trae @suffix (ej. "243761238040801@lid" o "5215512345678@s.whatsapp.net"), úsalo tal cual.
+    if (String(to).includes('@')) return String(to);
+    const clean = String(to).replace(/\D/g, '');
+    // Los LIDs son típicamente 14-15 dígitos; los números telefónicos 10-13.
+    // WhatsApp está migrando contactos nuevos a LIDs.
+    return clean.length > 13 ? `${clean}@lid` : `${clean}@s.whatsapp.net`;
 }
 
 function phoneFromJid(jid) {
@@ -137,6 +141,8 @@ export async function startSession(channelId, { resetAuth = false } = {}) {
                 event: 'message',
                 msgId: msg.key.id,
                 from,
+                fromJid: msg.key.remoteJid,
+                senderPn: msg.key.senderPn || null,
                 pushName: msg.pushName || null,
                 text,
                 media,
@@ -166,8 +172,35 @@ export async function sendText(channelId, to, text, ref) {
     if (!record || !record.connected) {
         throw new Error(`session ${channelId} not connected`);
     }
-    const result = await record.sock.sendMessage(jidFor(to), { text });
-    return { msgId: result?.key?.id, ref };
+
+    // Intenta resolver el JID correcto vía onWhatsApp (evita el problema LID vs @s.whatsapp.net)
+    let jid = jidFor(to);
+    const digits = String(to).replace(/\D/g, '');
+    try {
+        const results = await record.sock.onWhatsApp(digits);
+        if (results && results.length > 0 && results[0].exists) {
+            jid = results[0].jid || results[0].lid || jid;
+            logger.info({ channelId, to, resolvedJid: jid }, 'resolved jid via onWhatsApp');
+        } else {
+            logger.warn({ channelId, to, digits }, 'onWhatsApp returned no results, using fallback jid');
+        }
+    } catch (err) {
+        logger.warn({ channelId, to, err: err.message }, 'onWhatsApp failed, using fallback jid');
+    }
+
+    logger.info({ channelId, jid, ref, textLen: text?.length || 0 }, 'calling sendMessage');
+    try {
+        const result = await Promise.race([
+            record.sock.sendMessage(jid, { text }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('sendMessage timeout after 30s')), 30000)),
+        ]);
+        const msgId = result?.key?.id;
+        logger.info({ channelId, jid, ref, msgId }, 'sendMessage success');
+        return { msgId, ref };
+    } catch (err) {
+        logger.error({ channelId, jid, ref, err: err.message, stack: err.stack }, 'sendMessage failed');
+        throw err;
+    }
 }
 
 export async function logout(channelId) {

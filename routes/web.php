@@ -18,6 +18,7 @@ use App\Http\Controllers\Tenant\MessageController;
 use App\Http\Controllers\Tenant\NotificationController;
 use App\Http\Controllers\Tenant\BrandController;
 use App\Http\Controllers\Tenant\WhatsAppTemplateController;
+use App\Http\Controllers\Tenant\WhatsAppDirectoController;
 use App\Http\Controllers\Tenant\ChannelController;
 use App\Http\Controllers\Tenant\PipelineController;
 use App\Http\Controllers\Tenant\TagController;
@@ -102,6 +103,19 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/inbox/conversations/{conversation}/messages/forward', [MessageController::class, 'forward'])->name('inbox.conversations.messages.forward');
             Route::post('/inbox/conversations/{conversation}/send-template', [MessageController::class, 'sendTemplate'])->name('inbox.conversations.send-template');
             Route::get('/contacts/search', [ContactController::class, 'searchJson'])->name('contacts.search');
+
+            // WhatsApp Directo (Phase 22 — sección aislada del inbox, usa bridge Baileys vía Redis)
+            Route::get('/whatsapp-directo', [WhatsAppDirectoController::class, 'index'])->name('whatsapp-directo.index');
+            Route::post('/whatsapp-directo', [WhatsAppDirectoController::class, 'store'])->name('whatsapp-directo.store');
+            Route::get('/whatsapp-directo/{channel}/pair', [WhatsAppDirectoController::class, 'pair'])->name('whatsapp-directo.pair');
+            Route::post('/whatsapp-directo/{channel}/pair', [WhatsAppDirectoController::class, 'repair'])->name('whatsapp-directo.repair');
+            Route::get('/whatsapp-directo/{channel}/status', [WhatsAppDirectoController::class, 'status'])->name('whatsapp-directo.status');
+            Route::post('/whatsapp-directo/{channel}/logout', [WhatsAppDirectoController::class, 'logout'])->name('whatsapp-directo.logout');
+            Route::get('/whatsapp-directo/{channel}', [WhatsAppDirectoController::class, 'show'])->name('whatsapp-directo.show');
+            Route::get('/whatsapp-directo/{channel}/conversations', [WhatsAppDirectoController::class, 'conversations'])->name('whatsapp-directo.conversations');
+            Route::get('/whatsapp-directo/{channel}/conversations/{conversation}', [WhatsAppDirectoController::class, 'conversation'])->name('whatsapp-directo.conversation.show');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/send', [WhatsAppDirectoController::class, 'send'])->name('whatsapp-directo.send');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/read', [WhatsAppDirectoController::class, 'markAsRead'])->name('whatsapp-directo.read');
 
             // CRM Kanban
             Route::get('/deals', [DealBoardController::class, 'index'])->name('deals.board');

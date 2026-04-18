@@ -20,37 +20,51 @@ class WhatsAppWebListener extends Command
 
     public function handle(WhatsAppWebService $service): int
     {
-        $this->info('Subscribing to wa:inbound:* and wa:status:*');
+        $this->info('Subscribing to wa:inbound:* and wa:status:* (auto-reconnect enabled)');
 
-        Redis::connection(WhatsAppWebService::REDIS_CONNECTION)
-            ->psubscribe([$service->inboundPattern(), $service->statusPattern()], function ($message, $channel) use ($service) {
-            $channelId = $service->extractChannelId($channel);
-            if (!$channelId) {
-                return;
-            }
-
-            $payload = json_decode($message, true);
-            if (!is_array($payload)) {
-                Log::warning('wa:listen: invalid JSON', ['raw' => $message, 'channel' => $channel]);
-                return;
-            }
-
+        while (true) {
             try {
-                if (str_contains($channel, ':inbound:')) {
-                    $this->handleInbound((int) $channelId, $payload);
-                } elseif (str_contains($channel, ':status:')) {
-                    $this->handleStatus((int) $channelId, $payload);
-                }
+                Redis::connection(WhatsAppWebService::REDIS_CONNECTION)
+                    ->psubscribe([$service->inboundPattern(), $service->statusPattern()], function ($message, $channel) use ($service) {
+                        $this->dispatch($service, $channel, $message);
+                    });
             } catch (\Throwable $e) {
-                Log::error('wa:listen: handler crashed', [
-                    'channel' => $channel,
+                $this->warn('subscribe dropped: ' . $e->getMessage() . ' — reconnecting in 2s');
+                Log::warning('wa:listen: subscribe disconnected, reconnecting', [
                     'error' => $e->getMessage(),
-                    'payload' => $payload,
                 ]);
+                Redis::purge(WhatsAppWebService::REDIS_CONNECTION);
+                sleep(2);
             }
-        });
+        }
+    }
 
-        return self::SUCCESS;
+    private function dispatch(WhatsAppWebService $service, string $channel, string $message): void
+    {
+        $channelId = $service->extractChannelId($channel);
+        if (!$channelId) {
+            return;
+        }
+
+        $payload = json_decode($message, true);
+        if (!is_array($payload)) {
+            Log::warning('wa:listen: invalid JSON', ['raw' => $message, 'channel' => $channel]);
+            return;
+        }
+
+        try {
+            if (str_contains($channel, ':inbound:')) {
+                $this->handleInbound((int) $channelId, $payload);
+            } elseif (str_contains($channel, ':status:')) {
+                $this->handleStatus((int) $channelId, $payload);
+            }
+        } catch (\Throwable $e) {
+            Log::error('wa:listen: handler crashed', [
+                'channel' => $channel,
+                'error' => $e->getMessage(),
+                'payload' => $payload,
+            ]);
+        }
     }
 
     private function handleInbound(int $channelId, array $payload): void
@@ -123,7 +137,13 @@ class WhatsAppWebListener extends Command
 
     private function storeInboundMessage(Channel $channel, array $payload): void
     {
-        $from = $payload['from'] ?? null;
+        // Preferir senderPn (número real) sobre from (que puede ser un LID @lid).
+        // LIDs son identificadores internos de WhatsApp y no sirven para enviar respuestas
+        // de forma confiable. senderPn viene en formato "5219982168975@s.whatsapp.net".
+        $senderPn = $payload['senderPn'] ?? null;
+        $from = $senderPn
+            ? preg_replace('/\D/', '', explode('@', $senderPn)[0])
+            : ($payload['from'] ?? null);
         $msgId = $payload['msgId'] ?? null;
 
         if (!$from || !$msgId) {
