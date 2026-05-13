@@ -116,6 +116,14 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::get('/whatsapp-directo/{channel}/conversations/{conversation}', [WhatsAppDirectoController::class, 'conversation'])->name('whatsapp-directo.conversation.show');
             Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/send', [WhatsAppDirectoController::class, 'send'])->name('whatsapp-directo.send');
             Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/read', [WhatsAppDirectoController::class, 'markAsRead'])->name('whatsapp-directo.read');
+            Route::get('/whatsapp-directo/{channel}/forward-targets', [WhatsAppDirectoController::class, 'forwardTargets'])->name('whatsapp-directo.forward-targets');
+            Route::get('/whatsapp-directo/{channel}/conversations/{conversation}/info', [WhatsAppDirectoController::class, 'info'])->name('whatsapp-directo.conversation.info');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/convert-to-deal', [WhatsAppDirectoController::class, 'convertToDeal'])->name('whatsapp-directo.conversation.convert-to-deal');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/close', [WhatsAppDirectoController::class, 'close'])->name('whatsapp-directo.conversation.close');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/reopen', [WhatsAppDirectoController::class, 'reopen'])->name('whatsapp-directo.conversation.reopen');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/assign', [WhatsAppDirectoController::class, 'assign'])->name('whatsapp-directo.conversation.assign');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/messages/delete', [WhatsAppDirectoController::class, 'deleteMessages'])->name('whatsapp-directo.messages.delete');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/messages/forward', [WhatsAppDirectoController::class, 'forwardMessages'])->name('whatsapp-directo.messages.forward');
 
             // CRM Kanban
             Route::get('/deals', [DealBoardController::class, 'index'])->name('deals.board');

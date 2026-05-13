@@ -114,7 +114,11 @@
       "Bash(awk '/1776489458200/,/1776489470/' /c/Users/jfcru/AppData/Local/Temp/claude/C--laragon-www-chatme/0caec0c2-ee5d-40ad-b71f-7e8d0882406c/tasks/bx5v9dkua.output)",
       "Bash(taskkill //F //PID 31728)",
       "Read(//tmp/**)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "PowerShell(php -l app/Http/Controllers/Tenant/WhatsAppDirectoController.php; php artisan route:list --path=whatsapp-directo)",
+      "PowerShell(cmd /c \"dir /b C:\\\\laragon\\\\bin\\\\php\"; Write-Output \"---\"; where.exe php 2>$null; Write-Output \"---which via cmd---\"; cmd /c \"where php\")",
+      "PowerShell($phpExe = 'C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.15-nts-Win32-vs17-x64\\\\php.exe'; & $phpExe -l app/Http/Controllers/Tenant/WhatsAppDirectoController.php; & $phpExe -l routes/web.php; & $phpExe artisan route:list --path=whatsapp-directo)",
+      "PowerShell($phpExe = 'C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.15-nts-Win32-vs17-x64\\\\php.exe'; & $phpExe artisan view:clear; & $phpExe artisan view:cache 2>&1 | Select-Object -Last 5)"
     ]
   }
 }
