@@ -120,6 +120,8 @@ class WhatsAppDirectoController extends Controller
         $this->ensureWebChannel($channel);
 
         $conversations = Conversation::where('channel_id', $channel->id)
+            // Oculta ruido (status@broadcast, etc.): solo conversaciones con un teléfono real.
+            ->whereRaw("contact_identifier ~ '^[0-9]{10,15}$'")
             ->with(['messages' => fn($q) => $q->latest()->limit(1)])
             ->orderByDesc('last_message_at')
             ->limit(100)

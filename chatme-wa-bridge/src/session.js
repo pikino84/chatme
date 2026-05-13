@@ -131,7 +131,11 @@ export async function startSession(channelId, { resetAuth = false } = {}) {
         for (const msg of messages) {
             if (!msg.message) continue;
             if (msg.key.fromMe) continue;
-            if (msg.key.remoteJid?.endsWith('@g.us')) continue; // ignora grupos por ahora
+            const rjid = msg.key.remoteJid || '';
+            if (rjid.endsWith('@g.us')) continue;            // ignora grupos por ahora
+            if (rjid === 'status@broadcast') continue;        // ignora actualizaciones de estado
+            if (rjid.endsWith('@broadcast')) continue;        // ignora listas de difusión
+            if (rjid.endsWith('@newsletter')) continue;       // ignora canales
 
             const from = phoneFromJid(msg.key.remoteJid);
             const text = extractText(msg.message);

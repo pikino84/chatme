@@ -150,6 +150,21 @@ class WhatsAppWebListener extends Command
             return;
         }
 
+        // Ignorar estados/listas de difusión/grupos/canales (no son chats 1:1 con un teléfono).
+        $fromJid = (string) ($payload['fromJid'] ?? '');
+        if ($fromJid === 'status@broadcast'
+            || str_ends_with($fromJid, '@broadcast')
+            || str_ends_with($fromJid, '@g.us')
+            || str_ends_with($fromJid, '@newsletter')) {
+            return;
+        }
+        // Si tras normalizar no queda un teléfono numérico válido, descartar.
+        $digits = preg_replace('/\D/', '', (string) $from);
+        if (strlen($digits) < 10 || strlen($digits) > 15) {
+            return;
+        }
+        $from = $digits;
+
         $exists = Message::withoutGlobalScopes()
             ->where('organization_id', $channel->organization_id)
             ->where('external_id', $msgId)

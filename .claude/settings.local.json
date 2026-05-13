@@ -118,7 +118,8 @@
       "PowerShell(php -l app/Http/Controllers/Tenant/WhatsAppDirectoController.php; php artisan route:list --path=whatsapp-directo)",
       "PowerShell(cmd /c \"dir /b C:\\\\laragon\\\\bin\\\\php\"; Write-Output \"---\"; where.exe php 2>$null; Write-Output \"---which via cmd---\"; cmd /c \"where php\")",
       "PowerShell($phpExe = 'C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.15-nts-Win32-vs17-x64\\\\php.exe'; & $phpExe -l app/Http/Controllers/Tenant/WhatsAppDirectoController.php; & $phpExe -l routes/web.php; & $phpExe artisan route:list --path=whatsapp-directo)",
-      "PowerShell($phpExe = 'C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.15-nts-Win32-vs17-x64\\\\php.exe'; & $phpExe artisan view:clear; & $phpExe artisan view:cache 2>&1 | Select-Object -Last 5)"
+      "PowerShell($phpExe = 'C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.15-nts-Win32-vs17-x64\\\\php.exe'; & $phpExe artisan view:clear; & $phpExe artisan view:cache 2>&1 | Select-Object -Last 5)",
+      "PowerShell($phpExe = 'C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.15-nts-Win32-vs17-x64\\\\php.exe'; & $phpExe -l app/Http/Controllers/Tenant/WhatsAppDirectoController.php; & $phpExe -l app/Console/Commands/WhatsAppWebListener.php; node -c chatme-wa-bridge/src/session.js 2>&1; node --check chatme-wa-bridge/src/session.js 2>&1; Write-Output \"node check done\")"
     ]
   }
 }
