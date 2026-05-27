@@ -162,8 +162,12 @@ class EvolutionWebhookController extends Controller
         $remoteJid = (string) ($key['remoteJid'] ?? '');
         $msgId = $key['id'] ?? null;
 
-        // Ignorar nuestros propios mensajes salientes (ya quedaron registrados al enviar).
-        if (($key['fromMe'] ?? false) === true || ! $msgId) {
+        // fromMe = enviado por nosotros (desde la app O desde el teléfono vinculado).
+        // Antes se descartaban; ahora los reflejamos como salientes (sync multi-dispositivo,
+        // estilo WhatsApp Web). El dedup por external_id evita duplicar lo que ya mandó la app.
+        $fromMe = ($key['fromMe'] ?? false) === true;
+
+        if (! $msgId) {
             return;
         }
 
@@ -180,32 +184,38 @@ class EvolutionWebhookController extends Controller
             return;
         }
 
-        // Deduplicar por id de mensaje de WhatsApp.
-        $exists = Message::withoutGlobalScopes()
-            ->where('organization_id', $channel->organization_id)
-            ->where('external_id', $msgId)
-            ->exists();
-        if ($exists) {
-            return;
-        }
-
+        $direction = $fromMe ? 'outbound' : 'inbound';
         $content = $this->extractContent($msg['message'] ?? [], (string) ($msg['messageType'] ?? ''));
-        $conversation = $this->findOrCreateConversation($channel, $phone, $msg['pushName'] ?? $phone);
 
-        $message = Message::create([
-            'organization_id' => $channel->organization_id,
-            'conversation_id' => $conversation->id,
-            'body' => $content['body'],
-            'type' => $content['type'],
-            'direction' => 'inbound',
-            'external_id' => $msgId,
-            'metadata' => [
-                'wa_web' => true,
-                'wa_message_id' => $msgId,
-                'wa_timestamp' => $msg['messageTimestamp'] ?? null,
-                'media_kind' => $content['media']['kind'] ?? null,
+        // En un fromMe el pushName es el NUESTRO, no el del contacto: no lo usamos para nombrar.
+        $contactName = $fromMe ? $phone : ($msg['pushName'] ?? $phone);
+        $conversation = $this->findOrCreateConversation($channel, $phone, $contactName);
+
+        // Idempotente por external_id: si el mensaje ya existe (lo creó la app al enviar,
+        // o es un webhook repetido) NO se duplica. wasRecentlyCreated distingue el alta real.
+        $message = Message::withoutGlobalScopes()->firstOrCreate(
+            [
+                'organization_id' => $channel->organization_id,
+                'external_id' => $msgId,
             ],
-        ]);
+            [
+                'conversation_id' => $conversation->id,
+                'body' => $content['body'],
+                'type' => $content['type'],
+                'direction' => $direction,
+                'metadata' => [
+                    'wa_web' => true,
+                    'wa_message_id' => $msgId,
+                    'wa_timestamp' => $msg['messageTimestamp'] ?? null,
+                    'media_kind' => $content['media']['kind'] ?? null,
+                    'from_phone' => $fromMe, // salió del teléfono, no de la app
+                ],
+            ]
+        );
+
+        if (! $message->wasRecentlyCreated) {
+            return; // ya estaba registrado (envío de la app o webhook repetido)
+        }
 
         // Si trae multimedia, crear el adjunto y encolar la descarga a S3.
         if ($content['media']) {
@@ -225,12 +235,18 @@ class EvolutionWebhookController extends Controller
             DownloadEvolutionMediaJob::dispatch($message->id, $attachment->id, $channel->id, $key);
         }
 
-        $conversation->update([
-            'last_message_at' => now(),
-            'unread_count' => $conversation->unread_count + 1,
-        ]);
+        // El contador de no leídos sólo sube con ENTRANTES. Un saliente (incluido lo
+        // enviado desde el teléfono) actualiza el orden pero no marca como no leído.
+        $convUpdate = ['last_message_at' => now()];
+        if (! $fromMe) {
+            $convUpdate['unread_count'] = $conversation->unread_count + 1;
+        }
+        $conversation->update($convUpdate);
 
-        $this->safeDispatch(fn () => MessageReceivedEvent::dispatch($message), 'MessageReceivedEvent');
+        // Sólo los entrantes disparan notificación/sonido de "mensaje nuevo".
+        if (! $fromMe) {
+            $this->safeDispatch(fn () => MessageReceivedEvent::dispatch($message), 'MessageReceivedEvent');
+        }
     }
 
     private function onMessagesUpdate(Channel $channel, array $data): void

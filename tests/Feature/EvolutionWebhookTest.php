@@ -146,7 +146,7 @@ class EvolutionWebhookTest extends TestCase
         $this->assertCount(1, Message::withoutGlobalScopes()->where('external_id', 'WAMID-DUP')->get());
     }
 
-    public function test_own_outbound_message_is_ignored(): void
+    public function test_own_outbound_from_phone_is_stored_as_outbound(): void
     {
         Event::fake();
         $payload = $this->messagePayload('WAMID-MINE');
@@ -154,7 +154,46 @@ class EvolutionWebhookTest extends TestCase
 
         $this->post(...$this->signed($payload))->assertOk();
 
-        $this->assertDatabaseMissing('messages', ['external_id' => 'WAMID-MINE']);
+        // Sync multi-dispositivo: lo enviado desde el teléfono se refleja como saliente.
+        $this->assertDatabaseHas('messages', [
+            'organization_id' => $this->org->id,
+            'external_id' => 'WAMID-MINE',
+            'direction' => 'outbound',
+        ]);
+        // Pero un saliente no notifica como "mensaje nuevo".
+        Event::assertNotDispatched(MessageReceivedEvent::class);
+    }
+
+    public function test_own_outbound_from_app_is_not_duplicated(): void
+    {
+        Event::fake();
+
+        // La app ya registró el saliente con su external_id al enviar.
+        $conversation = Conversation::create([
+            'organization_id' => $this->org->id,
+            'channel_id' => $this->channel->id,
+            'contact_identifier' => '5215512345678',
+            'contact_name' => '5215512345678',
+            'status' => 'open',
+            'priority' => 'normal',
+            'last_message_at' => now(),
+        ]);
+        Message::create([
+            'organization_id' => $this->org->id,
+            'conversation_id' => $conversation->id,
+            'direction' => 'outbound',
+            'type' => 'text',
+            'body' => 'desde la app',
+            'external_id' => 'WAMID-APP',
+        ]);
+
+        // Llega el eco fromMe de Evolution para ese mismo mensaje.
+        $payload = $this->messagePayload('WAMID-APP');
+        $payload['data']['key']['fromMe'] = true;
+        $this->post(...$this->signed($payload))->assertOk();
+
+        // No se duplica (dedup por external_id).
+        $this->assertCount(1, Message::withoutGlobalScopes()->where('external_id', 'WAMID-APP')->get());
     }
 
     public function test_group_message_is_ignored(): void
