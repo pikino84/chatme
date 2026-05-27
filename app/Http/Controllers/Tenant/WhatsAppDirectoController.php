@@ -146,6 +146,7 @@ class WhatsAppDirectoController extends Controller
         $this->ensureConversationBelongs($channel, $conversation);
 
         $messages = $conversation->messages()
+            ->with('attachments')
             ->orderBy('id')
             ->get()
             ->map(fn(Message $m) => [
@@ -155,6 +156,17 @@ class WhatsAppDirectoController extends Controller
                 'body' => $m->body,
                 'created_at' => $m->created_at->toIso8601String(),
                 'metadata' => $m->metadata,
+                'attachments' => $m->attachments->map(fn ($a) => [
+                    'id' => $a->id,
+                    'file_name' => $a->file_name,
+                    'media_type' => $a->media_type,
+                    'mime_type' => $a->mime_type,
+                    'file_size' => $a->sizeForHumans(),
+                    'duration' => $a->durationForHumans(),
+                    'status' => $a->status,
+                    'url' => $a->url(),
+                    'thumbnail_url' => $a->thumbnailUrl(),
+                ]),
             ]);
 
         return response()->json([

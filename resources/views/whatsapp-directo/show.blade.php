@@ -282,10 +282,58 @@
                 const el = chatMessages.querySelector(`[data-id="${m.id}"] .ack-indicator`);
                 if (el) el.innerHTML = ackInner(m);
             }
+            // --- Adjuntos multimedia (Phase 22.4) -------------------------------
+            function renderAttachment(att) {
+                const u = att.url || '';
+                if (att.status === 'pending' || att.status === 'processing') {
+                    return '<div class="flex items-center gap-2 py-1 text-xs opacity-60"><svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Descargando ' + escapeHtml(att.media_type || 'archivo') + '…</div>';
+                }
+                if (att.status === 'failed') {
+                    return '<div class="flex items-center gap-2 py-1 text-xs text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>No se pudo descargar</div>';
+                }
+                if (!u) return '';
+                if (att.media_type === 'sticker') {
+                    return '<img src="' + escapeHtml(att.thumbnail_url || u) + '" alt="sticker" class="w-28 h-28 object-contain mb-1" loading="lazy">';
+                }
+                if (att.media_type === 'image') {
+                    return '<a href="' + escapeHtml(u) + '" target="_blank" rel="noopener"><img src="' + escapeHtml(att.thumbnail_url || u) + '" alt="' + escapeHtml(att.file_name || '') + '" class="max-w-[250px] max-h-[250px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition mb-1" loading="lazy"></a>';
+                }
+                if (att.media_type === 'video') {
+                    return '<video controls preload="metadata" class="max-w-[280px] max-h-[250px] rounded-lg mb-1"><source src="' + escapeHtml(u) + '" type="' + escapeHtml(att.mime_type || '') + '"></video>';
+                }
+                if (att.media_type === 'audio') {
+                    return '<audio controls preload="metadata" class="h-10 max-w-[250px] mb-1"><source src="' + escapeHtml(u) + '" type="' + escapeHtml(att.mime_type || '') + '"></audio>';
+                }
+                return '<a href="' + escapeHtml(u) + '" target="_blank" rel="noopener" class="flex items-center gap-2 p-2 rounded-lg bg-black/5 hover:bg-black/10 transition min-w-[180px] mb-1"><svg class="w-8 h-8 shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg><div class="min-w-0 flex-1"><p class="text-xs font-medium truncate">' + escapeHtml(att.file_name || 'archivo') + '</p><p class="text-[10px] opacity-60">' + escapeHtml(att.file_size || '') + '</p></div></a>';
+            }
+            function renderAttachments(atts) {
+                if (!atts || !atts.length) return '';
+                return atts.map(renderAttachment).join('');
+            }
+            function isMediaPlaceholder(body) {
+                return typeof body === 'string' && /^\[.+\]$/.test(body.trim());
+            }
+            const mediaState = {};
+            function attSig(m) {
+                return (m.attachments || []).map(a => a.status + ':' + (a.url ? '1' : '0')).join(',');
+            }
+            function updateMedia(m) {
+                if (!m.attachments || !m.attachments.length) return;
+                const sig = attSig(m);
+                if (mediaState[m.id] === sig) return;
+                mediaState[m.id] = sig;
+                const box = chatMessages.querySelector(`[data-id="${m.id}"] .media-box`);
+                if (box) box.innerHTML = renderAttachments(m.attachments);
+            }
             function renderMessage(m) {
-                if (messageIds.has(m.id)) { updateAck(m); return; }
+                if (messageIds.has(m.id)) { updateAck(m); updateMedia(m); return; }
                 messageIds.add(m.id);
                 const isOut = m.direction === 'outbound';
+                const hasMedia = m.attachments && m.attachments.length > 0;
+                if (hasMedia) mediaState[m.id] = attSig(m);
+                const mediaHtml = hasMedia ? renderAttachments(m.attachments) : '';
+                const showBody = m.body && !(hasMedia && isMediaPlaceholder(m.body));
+                const bodyHtml = showBody ? `<p class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">${escapeHtml(m.body)}</p>` : '';
                 const fromPhone = (isOut && m.metadata && m.metadata.from_phone)
                     ? '<span title="Enviado desde el teléfono" class="inline-flex items-center align-middle opacity-60"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17h2m-5 4h8a1 1 0 001-1V4a1 1 0 00-1-1H8a1 1 0 00-1 1v16a1 1 0 001 1z"/></svg></span>'
                     : '';
@@ -298,7 +346,8 @@
                     <input type="checkbox" class="msg-check w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0" value="${m.id}">
                     <div class="${isOut ? 'bg-green-100 dark:bg-green-900/40' : 'bg-white dark:bg-gray-800'} max-w-[75%] px-3 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                         ${fwd}
-                        <p class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">${escapeHtml(m.body || '')}</p>
+                        <div class="media-box">${mediaHtml}</div>
+                        ${bodyHtml}
                         <p class="text-[10px] text-gray-400 mt-1 text-right flex items-center justify-end gap-1">${fromPhone}<span>${fmtTime(m.created_at)}</span><span class="ack-indicator inline-flex items-center">${ackInner(m)}</span></p>
                     </div>`;
                 const cb = row.querySelector('.msg-check');
