@@ -261,6 +261,9 @@
                 if (messageIds.has(m.id)) return;
                 messageIds.add(m.id);
                 const isOut = m.direction === 'outbound';
+                const fromPhone = (isOut && m.metadata && m.metadata.from_phone)
+                    ? '<span title="Enviado desde el teléfono" class="inline-flex items-center align-middle opacity-60"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17h2m-5 4h8a1 1 0 001-1V4a1 1 0 00-1-1H8a1 1 0 00-1 1v16a1 1 0 001 1z"/></svg></span>'
+                    : '';
                 const fwd = m.metadata && m.metadata.forwarded
                     ? '<div class="text-[10px] italic opacity-60 mb-0.5 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>Reenviado</div>' : '';
                 const row = document.createElement('div');
@@ -271,7 +274,7 @@
                     <div class="${isOut ? 'bg-green-100 dark:bg-green-900/40' : 'bg-white dark:bg-gray-800'} max-w-[75%] px-3 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                         ${fwd}
                         <p class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">${escapeHtml(m.body || '')}</p>
-                        <p class="text-[10px] text-gray-400 mt-1 text-right">${fmtTime(m.created_at)}</p>
+                        <p class="text-[10px] text-gray-400 mt-1 text-right flex items-center justify-end gap-1">${fromPhone}<span>${fmtTime(m.created_at)}</span></p>
                     </div>`;
                 const cb = row.querySelector('.msg-check');
                 cb.addEventListener('change', () => { toggleSelected(m.id, cb.checked); });
