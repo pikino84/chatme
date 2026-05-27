@@ -257,8 +257,33 @@
             }
 
             /* ---------- Messages ---------- */
+            // Palomitas de estado (solo salientes): enviado / entregado / leído.
+            // Estado vía metadata.wa_ack_status (Evolution messages.update):
+            // SERVER_ACK=enviado, DELIVERY_ACK=entregado, READ/PLAYED=leído.
+            function ackInner(m) {
+                if (m.direction !== 'outbound') return '';
+                const meta = m.metadata || {};
+                if (meta.send_failed) return '<span title="No enviado" class="inline-flex items-center font-bold" style="color:#ef4444">!</span>';
+                const SINGLE = '<svg width="16" height="15" viewBox="0 0 16 15" fill="currentColor"><path d="M10.91 3.316l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.879a.32.32 0 0 1-.484.033L1.891 7.769a.366.366 0 0 0-.515.006l-.423.433a.364.364 0 0 0 .006.514l3.258 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"/></svg>';
+                const DOUBLE = '<svg width="16" height="15" viewBox="0 0 16 15" fill="currentColor"><path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.418.418 0 0 0 .036.541l1.32 1.266a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.063-.51zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.879a.32.32 0 0 1-.484.033L1.891 7.769a.366.366 0 0 0-.515.006l-.423.433a.364.364 0 0 0 .006.514l3.258 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"/></svg>';
+                const st = String(meta.wa_ack_status == null ? '' : meta.wa_ack_status).toUpperCase();
+                if (st === 'READ' || st === 'PLAYED' || st === '4' || st === '5')
+                    return '<span title="Leído" class="inline-flex items-center" style="color:#53bdeb">' + DOUBLE + '</span>';
+                if (st === 'DELIVERY_ACK' || st === 'DELIVERED' || st === '3')
+                    return '<span title="Entregado" class="inline-flex items-center text-gray-400">' + DOUBLE + '</span>';
+                if (st === 'SERVER_ACK' || st === 'SENT' || st === '2')
+                    return '<span title="Enviado" class="inline-flex items-center text-gray-400">' + SINGLE + '</span>';
+                if (meta.pending)
+                    return '<span title="Enviando…" class="inline-flex items-center text-gray-400"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>';
+                return '<span title="Enviado" class="inline-flex items-center text-gray-400">' + SINGLE + '</span>';
+            }
+            function updateAck(m) {
+                if (m.direction !== 'outbound') return;
+                const el = chatMessages.querySelector(`[data-id="${m.id}"] .ack-indicator`);
+                if (el) el.innerHTML = ackInner(m);
+            }
             function renderMessage(m) {
-                if (messageIds.has(m.id)) return;
+                if (messageIds.has(m.id)) { updateAck(m); return; }
                 messageIds.add(m.id);
                 const isOut = m.direction === 'outbound';
                 const fromPhone = (isOut && m.metadata && m.metadata.from_phone)
@@ -274,7 +299,7 @@
                     <div class="${isOut ? 'bg-green-100 dark:bg-green-900/40' : 'bg-white dark:bg-gray-800'} max-w-[75%] px-3 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                         ${fwd}
                         <p class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">${escapeHtml(m.body || '')}</p>
-                        <p class="text-[10px] text-gray-400 mt-1 text-right flex items-center justify-end gap-1">${fromPhone}<span>${fmtTime(m.created_at)}</span></p>
+                        <p class="text-[10px] text-gray-400 mt-1 text-right flex items-center justify-end gap-1">${fromPhone}<span>${fmtTime(m.created_at)}</span><span class="ack-indicator inline-flex items-center">${ackInner(m)}</span></p>
                     </div>`;
                 const cb = row.querySelector('.msg-check');
                 cb.addEventListener('change', () => { toggleSelected(m.id, cb.checked); });
