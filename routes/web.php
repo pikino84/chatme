@@ -115,6 +115,7 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::get('/whatsapp-directo/{channel}/conversations', [WhatsAppDirectoController::class, 'conversations'])->name('whatsapp-directo.conversations');
             Route::get('/whatsapp-directo/{channel}/conversations/{conversation}', [WhatsAppDirectoController::class, 'conversation'])->name('whatsapp-directo.conversation.show');
             Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/send', [WhatsAppDirectoController::class, 'send'])->name('whatsapp-directo.send');
+            Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/send-media', [WhatsAppDirectoController::class, 'sendMedia'])->name('whatsapp-directo.send-media');
             Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/read', [WhatsAppDirectoController::class, 'markAsRead'])->name('whatsapp-directo.read');
             Route::get('/whatsapp-directo/{channel}/forward-targets', [WhatsAppDirectoController::class, 'forwardTargets'])->name('whatsapp-directo.forward-targets');
             Route::get('/whatsapp-directo/{channel}/conversations/{conversation}/info', [WhatsAppDirectoController::class, 'info'])->name('whatsapp-directo.conversation.info');

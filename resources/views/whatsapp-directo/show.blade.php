@@ -87,7 +87,12 @@
                     </div>
                 </div>
 
-                <form id="chat-form" class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 flex gap-2">
+                <form id="chat-form" class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 flex gap-2 items-center">
+                    <input type="file" id="chat-file" class="hidden" accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip">
+                    <button type="button" id="chat-attach" title="Adjuntar archivo"
+                        class="shrink-0 p-2 text-gray-500 hover:text-green-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full disabled:opacity-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    </button>
                     <input type="text" id="chat-input" placeholder="Escribe un mensaje..." autocomplete="off"
                         class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
                     <button type="submit" id="chat-send"
@@ -433,6 +438,42 @@
                     alert('No se pudo enviar. Intenta de nuevo.');
                 } finally {
                     chatSend.disabled = false;
+                    chatInput.focus();
+                }
+            });
+
+            /* ---------- Adjuntar archivo (multimedia saliente) ---------- */
+            const chatFile = document.getElementById('chat-file');
+            const chatAttach = document.getElementById('chat-attach');
+            chatAttach.addEventListener('click', () => { if (activeConvId) chatFile.click(); });
+            chatFile.addEventListener('change', async () => {
+                if (!activeConvId || !chatFile.files.length) return;
+                const file = chatFile.files[0];
+                if (file.size > 16 * 1024 * 1024) { alert('El archivo supera el límite de 16 MB.'); chatFile.value = ''; return; }
+                const fd = new FormData();
+                fd.append('file', file);
+                const caption = chatInput.value.trim();
+                if (caption) fd.append('caption', caption);
+                chatFile.value = '';
+                chatInput.value = '';
+                chatSend.disabled = true;
+                chatAttach.disabled = true;
+                try {
+                    const res = await fetch(`${CONV_BASE}/${activeConvId}/send-media`, {
+                        method: 'POST',
+                        headers: {'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json'},
+                        body: fd,
+                    });
+                    if (!res.ok) throw new Error('upload failed');
+                    const data = await res.json();
+                    if (data.failed) alert('El archivo se subió pero WhatsApp rechazó el envío.');
+                    await refreshCurrentConversation();
+                } catch (err) {
+                    console.error('media send failed', err);
+                    alert('No se pudo enviar el archivo. Intenta de nuevo.');
+                } finally {
+                    chatSend.disabled = false;
+                    chatAttach.disabled = false;
                     chatInput.focus();
                 }
             });

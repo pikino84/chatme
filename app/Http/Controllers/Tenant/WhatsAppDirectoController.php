@@ -232,6 +232,104 @@ class WhatsAppDirectoController extends Controller
         ]);
     }
 
+    /** Envía un archivo (imagen, video, audio o documento) por WhatsApp Directo. */
+    public function sendMedia(Channel $channel, Conversation $conversation, Request $request): JsonResponse
+    {
+        $this->ensureWebChannel($channel);
+        $this->ensureConversationBelongs($channel, $conversation);
+
+        $request->validate([
+            'file' => 'required|file|max:16384', // 16 MB (límite de WhatsApp)
+            'caption' => 'nullable|string|max:1024',
+        ]);
+
+        $file = $request->file('file');
+        $mime = $file->getMimeType() ?: 'application/octet-stream';
+        $mediaType = $this->detectMediaType($mime); // image|video|audio|document
+        $caption = $request->input('caption') ?: null;
+
+        $message = Message::create([
+            'organization_id' => $channel->organization_id,
+            'conversation_id' => $conversation->id,
+            'user_id' => $request->user()->id,
+            'body' => $caption,
+            'type' => $mediaType === 'document' ? 'file' : $mediaType,
+            'direction' => 'outbound',
+            'metadata' => ['wa_web' => true, 'pending' => true],
+        ]);
+
+        // Subir a S3 (disco chatme-media) y registrar el adjunto como listo.
+        $extension = $file->getClientOriginalExtension() ?: 'bin';
+        $storagePath = MessageAttachment::storagePath(
+            $channel->organization_id,
+            'whatsapp_web',
+            $message->id,
+            $extension,
+        );
+        Storage::disk(MessageAttachment::mediaDisk())->put($storagePath, file_get_contents($file), 'private');
+
+        $attachment = MessageAttachment::create([
+            'organization_id' => $channel->organization_id,
+            'message_id' => $message->id,
+            'file_name' => $file->getClientOriginalName(),
+            'file_path' => $storagePath,
+            'file_size' => $file->getSize(),
+            'mime_type' => $mime,
+            'media_type' => $mediaType,
+            'status' => 'ready',
+        ]);
+
+        $failed = false;
+        try {
+            // Evolution descarga el archivo desde una URL firmada de S3 (15 min).
+            $url = $attachment->url();
+            if (! $url) {
+                throw new \RuntimeException('No se pudo generar la URL del adjunto');
+            }
+
+            if ($mediaType === 'audio') {
+                $waId = $this->service->sendAudio($channel, $conversation->contact_identifier, $url);
+            } else {
+                $waId = $this->service->sendMedia(
+                    $channel,
+                    $conversation->contact_identifier,
+                    $mediaType,
+                    $url,
+                    $caption,
+                    $file->getClientOriginalName(),
+                );
+            }
+
+            $message->update([
+                'external_id' => $waId ?: null,
+                'metadata' => array_merge($message->metadata ?? [], ['send_ref' => $waId, 'pending' => false]),
+            ]);
+        } catch (\Throwable $e) {
+            $failed = true;
+            Log::warning('WA Directo: falló el envío de multimedia', [
+                'conversation_id' => $conversation->id,
+                'error' => $e->getMessage(),
+            ]);
+            $message->update([
+                'metadata' => array_merge($message->metadata ?? [], ['send_failed' => true, 'pending' => false]),
+            ]);
+        }
+
+        $conversation->update(['last_message_at' => now()]);
+
+        return response()->json(['failed' => $failed, 'message_id' => $message->id]);
+    }
+
+    private function detectMediaType(string $mime): string
+    {
+        return match (true) {
+            str_starts_with($mime, 'image/') => 'image',
+            str_starts_with($mime, 'video/') => 'video',
+            str_starts_with($mime, 'audio/') => 'audio',
+            default => 'document',
+        };
+    }
+
     public function markAsRead(Channel $channel, Conversation $conversation): JsonResponse
     {
         $this->ensureWebChannel($channel);

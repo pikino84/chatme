@@ -128,6 +128,26 @@ class WhatsAppWebService
         return (string) (data_get($resp->json(), 'key.id') ?? '');
     }
 
+    /**
+     * Envía audio como nota de voz (endpoint dedicado de Evolution).
+     * $audio puede ser una URL pública o base64.
+     */
+    public function sendAudio(Channel $channel, string $to, string $audio): string
+    {
+        $this->ensureWebChannel($channel);
+
+        $resp = $this->http()->post('/message/sendWhatsAppAudio/' . $this->instanceFor($channel), [
+            'number' => $this->normalizeNumber($to),
+            'audio' => $audio,
+        ]);
+
+        if ($resp->failed()) {
+            throw new \RuntimeException('Evolution sendWhatsAppAudio falló: ' . $resp->body());
+        }
+
+        return (string) (data_get($resp->json(), 'key.id') ?? '');
+    }
+
     /** Descarga el binario de un mensaje multimedia como base64 (data crudo). */
     public function fetchMediaBase64(Channel $channel, array $messageKey): ?string
     {
