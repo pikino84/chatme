@@ -190,7 +190,7 @@ class ConversationTest extends TestCase
         $this->assertTrue($supervisor->can('assign', $conv));
     }
 
-    public function test_conversation_delete_always_denied(): void
+    public function test_org_admin_can_delete_conversation(): void
     {
         $admin = User::factory()->create(['organization_id' => $this->org->id]);
         $admin->assignRole('org_admin');
@@ -200,7 +200,21 @@ class ConversationTest extends TestCase
             'channel_id' => $this->channel->id,
         ]);
 
-        $this->assertFalse($admin->can('delete', $conv));
+        // Fase 19.7: el borrado de conversaciones está permitido para org_admin.
+        $this->assertTrue($admin->can('delete', $conv));
+    }
+
+    public function test_non_admin_cannot_delete_conversation(): void
+    {
+        $agent = User::factory()->create(['organization_id' => $this->org->id]);
+        $agent->assignRole('agent');
+
+        $conv = Conversation::factory()->create([
+            'organization_id' => $this->org->id,
+            'channel_id' => $this->channel->id,
+        ]);
+
+        $this->assertFalse($agent->can('delete', $conv));
     }
 
     public function test_cross_tenant_conversation_access_blocked(): void
