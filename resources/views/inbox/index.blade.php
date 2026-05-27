@@ -1,10 +1,10 @@
 <x-app-layout>
     <div class="flex overflow-hidden sm:-m-6" style="height: calc(100vh - 64px);" x-data="inboxApp()" x-init="init()">
         {{-- Left: Conversation List --}}
-        <div class="w-full lg:w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800 shrink-0">
+        <div class="w-full lg:w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col min-h-0 bg-white dark:bg-gray-800 shrink-0">
             @include('inbox.partials.filters')
 
-            <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700" id="conversation-list">
+            <div class="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700" id="conversation-list">
                 @forelse($conversations as $conv)
                     <a href="{{ route('inbox.conversations.show', $conv) }}"
                        data-conv-id="{{ $conv->id }}"

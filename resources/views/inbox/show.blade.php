@@ -2,14 +2,14 @@
     <div class="flex relative overflow-hidden sm:-m-6" style="height: calc(100vh - 64px);" id="conversation-container">
 
         {{-- Left: Conversation List (desktop only) --}}
-        <div class="hidden lg:flex lg:w-80 border-r border-gray-200 dark:border-gray-700 flex-col bg-white dark:bg-gray-800 shrink-0">
+        <div class="hidden lg:flex lg:w-80 border-r border-gray-200 dark:border-gray-700 flex-col min-h-0 bg-white dark:bg-gray-800 shrink-0">
             <div class="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Conversaciones</h2>
                 <a href="{{ route('inbox') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                     Bandeja completa &rarr;
                 </a>
             </div>
-            <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+            <div class="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
                 @foreach($conversations as $conv)
                     @include('inbox.partials.conversation-list', ['conv' => $conv])
                 @endforeach

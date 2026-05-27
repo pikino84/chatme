@@ -108,7 +108,11 @@ class ConversationsController extends Controller
         // Load conversation list for desktop sidebar
         $user = $request->user();
         $listQuery = Conversation::with(['channel', 'assignedUser', 'messages' => fn ($q) => $q->latest()->limit(1)])
-            ->latest('last_message_at');
+            ->latest('last_message_at')
+            // Los canales whatsapp_web (WhatsApp Directo) tienen su propia sección
+            // en /whatsapp-directo. Excluirlos aquí para no mezclarlos con el inbox
+            // normal (mismo criterio que InboxController::index()).
+            ->whereHas('channel', fn ($q) => $q->where('type', '!=', 'whatsapp_web'));
 
         if (! $user->hasPermissionTo('conversations.view-all')) {
             $listQuery->where('assigned_user_id', $user->id);

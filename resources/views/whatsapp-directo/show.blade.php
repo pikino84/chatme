@@ -30,18 +30,18 @@
         data-deals-base="{{ url('/deals') }}">
 
         {{-- Left: Conversation list --}}
-        <div class="w-full lg:w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800 shrink-0" id="conv-pane">
+        <div class="w-full lg:w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col min-h-0 bg-white dark:bg-gray-800 shrink-0" id="conv-pane">
             <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <input type="text" id="conv-search" placeholder="Buscar..." autocomplete="off"
                     class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
             </div>
-            <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700" id="conv-list">
+            <div class="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700" id="conv-list">
                 <div class="p-6 text-center text-sm text-gray-500">Cargando...</div>
             </div>
         </div>
 
         {{-- Right: Chat panel --}}
-        <div class="hidden lg:flex flex-1 flex-col bg-gray-50 dark:bg-gray-900" id="chat-pane">
+        <div class="hidden lg:flex flex-1 flex-col min-h-0 min-w-0 bg-gray-50 dark:bg-gray-900" id="chat-pane">
             <div id="chat-empty" class="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
                 <div class="text-center">
                     <svg class="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            <div id="chat-active" class="hidden flex-1 flex flex-col relative">
+            <div id="chat-active" class="hidden flex-1 flex flex-col min-h-0 relative">
                 <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center gap-2">
                     <button type="button" id="chat-close-mobile" class="lg:hidden text-gray-500 hover:text-gray-700 p-1 -ml-1 shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -69,7 +69,7 @@
                     </button>
                 </div>
 
-                <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-2"></div>
+                <div id="chat-messages" class="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-2"></div>
 
                 {{-- Select-mode action bar --}}
                 <div id="select-bar" class="hidden border-t border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/20 px-4 py-2.5 flex items-center justify-between gap-2">
@@ -592,14 +592,18 @@
             // Polling
             loadConversations();
             setInterval(async () => {
-                await loadConversations();
+                // Si hay una conversación abierta, tráete sus mensajes nuevos y vuelve a
+                // marcarla como leída ANTES de refrescar la lista: así su badge no crece
+                // con los mensajes que estás viendo en vivo.
                 if (activeConvId && !selectMode) {
                     try {
                         const res = await fetch(`${CONV_BASE}/${activeConvId}`, { headers: {'Accept':'application/json'} });
                         const data = await res.json();
                         (data.messages || []).forEach(renderMessage);
+                        fetch(`${CONV_BASE}/${activeConvId}/read`, { method: 'POST', headers: {'X-CSRF-TOKEN': CSRF, 'Accept':'application/json'} });
                     } catch (err) { /* silent */ }
                 }
+                await loadConversations();
             }, 5000);
         })();
     </script>

@@ -15,11 +15,14 @@ class NotificationController extends Controller
         $user = $request->user();
         $orgId = $user->organization_id;
 
-        // Unread conversations count
+        // Unread conversations count.
+        // Excluimos whatsapp_web (WhatsApp Directo): tiene su propia sección y no
+        // aparece en el inbox, así que no debe inflar el badge del inbox.
         $query = Conversation::withoutGlobalScopes()
             ->where('organization_id', $orgId)
             ->where('status', '!=', 'closed')
-            ->where('unread_count', '>', 0);
+            ->where('unread_count', '>', 0)
+            ->whereHas('channel', fn ($q) => $q->withoutGlobalScopes()->where('type', '!=', 'whatsapp_web'));
 
         if (!$user->hasPermissionTo('conversations.view-all')) {
             $query->where('assigned_user_id', $user->id);
@@ -38,7 +41,8 @@ class NotificationController extends Controller
                 ->where('organization_id', $orgId)
                 ->where('status', '!=', 'closed')
                 ->where('unread_count', '>', 0)
-                ->where('last_message_at', '>', $since);
+                ->where('last_message_at', '>', $since)
+                ->whereHas('channel', fn ($q) => $q->withoutGlobalScopes()->where('type', '!=', 'whatsapp_web'));
 
             if (!$user->hasPermissionTo('conversations.view-all')) {
                 $recentQuery->where('assigned_user_id', $user->id);
