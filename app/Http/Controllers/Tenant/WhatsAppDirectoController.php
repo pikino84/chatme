@@ -188,15 +188,28 @@ class WhatsAppDirectoController extends Controller
             'metadata' => ['wa_web' => true, 'pending' => true],
         ]);
 
-        $ref = $this->service->sendText($channel, $conversation->contact_identifier, $data['body']);
-
-        $message->update([
-            'metadata' => array_merge($message->metadata ?? [], ['send_ref' => $ref]),
-        ]);
+        $failed = false;
+        try {
+            $waId = $this->service->sendText($channel, $conversation->contact_identifier, $data['body']);
+            $message->update([
+                'external_id' => $waId ?: null,
+                'metadata' => array_merge($message->metadata ?? [], ['send_ref' => $waId]),
+            ]);
+        } catch (\Throwable $e) {
+            $failed = true;
+            Log::warning('WA Directo: falló el envío', [
+                'conversation_id' => $conversation->id,
+                'error' => $e->getMessage(),
+            ]);
+            $message->update([
+                'metadata' => array_merge($message->metadata ?? [], ['send_failed' => true]),
+            ]);
+        }
 
         $conversation->update(['last_message_at' => now()]);
 
         return response()->json([
+            'failed' => $failed,
             'message' => [
                 'id' => $message->id,
                 'direction' => 'outbound',
@@ -539,8 +552,11 @@ class WhatsAppDirectoController extends Controller
                     'metadata' => ['wa_web' => true, 'forwarded' => true, 'pending' => true],
                 ]);
                 try {
-                    $ref = $this->service->sendText($channel, $target->contact_identifier, $body);
-                    $new->update(['metadata' => array_merge($new->metadata ?? [], ['send_ref' => $ref])]);
+                    $waId = $this->service->sendText($channel, $target->contact_identifier, $body);
+                    $new->update([
+                        'external_id' => $waId ?: null,
+                        'metadata' => array_merge($new->metadata ?? [], ['send_ref' => $waId]),
+                    ]);
                     $forwarded++;
                 } catch (\Throwable $e) {
                     Log::warning('WA Directo: falló reenvío', ['to' => $target->contact_identifier, 'error' => $e->getMessage()]);

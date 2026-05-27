@@ -52,4 +52,14 @@ return [
         'token' => env('LEAD_API_TOKEN'),
     ],
 
+    // Evolution API — gateway WhatsApp para "WhatsApp Directo" (Phase 22).
+    'evolution' => [
+        'base_url' => env('EVOLUTION_API_URL', 'http://localhost:8080'),
+        'api_key' => env('EVOLUTION_API_KEY'),
+        // URL pública del endpoint que recibe los webhooks de Evolution.
+        'webhook_url' => env('EVOLUTION_WEBHOOK_URL'),
+        // Token compartido que Evolution envía en el header Authorization.
+        'webhook_token' => env('EVOLUTION_WEBHOOK_TOKEN'),
+    ],
+
 ];
