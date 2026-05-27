@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\LeadApiController;
 use App\Http\Controllers\Webchat\WebchatController;
+use App\Http\Controllers\Webhooks\EvolutionWebhookController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use Illuminate\Http\Request;
@@ -23,6 +24,9 @@ Route::prefix('webhooks/whatsapp/{channelUuid}')->group(function () {
 
 // Stripe webhooks (no auth - validated by signature)
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
+
+// Evolution API webhooks — WhatsApp Directo (no auth middleware - validated by header token)
+Route::post('/webhooks/evolution', [EvolutionWebhookController::class, 'handle']);
 
 // Webchat public API (no auth middleware - validated by encrypted session token)
 Route::prefix('webchat/{channelUuid}')->group(function () {

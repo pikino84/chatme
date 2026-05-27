@@ -18,6 +18,9 @@ class WhatsAppWebSession extends Model
 
     protected $fillable = [
         'channel_id',
+        'instance_name',
+        'instance_id',
+        'instance_apikey',
         'status',
         'qr_raw',
         'connected_phone',
