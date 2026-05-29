@@ -700,7 +700,7 @@ class WhatsAppDirectoController extends Controller
         $this->ensureWebChannel($channel);
 
         $request->validate([
-            'file' => 'required|file|max:204800', // 200 MB
+            'file' => 'required|file|max:65536', // 64 MB (alineado con nginx/PHP-FPM en prod)
             'day_first' => 'nullable|boolean',
         ]);
 
