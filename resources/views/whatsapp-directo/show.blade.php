@@ -204,6 +204,16 @@
             function escapeHtml(s) {
                 return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
             }
+            // Convierte URLs en texto ya escapado a enlaces target="_blank"
+            function linkify(escaped) {
+                return escaped.replace(/((?:https?:\/\/|www\.)[^\s<]+)/gi, (m) => {
+                    let url = m, trail = '';
+                    const tm = url.match(/[.,;:!?)\]}'"]+$/);
+                    if (tm) { trail = tm[0]; url = url.slice(0, -trail.length); }
+                    const href = /^https?:\/\//i.test(url) ? url : 'http://' + url;
+                    return '<a href="' + href + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 underline break-all">' + url + '</a>' + trail;
+                });
+            }
             function fmtTime(iso) {
                 if (!iso) return '';
                 const d = new Date(iso);
@@ -338,7 +348,7 @@
                 if (hasMedia) mediaState[m.id] = attSig(m);
                 const mediaHtml = hasMedia ? renderAttachments(m.attachments) : '';
                 const showBody = m.body && !(hasMedia && isMediaPlaceholder(m.body));
-                const bodyHtml = showBody ? `<p class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">${escapeHtml(m.body)}</p>` : '';
+                const bodyHtml = showBody ? `<p class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">${linkify(escapeHtml(m.body))}</p>` : '';
                 const fromPhone = (isOut && m.metadata && m.metadata.from_phone)
                     ? '<span title="Enviado desde el teléfono" class="inline-flex items-center align-middle opacity-60"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17h2m-5 4h8a1 1 0 001-1V4a1 1 0 00-1-1H8a1 1 0 00-1 1v16a1 1 0 001 1z"/></svg></span>'
                     : '';
