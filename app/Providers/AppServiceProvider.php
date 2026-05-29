@@ -53,13 +53,15 @@ class AppServiceProvider extends ServiceProvider
     private function configureRateLimiting(): void
     {
         RateLimiter::for('tenant-api', function (Request $request) {
-            // Se llave por USUARIO (no por organización) para que el cupo escale con
-            // el tamaño del equipo: cada agente tiene su propio bucket. El polling del
-            // inbox + WhatsApp Directo cada 5s en varios endpoints consume ~40-48 req/min
-            // por agente, así que el default es holgado. (Antes se llaveaba por org_id →
-            // todos los agentes compartían 60/min y bastaban 2-3 sesiones para el 429.)
-            $key = $request->user()?->id ?? $request->ip();
-            $limit = config('security.tenant_api_rate_limit', 120);
+            // Se llave por SESIÓN (dispositivo), no por usuario ni organización: así cada
+            // dispositivo (celular, PC, tablet, laptop) tiene su propio cupo independiente.
+            // Esto escala sin topes para N usuarios × M dispositivos. El polling del inbox +
+            // WhatsApp Directo consume ~18 req/min por dispositivo activo, así que 60/min da
+            // margen 3×. (Historial: antes por org_id → 60/min compartidos por toda la org,
+            // 2-3 sesiones daban 429; luego por user_id → 6 dispositivos del mismo usuario
+            // compartían cupo. Por sesión elimina toda contención entre dispositivos.)
+            $key = $request->session()?->getId() ?? $request->user()?->id ?? $request->ip();
+            $limit = config('security.tenant_api_rate_limit', 60);
             return Limit::perMinute($limit)->by('tenant-api:' . $key);
         });
 
