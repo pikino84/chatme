@@ -13,11 +13,13 @@ use App\Models\Tag;
 use App\Models\User;
 use App\Models\WhatsAppWebSession;
 use App\Services\DealService;
+use App\Services\WhatsAppChatImportService;
 use App\Services\WhatsAppWebService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class WhatsAppDirectoController extends Controller
 {
@@ -681,6 +683,320 @@ class WhatsAppDirectoController extends Controller
             'forwarded' => $forwarded,
             'targets' => count($targets),
         ]);
+    }
+
+    // --- Importador de historial (ZIP de WhatsApp Business, Fase 22.6) --------
+
+    private const IMPORT_MAX_MESSAGES = 20000;
+    private const IMPORT_TMP_DIR = 'wa-import';
+
+    /**
+     * Paso 1: analiza el archivo exportado (ZIP o .txt) SIN persistir nada y
+     * devuelve un resumen (remitentes, totales, rango de fechas) + un token para
+     * el paso de importación. Guarda el archivo en un temporal local.
+     */
+    public function importAnalyze(Channel $channel, Request $request, WhatsAppChatImportService $parser): JsonResponse
+    {
+        $this->ensureWebChannel($channel);
+
+        $request->validate([
+            'file' => 'required|file|max:204800', // 200 MB
+            'day_first' => 'nullable|boolean',
+        ]);
+
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'zip');
+        if (! in_array($ext, ['zip', 'txt'], true)) {
+            return response()->json(['error' => 'Sube el ZIP exportado de WhatsApp (o el _chat.txt).'], 422);
+        }
+
+        $dayFirst = $request->boolean('day_first', true);
+
+        try {
+            $text = $this->readChatText($file->getRealPath(), $ext);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'No se pudo leer el archivo: ' . $e->getMessage()], 422);
+        }
+        if ($text === null) {
+            return response()->json(['error' => 'No se encontró el chat (_chat.txt) dentro del ZIP.'], 422);
+        }
+
+        $messages = $parser->parse($text, $dayFirst);
+        if (empty($messages)) {
+            return response()->json(['error' => 'No se detectaron mensajes en el archivo.'], 422);
+        }
+
+        $token = Str::random(40);
+        $file->storeAs(self::IMPORT_TMP_DIR, $token . '.' . $ext, 'local');
+
+        return response()->json([
+            'token' => $token,
+            'summary' => $parser->summarize($messages),
+            'suggested_me' => $channel->whatsappWebSession?->connected_name,
+            'day_first' => $dayFirst,
+            'truncated' => count($messages) > self::IMPORT_MAX_MESSAGES,
+        ]);
+    }
+
+    /**
+     * Paso 2: importa el historial al destino elegido. Idempotente por
+     * external_id (`wa-import:<hash>`): reimportar el mismo archivo no duplica.
+     */
+    public function import(Channel $channel, Request $request, WhatsAppChatImportService $parser): JsonResponse
+    {
+        $this->ensureWebChannel($channel);
+
+        $data = $request->validate([
+            'token' => 'required|string|max:64',
+            'me_sender' => 'nullable|string|max:120',
+            'day_first' => 'nullable|boolean',
+            'conversation_id' => 'nullable|integer',
+            'phone' => ['nullable', 'string', 'regex:/^\+?\d{10,15}$/'],
+            'contact_name' => 'nullable|string|max:255',
+        ]);
+
+        // Localiza el temporal (sanea el token para evitar path traversal).
+        $token = preg_replace('/[^A-Za-z0-9]/', '', $data['token']);
+        $path = null;
+        $ext = null;
+        foreach (['zip', 'txt'] as $e) {
+            $candidate = self::IMPORT_TMP_DIR . '/' . $token . '.' . $e;
+            if (Storage::disk('local')->exists($candidate)) {
+                $path = $candidate;
+                $ext = $e;
+                break;
+            }
+        }
+        if (! $path) {
+            return response()->json(['error' => 'La sesión de importación expiró. Vuelve a subir el archivo.'], 422);
+        }
+
+        $conversation = $this->resolveImportTarget($channel, $data);
+        if (! $conversation) {
+            return response()->json(['error' => 'Indica una conversación existente o un teléfono + nombre.'], 422);
+        }
+
+        $absPath = Storage::disk('local')->path($path);
+        $dayFirst = $request->boolean('day_first', true);
+
+        $text = $this->readChatText($absPath, $ext);
+        if ($text === null) {
+            return response()->json(['error' => 'No se pudo leer el chat del archivo.'], 422);
+        }
+
+        $messages = array_slice($parser->parse($text, $dayFirst), 0, self::IMPORT_MAX_MESSAGES);
+        $meSender = trim((string) ($data['me_sender'] ?? ''));
+
+        // Índice de multimedia del ZIP por nombre base.
+        $zip = null;
+        $entryByBase = [];
+        if ($ext === 'zip') {
+            $zip = new \ZipArchive();
+            if ($zip->open($absPath) === true) {
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $entryByBase[basename((string) $zip->getNameIndex($i))] = $i;
+                }
+            } else {
+                $zip = null;
+            }
+        }
+
+        $imported = 0;
+        $skipped = 0;
+        $mediaImported = 0;
+        $latestTs = null;
+
+        foreach ($messages as $m) {
+            $ts = $m['ts'] ?? now();
+            $externalId = 'wa-import:' . substr(sha1(
+                $conversation->id . '|' . $ts->toIso8601String() . '|' . $m['sender'] . '|' . $m['body'] . '|' . ($m['media_file'] ?? '')
+            ), 0, 40);
+
+            $exists = Message::withoutGlobalScopes()
+                ->where('organization_id', $channel->organization_id)
+                ->where('external_id', $externalId)
+                ->exists();
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            $direction = ($meSender !== '' && $m['sender'] === $meSender) ? 'outbound' : 'inbound';
+
+            $type = 'text';
+            $body = $m['body'];
+            $mediaType = null;
+            $mediaContent = null;
+            $mediaName = $m['media_file'];
+
+            if ($mediaName) {
+                $mediaType = $parser->mediaTypeFor($mediaName);
+                $type = match ($mediaType) {
+                    'document' => 'file',
+                    'sticker', 'image' => 'image',
+                    default => $mediaType,
+                };
+
+                if ($zip) {
+                    $base = basename($mediaName);
+                    if (isset($entryByBase[$base])) {
+                        $raw = $zip->getFromIndex($entryByBase[$base]);
+                        if ($raw !== false && strlen($raw) <= 16 * 1024 * 1024) {
+                            $mediaContent = $raw;
+                        }
+                    }
+                }
+
+                if (! $mediaContent) {
+                    // Archivo no incluido en el export: queda el marcador de texto.
+                    $body = $this->mediaPlaceholder($mediaType);
+                }
+            } elseif ($m['is_media_omitted']) {
+                $body = '[Multimedia]';
+            }
+
+            $message = new Message([
+                'organization_id' => $channel->organization_id,
+                'conversation_id' => $conversation->id,
+                'user_id' => null,
+                'body' => $body,
+                'type' => $type,
+                'direction' => $direction,
+                'external_id' => $externalId,
+                'metadata' => [
+                    'wa_web' => true,
+                    'imported' => true,
+                    'from_phone' => $direction === 'outbound',
+                    'original_sender' => $m['sender'],
+                ],
+            ]);
+            // created_at = fecha original (orden cronológico correcto en el chat).
+            $message->created_at = $ts;
+            $message->updated_at = $ts;
+            $message->save();
+            $imported++;
+
+            if ($latestTs === null || $ts->gt($latestTs)) {
+                $latestTs = $ts;
+            }
+
+            if ($mediaContent && $mediaName) {
+                $extn = pathinfo($mediaName, PATHINFO_EXTENSION) ?: 'bin';
+                $sp = MessageAttachment::storagePath($channel->organization_id, 'whatsapp_web', $message->id, $extn);
+                Storage::disk(MessageAttachment::mediaDisk())->put($sp, $mediaContent, 'private');
+
+                MessageAttachment::create([
+                    'organization_id' => $channel->organization_id,
+                    'message_id' => $message->id,
+                    'file_name' => $mediaName,
+                    'file_path' => $sp,
+                    'file_size' => strlen($mediaContent),
+                    'mime_type' => $parser->mimeFor($mediaName),
+                    'media_type' => $mediaType,
+                    'status' => 'ready',
+                ]);
+                $mediaImported++;
+            }
+        }
+
+        $zip?->close();
+        Storage::disk('local')->delete($path);
+
+        if ($latestTs && (! $conversation->last_message_at || $latestTs->gt($conversation->last_message_at))) {
+            $conversation->update(['last_message_at' => $latestTs]);
+        }
+
+        Log::info('WA Directo: historial importado', [
+            'conversation_id' => $conversation->id,
+            'imported' => $imported,
+            'skipped' => $skipped,
+            'media' => $mediaImported,
+            'by' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'conversation_id' => $conversation->id,
+            'imported' => $imported,
+            'skipped' => $skipped,
+            'media_imported' => $mediaImported,
+        ]);
+    }
+
+    /** Resuelve la conversación destino: existente por id, o nueva por teléfono. */
+    private function resolveImportTarget(Channel $channel, array $data): ?Conversation
+    {
+        if (! empty($data['conversation_id'])) {
+            return Conversation::where('channel_id', $channel->id)->find($data['conversation_id']);
+        }
+
+        $phone = preg_replace('/\D/', '', (string) ($data['phone'] ?? ''));
+        if (strlen($phone) < 10 || strlen($phone) > 15) {
+            return null;
+        }
+        $name = trim((string) ($data['contact_name'] ?? '')) ?: $phone;
+
+        return Conversation::where('organization_id', $channel->organization_id)
+            ->where('channel_id', $channel->id)
+            ->where('contact_identifier', $phone)
+            ->where('status', '!=', 'closed')
+            ->first()
+            ?? Conversation::create([
+                'organization_id' => $channel->organization_id,
+                'brand_id' => $channel->brand_id,
+                'channel_id' => $channel->id,
+                'contact_name' => $name,
+                'contact_identifier' => $phone,
+                'status' => 'open',
+                'priority' => 'normal',
+                'last_message_at' => now(),
+            ]);
+    }
+
+    /** Lee el _chat.txt de un ZIP (o el propio .txt). */
+    private function readChatText(string $absPath, string $ext): ?string
+    {
+        if ($ext === 'txt') {
+            $content = @file_get_contents($absPath);
+            return $content !== false ? $content : null;
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($absPath) !== true) {
+            throw new \RuntimeException('No se pudo abrir el ZIP.');
+        }
+
+        $index = null;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            if (str_ends_with(strtolower((string) $zip->getNameIndex($i)), '_chat.txt')) {
+                $index = $i;
+                break;
+            }
+        }
+        if ($index === null) {
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                if (str_ends_with(strtolower((string) $zip->getNameIndex($i)), '.txt')) {
+                    $index = $i;
+                    break;
+                }
+            }
+        }
+
+        $content = $index !== null ? $zip->getFromIndex($index) : false;
+        $zip->close();
+
+        return $content !== false ? $content : null;
+    }
+
+    private function mediaPlaceholder(string $mediaType): string
+    {
+        return match ($mediaType) {
+            'image' => '[Imagen]',
+            'video' => '[Video]',
+            'audio' => '[Audio]',
+            'sticker' => '[Sticker]',
+            default => '[Documento]',
+        };
     }
 
     private function ensureWebChannel(Channel $channel): void

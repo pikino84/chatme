@@ -125,6 +125,9 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
             Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/assign', [WhatsAppDirectoController::class, 'assign'])->name('whatsapp-directo.conversation.assign');
             Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/messages/delete', [WhatsAppDirectoController::class, 'deleteMessages'])->name('whatsapp-directo.messages.delete');
             Route::post('/whatsapp-directo/{channel}/conversations/{conversation}/messages/forward', [WhatsAppDirectoController::class, 'forwardMessages'])->name('whatsapp-directo.messages.forward');
+            // Importador de historial (ZIP de WhatsApp Business, Fase 22.6)
+            Route::post('/whatsapp-directo/{channel}/import/analyze', [WhatsAppDirectoController::class, 'importAnalyze'])->name('whatsapp-directo.import.analyze');
+            Route::post('/whatsapp-directo/{channel}/import', [WhatsAppDirectoController::class, 'import'])->name('whatsapp-directo.import');
 
             // CRM Kanban
             Route::get('/deals', [DealBoardController::class, 'index'])->name('deals.board');
