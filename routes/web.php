@@ -20,6 +20,7 @@ use App\Http\Controllers\Tenant\BrandController;
 use App\Http\Controllers\Tenant\WhatsAppTemplateController;
 use App\Http\Controllers\Tenant\WhatsAppDirectoController;
 use App\Http\Controllers\Tenant\ChannelController;
+use App\Http\Controllers\Tenant\OrganizationSwitchController;
 use App\Http\Controllers\Tenant\PipelineController;
 use App\Http\Controllers\Tenant\TagController;
 use App\Http\Controllers\Tenant\SettingsController;
@@ -86,6 +87,11 @@ Route::domain('app.' . config('app.base_domain'))->group(function () {
         Route::get('/dashboard', function () {
             return view('dashboard');
         })->name('dashboard');
+
+        // Cambiar de negocio activo (login multi-cuenta). Fuera de ResolveUserTenant
+        // a propósito: este endpoint cambia cuál es el tenant del usuario.
+        Route::post('/organizations/switch/{organization}', [OrganizationSwitchController::class, 'switch'])
+            ->name('organizations.switch');
 
         Route::middleware([\App\Http\Middleware\ResolveUserTenant::class, 'throttle:tenant-api'])->group(function () {
             Route::get('/notifications/poll', [NotificationController::class, 'poll'])->name('notifications.poll');

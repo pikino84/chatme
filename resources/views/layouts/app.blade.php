@@ -158,6 +158,43 @@
                             {{ $header }}
                         </div>
                     @endif
+
+                    {{-- Selector de negocio (login multi-cuenta) --}}
+                    @php
+                        $activeOrg = Auth::user()->organization;
+                        $switchableOrgs = Auth::user()->organizations()
+                            ->where('organizations.status', 'active')
+                            ->orderBy('organizations.name')
+                            ->get();
+                    @endphp
+                    @if($switchableOrgs->count() > 1)
+                        <div class="relative ml-auto" id="org-switcher">
+                            <button type="button" id="org-switcher-btn"
+                                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition max-w-[200px]">
+                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                <span class="truncate">{{ $activeOrg?->name }}</span>
+                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <div id="org-switcher-menu" class="hidden absolute right-0 mt-2 w-60 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-30 max-h-80 overflow-y-auto">
+                                <p class="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tus negocios</p>
+                                @foreach($switchableOrgs as $o)
+                                    @if($o->id === $activeOrg?->id)
+                                        <div class="flex items-center justify-between px-3 py-2 text-sm font-semibold text-crea-secondary bg-crea-secondary/5">
+                                            <span class="truncate">{{ $o->name }}</span>
+                                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        </div>
+                                    @else
+                                        <form method="POST" action="{{ route('organizations.switch', $o) }}">
+                                            @csrf
+                                            <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition truncate">
+                                                {{ $o->name }}
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </header>
 
                 {{-- Page content --}}
@@ -386,6 +423,25 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
                 }).catch(function() {});
             }
+        })();
+        </script>
+
+        {{-- Selector de negocio: abrir/cerrar (JS vanilla, Alpine es poco fiable en prod) --}}
+        <script>
+        (function() {
+            var btn = document.getElementById('org-switcher-btn');
+            var menu = document.getElementById('org-switcher-menu');
+            if (!btn || !menu) return;
+
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                menu.classList.toggle('hidden');
+            });
+            document.addEventListener('click', function(e) {
+                if (!menu.classList.contains('hidden') && !menu.contains(e.target) && e.target !== btn) {
+                    menu.classList.add('hidden');
+                }
+            });
         })();
         </script>
 

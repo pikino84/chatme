@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -40,6 +41,23 @@ class User extends Authenticatable
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * Todas las organizaciones (negocios) a las que este login tiene acceso.
+     * La organización "activa" sigue siendo users.organization_id; al cambiar
+     * de negocio se muta ese campo. Esta relación define a cuáles puede cambiar.
+     */
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class)
+            ->withPivot('is_owner')
+            ->withTimestamps();
+    }
+
+    public function canAccessOrganization(int $organizationId): bool
+    {
+        return $this->organizations()->whereKey($organizationId)->exists();
     }
 
     public function assignedConversations(): HasMany
