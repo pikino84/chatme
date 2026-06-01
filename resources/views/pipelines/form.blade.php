@@ -41,7 +41,7 @@
                     </button>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                    Arrastra para reordenar. Marca una etapa como "Ganado" o "Perdido" para indicar cierre del negocio.
+                    Arrastra para reordenar. Marca una etapa como "Ganado" o "Perdido" para indicar cierre del negocio (solo una de cada por pipeline). Las etapas nuevas aparecen arriba.
                 </p>
 
                 <div id="stages-container" class="space-y-2">
@@ -68,7 +68,7 @@
 
         var initialStages = @json($stagesJson);
 
-        function createStageRow(data) {
+        function createStageRow(data, prepend) {
             var idx = stageIndex++;
             var row = document.createElement('div');
             row.className = 'stage-row flex items-start gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600';
@@ -119,7 +119,15 @@
                     '</div>' +
                 '</div>';
 
-            container.appendChild(row);
+            // Las etapas nuevas (botón "Agregar") entran arriba para que el
+            // usuario las vea y luego las reordene; las iniciales se cargan en orden.
+            if (prepend) {
+                container.insertBefore(row, container.firstChild);
+                var nameInput = row.querySelector('input[name*="[name]"]');
+                if (nameInput) nameInput.focus();
+            } else {
+                container.appendChild(row);
+            }
             setupDragDrop(row);
         }
 
@@ -139,14 +147,19 @@
         };
 
         window.handleTerminal = function(checkbox, type) {
+            if (!checkbox.checked) return;
             var row = checkbox.closest('.stage-row');
-            if (type === 'won' && checkbox.checked) {
-                var lostCb = row.querySelector('input[name*="is_lost"]');
-                if (lostCb) lostCb.checked = false;
-            } else if (type === 'lost' && checkbox.checked) {
-                var wonCb = row.querySelector('input[name*="is_won"]');
-                if (wonCb) wonCb.checked = false;
-            }
+
+            // Una misma etapa no puede ser "Ganado" y "Perdido" a la vez.
+            var otherInRow = row.querySelector('input[name*="' + (type === 'won' ? 'is_lost' : 'is_won') + '"]');
+            if (otherInRow) otherInRow.checked = false;
+
+            // Solo una etapa "Ganado" y una "Perdido" en todo el pipeline:
+            // al marcar una, se desmarca cualquier otra del mismo tipo.
+            var sameType = type === 'won' ? 'is_won' : 'is_lost';
+            container.querySelectorAll('input[name*="' + sameType + '"]').forEach(function(cb) {
+                if (cb !== checkbox) cb.checked = false;
+            });
         };
 
         // Drag & drop
@@ -202,7 +215,7 @@
         });
 
         btnAdd.addEventListener('click', function() {
-            createStageRow({ id: null, name: '', color: '#6B7280', is_won: false, is_lost: false, max_duration_hours: null, has_deals: false });
+            createStageRow({ id: null, name: '', color: '#6B7280', is_won: false, is_lost: false, max_duration_hours: null, has_deals: false }, true);
         });
 
         // Init

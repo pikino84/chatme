@@ -140,6 +140,80 @@ class PipelineTest extends TestCase
         $response->assertSessionHasErrors('stages');
     }
 
+    public function test_store_rejects_multiple_won_stages(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('pipelines.store'), [
+            'name' => 'Doble Ganado',
+            'stages' => [
+                ['name' => 'Inicio', 'color' => '#3B82F6'],
+                ['name' => 'Ganado A', 'color' => '#10B981', 'is_won' => true],
+                ['name' => 'Ganado B', 'color' => '#22C55E', 'is_won' => true],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors('stages');
+        $this->assertDatabaseMissing('pipelines', ['name' => 'Doble Ganado']);
+    }
+
+    public function test_store_rejects_multiple_lost_stages(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('pipelines.store'), [
+            'name' => 'Doble Perdido',
+            'stages' => [
+                ['name' => 'Inicio', 'color' => '#3B82F6'],
+                ['name' => 'Perdido A', 'color' => '#EF4444', 'is_lost' => true],
+                ['name' => 'Perdido B', 'color' => '#DC2626', 'is_lost' => true],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors('stages');
+        $this->assertDatabaseMissing('pipelines', ['name' => 'Doble Perdido']);
+    }
+
+    public function test_store_rejects_stage_marked_won_and_lost(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('pipelines.store'), [
+            'name' => 'Ambos',
+            'stages' => [
+                ['name' => 'Confuso', 'color' => '#10B981', 'is_won' => true, 'is_lost' => true],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors('stages');
+        $this->assertDatabaseMissing('pipelines', ['name' => 'Ambos']);
+    }
+
+    public function test_store_allows_one_won_and_one_lost(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('pipelines.store'), [
+            'name' => 'Bien Formado',
+            'stages' => [
+                ['name' => 'Inicio', 'color' => '#3B82F6'],
+                ['name' => 'Ganado', 'color' => '#10B981', 'is_won' => true],
+                ['name' => 'Perdido', 'color' => '#EF4444', 'is_lost' => true],
+            ],
+        ]);
+
+        $response->assertRedirect(route('pipelines.index'));
+        $this->assertDatabaseHas('pipelines', ['name' => 'Bien Formado']);
+    }
+
+    public function test_update_rejects_multiple_won_stages(): void
+    {
+        $stage = $this->pipeline->stages()->first();
+
+        $response = $this->actingAs($this->admin)->put(route('pipelines.update', $this->pipeline), [
+            'name' => 'Ventas',
+            'stages' => [
+                ['id' => $stage->id, 'name' => 'Nuevo', 'color' => '#3B82F6'],
+                ['name' => 'Ganado A', 'color' => '#10B981', 'is_won' => true],
+                ['name' => 'Ganado B', 'color' => '#22C55E', 'is_won' => true],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors('stages');
+    }
+
     public function test_agent_cannot_create_pipeline(): void
     {
         $response = $this->actingAs($this->agent)->post(route('pipelines.store'), [

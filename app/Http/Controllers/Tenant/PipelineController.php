@@ -55,6 +55,10 @@ class PipelineController extends Controller
             'stages.*.max_duration_hours' => 'nullable|integer|min:1',
         ]);
 
+        if ($error = $this->validateTerminalStages($validated['stages'])) {
+            return back()->withInput()->withErrors(['stages' => $error]);
+        }
+
         $pipeline = Pipeline::create([
             'organization_id' => $request->user()->organization_id,
             'name' => $validated['name'],
@@ -113,6 +117,10 @@ class PipelineController extends Controller
             'stages.*.max_duration_hours' => 'nullable|integer|min:1',
         ]);
 
+        if ($error = $this->validateTerminalStages($validated['stages'])) {
+            return back()->withInput()->withErrors(['stages' => $error]);
+        }
+
         $pipeline->update(['name' => $validated['name']]);
 
         $existingStageIds = $pipeline->stages()->pluck('id')->toArray();
@@ -151,6 +159,41 @@ class PipelineController extends Controller
         }
 
         return redirect()->route('pipelines.index')->with('success', 'Pipeline actualizado exitosamente.');
+    }
+
+    /**
+     * Regla de negocio: como máximo una etapa "Ganado" y una "Perdido" por
+     * pipeline, y ninguna puede ser ambas a la vez. Devuelve el mensaje de
+     * error o null si las etapas son válidas.
+     */
+    private function validateTerminalStages(array $stages): ?string
+    {
+        $won = 0;
+        $lost = 0;
+
+        foreach ($stages as $stage) {
+            $isWon = !empty($stage['is_won']);
+            $isLost = !empty($stage['is_lost']);
+
+            if ($isWon && $isLost) {
+                return 'Una etapa no puede ser "Ganado" y "Perdido" a la vez.';
+            }
+            if ($isWon) {
+                $won++;
+            }
+            if ($isLost) {
+                $lost++;
+            }
+        }
+
+        if ($won > 1) {
+            return 'Solo puede haber una etapa "Ganado" por pipeline.';
+        }
+        if ($lost > 1) {
+            return 'Solo puede haber una etapa "Perdido" por pipeline.';
+        }
+
+        return null;
     }
 
     public function destroy(Pipeline $pipeline)
