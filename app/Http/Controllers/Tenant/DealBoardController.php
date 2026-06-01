@@ -44,7 +44,7 @@ class DealBoardController extends Controller
                     $q->where('assigned_user_id', $user->id);
                 }
 
-                $q->orderBy('stage_entered_at');
+                $q->orderByDesc('stage_entered_at');
             }])
             ->get();
 
@@ -154,7 +154,7 @@ class DealBoardController extends Controller
                     $q->where('assigned_user_id', $user->id);
                 }
 
-                $q->orderBy('stage_entered_at');
+                $q->orderByDesc('stage_entered_at');
             }])
             ->get();
 

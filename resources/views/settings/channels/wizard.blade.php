@@ -40,6 +40,20 @@
             </div>
         @endif
 
+        {{-- Pipeline Requerido (Webchat) --}}
+        @if(!$hasPipeline)
+            <div class="mb-6 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg" id="pipeline-banner">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div>
+                        <p class="text-sm font-medium text-blue-800 dark:text-blue-200">El Chat Web necesita un embudo</p>
+                        <p class="text-sm text-blue-700 dark:text-blue-300 mt-1">Para conectar un widget de Chat Web primero debes crear un embudo (pipeline) donde aterricen los contactos que escriban.</p>
+                        <a href="{{ route('pipelines.create') }}" class="inline-block mt-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Crear embudo &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- ═══ STEP 1: Select Type ═══ --}}
         <div class="wizard-step" data-wizard-step="1">
             <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Selecciona el tipo de canal</h3>
@@ -393,6 +407,7 @@
         var selectedType = null;
         var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         var canCreate = {{ $canCreate ? 'true' : 'false' }};
+        var hasPipeline = {{ $hasPipeline ? 'true' : 'false' }};
         var savedChannelData = null;
 
         var typeLabels = {
@@ -452,6 +467,17 @@
         document.querySelectorAll('.channel-card:not([disabled])').forEach(function(card) {
             card.addEventListener('click', function() {
                 if (!canCreate) return;
+
+                // Webchat requiere un embudo donde aterricen los contactos
+                if (card.dataset.channelType === 'webchat' && !hasPipeline) {
+                    var banner = document.getElementById('pipeline-banner');
+                    if (banner) {
+                        banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        banner.classList.add('ring-2', 'ring-blue-400');
+                        setTimeout(function() { banner.classList.remove('ring-2', 'ring-blue-400'); }, 2000);
+                    }
+                    return;
+                }
 
                 selectedType = card.dataset.channelType;
 

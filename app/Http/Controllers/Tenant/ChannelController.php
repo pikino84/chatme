@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\Channel;
 use App\Models\ChannelForm;
 use App\Models\Organization;
+use App\Models\Pipeline;
 use App\Services\BillingService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -82,6 +83,10 @@ class ChannelController extends Controller
         }
 
         $request->validate($rules);
+
+        if ($request->input('type') === 'webchat' && !$this->hasLandingPipeline()) {
+            return back()->withInput()->with('error', $this->pipelineRequiredMessage());
+        }
 
         $config = $this->buildConfig($request);
 
@@ -240,10 +245,11 @@ class ChannelController extends Controller
         $canCreate = $this->canCreateMoreChannels($tenant, $billing);
         $webchatEnabled = $billing->checkFeature($tenant, 'webchat_enabled');
         $whatsappEnabled = $billing->checkFeature($tenant, 'whatsapp_enabled');
+        $hasPipeline = $this->hasLandingPipeline();
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
 
         return view('settings.channels.wizard', compact(
-            'currentCount', 'canCreate', 'webchatEnabled', 'whatsappEnabled', 'brands'
+            'currentCount', 'canCreate', 'webchatEnabled', 'whatsappEnabled', 'hasPipeline', 'brands'
         ));
     }
 
@@ -336,6 +342,14 @@ class ChannelController extends Controller
                         'account_name' => $data['name'] ?? $data['username'] ?? 'Cuenta verificada',
                         'username' => $data['username'] ?? '',
                     ],
+                ]);
+            }
+
+            // Webchat — requiere un embudo donde aterricen los contactos
+            if (!$this->hasLandingPipeline()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $this->pipelineRequiredMessage(),
                 ]);
             }
 
@@ -432,6 +446,13 @@ class ChannelController extends Controller
             ], 422);
         }
 
+        if ($request->input('type') === 'webchat' && !$this->hasLandingPipeline()) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->pipelineRequiredMessage(),
+            ], 422);
+        }
+
         $config = $this->buildConfig($request);
 
         $channel = Channel::create([
@@ -489,6 +510,20 @@ class ChannelController extends Controller
 
         $currentCount = Channel::count();
         return $currentCount < (int) $value;
+    }
+
+    /**
+     * Un canal de webchat necesita un embudo (pipeline) por defecto donde
+     * aterricen los contactos. Toda la conversión a deal usa is_default = true.
+     */
+    private function hasLandingPipeline(): bool
+    {
+        return Pipeline::where('is_default', true)->exists();
+    }
+
+    private function pipelineRequiredMessage(): string
+    {
+        return 'Primero crea un embudo (pipeline) donde aterricen los contactos del chat web. Ve a CRM › Pipelines, crea uno y vuelve a este paso.';
     }
 
     // ─── Existing CRUD ──────────────────────────────────────

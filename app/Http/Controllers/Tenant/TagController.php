@@ -15,7 +15,7 @@ class TagController extends Controller
     {
         $request->user()->hasPermissionTo('pipelines.view') || abort(403);
 
-        $tags = Tag::withCount('deals')->orderBy('name')->get();
+        $tags = Tag::withCount('deals')->latest()->get();
 
         return view('tags.index', compact('tags'));
     }

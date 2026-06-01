@@ -39,6 +39,9 @@ class ChannelWizardTest extends TestCase
         // Give org a subscription so billing checks pass
         $plan = \App\Models\Plan::where('slug', 'enterprise')->first();
         (new \App\Services\BillingService())->subscribe($this->org, $plan);
+
+        // Default pipeline so webchat channels can be created (leads need a place to land)
+        \App\Models\Pipeline::factory()->default()->create(['organization_id' => $this->org->id]);
     }
 
     public function test_org_admin_can_access_wizard(): void
@@ -203,6 +206,45 @@ class ChannelWizardTest extends TestCase
             'name' => 'Chat Web',
             'type' => 'webchat',
         ]);
+    }
+
+    public function test_validate_webchat_blocked_without_pipeline(): void
+    {
+        \App\Models\Pipeline::query()->delete();
+
+        $response = $this->actingAs($this->admin)->postJson(route('settings.channels.wizard.validate'), [
+            'type' => 'webchat',
+            'allowed_origins' => 'https://example.com',
+        ]);
+
+        $response->assertOk();
+        $response->assertJson(['success' => false]);
+        $response->assertJsonFragment(['message' => $this->pipelineMessage()]);
+    }
+
+    public function test_wizard_store_webchat_blocked_without_pipeline(): void
+    {
+        \App\Models\Pipeline::query()->delete();
+
+        $response = $this->actingAs($this->admin)->postJson(route('settings.channels.wizard.store'), [
+            'type' => 'webchat',
+            'name' => 'Chat Web',
+            'allowed_origins' => 'https://example.com',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson(['success' => false]);
+        $response->assertJsonFragment(['message' => $this->pipelineMessage()]);
+
+        $this->assertDatabaseMissing('channels', [
+            'organization_id' => $this->org->id,
+            'type' => 'webchat',
+        ]);
+    }
+
+    private function pipelineMessage(): string
+    {
+        return 'Primero crea un embudo (pipeline) donde aterricen los contactos del chat web. Ve a CRM › Pipelines, crea uno y vuelve a este paso.';
     }
 
     public function test_wizard_store_creates_facebook_channel(): void

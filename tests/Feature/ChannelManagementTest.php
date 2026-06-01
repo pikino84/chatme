@@ -88,6 +88,9 @@ class ChannelManagementTest extends TestCase
 
     public function test_org_admin_can_create_webchat_channel(): void
     {
+        // Webchat requiere un embudo donde aterricen los contactos
+        \App\Models\Pipeline::factory()->default()->create(['organization_id' => $this->org->id]);
+
         $response = $this->actingAs($this->orgAdmin)
             ->post($this->channelUrl(), [
                 'name' => 'My Webchat',

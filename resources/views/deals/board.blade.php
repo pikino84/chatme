@@ -163,7 +163,7 @@
         // Move card in DOM immediately
         var emptyMsg = zone.querySelector('.empty-msg');
         if (emptyMsg) emptyMsg.remove();
-        zone.appendChild(draggedCard);
+        zone.insertBefore(draggedCard, zone.firstChild);
         draggedCard.dataset.stageId = targetStageId;
         draggedCard.classList.remove('dragging');
 
@@ -532,8 +532,8 @@
         var emptyMsg = targetZone.querySelector('.empty-msg');
         if (emptyMsg) emptyMsg.remove();
 
-        // Move card
-        targetZone.appendChild(card);
+        // Move card to top
+        targetZone.insertBefore(card, targetZone.firstChild);
         card.dataset.stageId = newStageId;
 
         // Update counters

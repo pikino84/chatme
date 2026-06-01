@@ -117,13 +117,22 @@ class WhatsAppDirectoController extends Controller
         ]);
     }
 
-    public function conversations(Channel $channel): JsonResponse
+    public function conversations(Channel $channel, Request $request): JsonResponse
     {
         $this->ensureWebChannel($channel);
 
-        $conversations = Conversation::where('channel_id', $channel->id)
+        $query = Conversation::where('channel_id', $channel->id)
             // Oculta ruido (status@broadcast, etc.): solo conversaciones con un teléfono real.
-            ->whereRaw("contact_identifier ~ '^[0-9]{10,15}$'")
+            ->whereRaw("contact_identifier ~ '^[0-9]{10,15}$'");
+
+        // Visibilidad por asignación: un agente sin 'conversations.view-all'
+        // solo ve sus conversaciones asignadas.
+        $user = $request->user();
+        if (! $user->hasPermissionTo('conversations.view-all')) {
+            $query->where('assigned_user_id', $user->id);
+        }
+
+        $conversations = $query
             ->with(['messages' => fn($q) => $q->latest()->limit(1)])
             ->orderByDesc('last_message_at')
             ->limit(100)
@@ -560,6 +569,13 @@ class WhatsAppDirectoController extends Controller
         $query = Conversation::where('channel_id', $channel->id)
             ->orderByDesc('last_message_at')
             ->limit(50);
+
+        // Visibilidad por asignación: un agente sin 'conversations.view-all'
+        // solo puede reenviar a sus conversaciones asignadas.
+        $user = $request->user();
+        if (! $user->hasPermissionTo('conversations.view-all')) {
+            $query->where('assigned_user_id', $user->id);
+        }
 
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
@@ -1007,5 +1023,13 @@ class WhatsAppDirectoController extends Controller
     private function ensureConversationBelongs(Channel $channel, Conversation $conversation): void
     {
         abort_unless($conversation->channel_id === $channel->id, 404);
+
+        // Visibilidad por asignación: un agente sin 'conversations.view-all'
+        // solo puede acceder a las conversaciones asignadas a él. Las demás
+        // desaparecen de su bandeja (el admin/supervisor las asigna).
+        $user = request()->user();
+        if ($user && ! $user->hasPermissionTo('conversations.view-all')) {
+            abort_unless($conversation->assigned_user_id === $user->id, 403);
+        }
     }
 }
