@@ -199,7 +199,7 @@ return [
     'defaults' => [
         'supervisor-critical' => [
             'connection' => 'redis',
-            'queue' => ['critical', 'default'],
+            'queue' => ['critical', 'media', 'default'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
